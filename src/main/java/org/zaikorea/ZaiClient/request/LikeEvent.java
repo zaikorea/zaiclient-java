@@ -2,43 +2,18 @@ package org.zaikorea.ZaiClient.request;
 
 public class LikeEvent extends Event {
 
+    private static final String defaultEventType = "like";
+    private static final String defaultEventValue = "1";
+
     public LikeEvent(String userId, String itemId) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.timestamp = System.currentTimeMillis() / 1000.d;
-        this.setEventTypeAndValue();
-    }
-
-    public LikeEvent(String userId, String itemId, int timestamp) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.timestamp = timestamp;
-        this.setEventTypeAndValue();
-    }
-
-    public LikeEvent(String userId, String itemId, long timestamp) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.timestamp = timestamp;
-        this.setEventTypeAndValue();
-    }
-
-    public LikeEvent(String userId, String itemId, float timestamp) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.timestamp = timestamp;
-        this.setEventTypeAndValue();
+        this(userId, itemId, Event.getCurrentUnixTimestamp());
     }
 
     public LikeEvent(String userId, String itemId, double timestamp) {
         this.userId = userId;
         this.itemId = itemId;
         this.timestamp = timestamp;
-        this.setEventTypeAndValue();
-    }
-
-    private void setEventTypeAndValue() {
-        this.eventType = "like";
-        this.eventValue = "1";
+        this.eventType = defaultEventType;
+        this.eventValue = defaultEventValue;
     }
 }
