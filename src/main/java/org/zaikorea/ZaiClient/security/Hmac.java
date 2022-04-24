@@ -2,7 +2,6 @@ package org.zaikorea.ZaiClient.security;
 
 import org.zaikorea.ZaiClient.configs.Config;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
