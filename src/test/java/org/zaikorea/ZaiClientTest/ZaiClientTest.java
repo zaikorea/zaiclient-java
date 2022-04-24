@@ -128,6 +128,73 @@ public class ZaiClientTest {
         }
     }
 
+    private void checkSuccessfulEventUpdate(Event oldEvent, Event newEvent) {
+        assertEquals(oldEvent.getUserId(), newEvent.getUserId());
+        assertEquals(oldEvent.getTimestamp(), newEvent.getTimestamp(), 0.0001);
+
+        try {
+            testClient.addEventLog(oldEvent);
+            String userId = oldEvent.getUserId();
+            String timestamp = Float.toString(oldEvent.getTimestamp());
+            String itemId = oldEvent.getItemId();
+            String eventType = oldEvent.getEventType();
+            String eventValue = oldEvent.getEventValue();
+
+            Map<String, String> logItem = getEventLog(userId, timestamp);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(eventTablePartitionKey), userId);
+            assertEquals(logItem.get(eventTableItemIdKey), itemId);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), Double.parseDouble(timestamp), 0.0001);
+            assertEquals(logItem.get(eventTableEventTypeKey), eventType);
+            assertEquals(logItem.get(eventTableEventValueKey), eventValue);
+
+            testClient.updateEventLog(newEvent);
+            userId = newEvent.getUserId();
+            timestamp = Float.toString(newEvent.getTimestamp());
+            itemId = newEvent.getItemId();
+            eventType = newEvent.getEventType();
+            eventValue = newEvent.getEventValue();
+
+            logItem = getEventLog(userId, timestamp);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(eventTablePartitionKey), userId);
+            assertEquals(logItem.get(eventTableItemIdKey), itemId);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), Double.parseDouble(timestamp), 0.0001);
+            assertEquals(logItem.get(eventTableEventTypeKey), eventType);
+            assertEquals(logItem.get(eventTableEventValueKey), eventValue);
+
+            assertTrue(deleteEventLog(userId, timestamp));
+        } catch (IOException | ZaiClientException e) {
+            fail();
+        }
+    }
+
+    private void checkSuccessfulEventDelete(Event event) {
+        try {
+            testClient.addEventLog(event);
+            String userId = event.getUserId();
+            String timestamp = Float.toString(event.getTimestamp());
+            String itemId = event.getItemId();
+            String eventType = event.getEventType();
+            String eventValue = event.getEventValue();
+
+            Map<String, String> logItem = getEventLog(userId, timestamp);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(eventTablePartitionKey), userId);
+            assertEquals(logItem.get(eventTableItemIdKey), itemId);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), Double.parseDouble(timestamp), 0.0001);
+            assertEquals(logItem.get(eventTableEventTypeKey), eventType);
+            assertEquals(logItem.get(eventTableEventValueKey), eventValue);
+
+            testClient.deleteEventLog(event);
+
+            Map<String, String> newLogItem = getEventLog(userId, timestamp);
+            assertEquals(newLogItem.size(), 0);
+        } catch (IOException | ZaiClientException e) {
+            fail();
+        }
+    }
+
     @Before
     public void setup() {
         testClient = new ZaiClient(clientId, clientSecret);
@@ -195,6 +262,26 @@ public class ZaiClientTest {
     }
 
     @Test
+    public void testUpdateViewEvent() {
+        String userId = generateUUID();
+        String oldItemId = generateUUID();
+        String newItemId = generateUUID();
+
+        Event oldEvent = new ViewEvent(userId, oldItemId);
+        Event newEvent = new ViewEvent(userId, newItemId, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ViewEvent(userId, itemId);
+        checkSuccessfulEventDelete(event);
+    }
+
+    @Test
     public void testAddLikeEvent() {
         String userId = generateUUID();
         String itemId = generateUUID();
@@ -246,6 +333,26 @@ public class ZaiClientTest {
     }
 
     @Test
+    public void testUpdateLikeEvent() {
+        String userId = generateUUID();
+        String oldItemId = generateUUID();
+        String newItemId = generateUUID();
+
+        Event oldEvent = new LikeEvent(userId, oldItemId);
+        Event newEvent = new LikeEvent(userId, newItemId, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteLikeEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new LikeEvent(userId, itemId);
+        checkSuccessfulEventDelete(event);
+    }
+
+    @Test
     public void testAddCartaddEvent() {
         String userId = generateUUID();
         String itemId = generateUUID();
@@ -294,6 +401,26 @@ public class ZaiClientTest {
         } catch (ZaiClientException e) {
             assertEquals(e.getHttpStatusCode(), 403);
         }
+    }
+
+    @Test
+    public void testUpdateCartaddEvent() {
+        String userId = generateUUID();
+        String oldItemId = generateUUID();
+        String newItemId = generateUUID();
+
+        Event oldEvent = new CartaddEvent(userId, oldItemId);
+        Event newEvent = new CartaddEvent(userId, newItemId, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteCartaddEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new CartaddEvent(userId, itemId);
+        checkSuccessfulEventDelete(event);
     }
 
     @Test
@@ -352,6 +479,29 @@ public class ZaiClientTest {
     }
 
     @Test
+    public void testUpdateRateEvent() {
+        String userId = generateUUID();
+        double oldRating = generateRandomDouble(0, 5);
+        String oldItemId = generateUUID();
+        double newRating = generateRandomDouble(0, 5);
+        String newItemId = generateUUID();
+
+        Event oldEvent = new RateEvent(userId, oldItemId, oldRating);
+        Event newEvent = new RateEvent(userId, newItemId, newRating, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteRateEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        double rating = generateRandomDouble(0, 5);
+
+        Event event = new RateEvent(userId, itemId, rating);
+        checkSuccessfulEventDelete(event);
+    }
+
+    @Test
     public void testAddPurchaseEvent() {
         String userId = generateUUID();
         String itemId = generateUUID();
@@ -407,6 +557,25 @@ public class ZaiClientTest {
     }
 
     @Test
-    public void testSample2() {
+    public void testUpdatePurchaseEvent() {
+        String userId = generateUUID();
+        int oldPrice = generateRandomInteger(10000, 100000);
+        String oldItemId = generateUUID();
+        int newPrice = generateRandomInteger(10000, 100000);
+        String newItemId = generateUUID();
+
+        Event oldEvent = new PurchaseEvent(userId, oldItemId, oldPrice);
+        Event newEvent = new PurchaseEvent(userId, newItemId, newPrice, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeletePurchaseEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        int price = generateRandomInteger(10000, 100000);
+
+        Event event = new PurchaseEvent(userId, itemId, price);
+        checkSuccessfulEventDelete(event);
     }
 }
