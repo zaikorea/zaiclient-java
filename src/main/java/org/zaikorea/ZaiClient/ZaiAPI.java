@@ -18,7 +18,7 @@ public interface ZaiAPI {
         @Body Event event
     );
 
-    @DELETE(Config.eventsApiPath)
+    @HTTP(method="DELETE", path=Config.eventsApiPath, hasBody=true)
     Call<EventLoggerResponse> deleteEventLog(
         @Body Event event
     );
