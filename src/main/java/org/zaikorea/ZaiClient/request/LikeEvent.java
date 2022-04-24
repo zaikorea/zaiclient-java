@@ -12,7 +12,7 @@ public class LikeEvent extends Event {
     public LikeEvent(String userId, String itemId, double timestamp) {
         this.userId = userId;
         this.itemId = itemId;
-        this.timestamp = timestamp;
+        this.timestamp = (float)timestamp;
         this.eventType = defaultEventType;
         this.eventValue = defaultEventValue;
     }

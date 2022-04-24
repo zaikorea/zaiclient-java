@@ -11,7 +11,7 @@ public class RateEvent extends Event{
     public RateEvent(String userId, String itemId, double rating, double timestamp) {
         this.userId = userId;
         this.itemId = itemId;
-        this.timestamp = timestamp;
+        this.timestamp = (float)timestamp;
         this.eventType = defaultEventType;
         this.eventValue = Double.toString(rating);
     }
