@@ -2,7 +2,6 @@ package org.zaikorea.ZaiClient.security;
 
 import org.zaikorea.ZaiClient.configs.Config;
 
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -24,7 +23,8 @@ public class ZaiHeaders {
         Map<String, String> zaiHeaders = new HashMap<>();
         zaiHeaders.put(Config.zaiClientIdHeader, zaiClientId);
         zaiHeaders.put(Config.zaiUnixTimestampHeader, unixTimestamp);
-        zaiHeaders.put(Config.zaiAuthorizationHeader, zaiToken);
+        zaiHeaders.put(Config.zaiAuthorizationHeader, Config.hmacScheme + " " + zaiToken);
+        zaiHeaders.put(Config.zaiCallTypeHeader, Config.zaiCallType);
 
         return zaiHeaders;
     }
