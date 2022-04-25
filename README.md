@@ -70,19 +70,19 @@ dependencies {
 
 ```xml
   <repositories>
-		<repository>
-	    <id>jitpack.io</id>
-	    <url>https://jitpack.io</url>
-		</repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 ```
 
 ```xml
-	<dependency>
-		<groupId>com.github.zaikorea</groupId>
-		<artifactId>zaiclient-java</artifactId>
-		<version>v0.1.0</version>
-	</dependency>
+  <dependency>
+    <groupId>com.github.zaikorea</groupId>
+    <artifactId>zaiclient-java</artifactId>
+    <version>v0.1.0</version>
+  </dependency>
 ```
 
 
@@ -104,8 +104,8 @@ import org.zaikorea.ZaiClient.response.EventLoggerResponse;
 ZaiClient zaiClient = new ZaiClient("{자이 UUID}", "{자이 API Secret}");
 
 try {
-	// 고객 행동 중 product detail view를 Z.Ai ML 데이터베이스에 기록
-	zaiClient.addEventLog(new ViewEvent("{고객 식별자}", "{제품 식별자}"));
+  // 고객 행동 중 product detail view를 Z.Ai ML 데이터베이스에 기록
+  zaiClient.addEventLog(new ViewEvent("{고객 식별자}", "{제품 식별자}"));
 } catch (ZaiClientException e) {
   // TODO: Error handling
 } catch (IOException e) {
@@ -220,7 +220,7 @@ Event rateEvent = new RateEvent("CUSTOMER_ID", "PRODUCT_ID", 0.5, timestamp);
 
 ```java
 try {
-	zaiClient.addEventLog(new ViewEvent("CUSTOMER_ID", "PRODUCT_ID"));
+  zaiClient.addEventLog(new ViewEvent("CUSTOMER_ID", "PRODUCT_ID"));
 } catch (ZaiClientException e) {
   System.out.println(e.getMessage());
 
