@@ -113,6 +113,20 @@ try {
 }
 ```
 
+### Kotlin
+
+```kotlin
+import org.zaikorea.ZaiClient.ZaiClient
+import org.zaikorea.ZaiClient.request.ViewEvent
+  
+...
+
+val zaiClient = ZaiClient("{자이 UUID}", "{자이 API Secret}")
+
+// 고객 행동 중 product detail view를 Z.Ai ML 데이터베이스에 기록
+zaiClient.addEventLog(ViewEvent("{고객 식별자}", "{제품 식별자}"))
+```
+
 
 
 ## API Client Instantiation
@@ -129,6 +143,18 @@ import org.zaikorea.ZaiClient.ZaiClient;
 String clientId = "YOUR_ZAI_CLIENT_ID";
 String clientSecret = "YOUR_ZAI_API_SECRET";
 ZaiClient zaiClient = new ZaiClient(clientId, clientSecret);
+```
+
+### Kotlin
+
+```kotlin
+import org.zaikorea.ZaiClient.ZaiClient;
+
+...
+
+val clientId = "YOUR_ZAI_CLIENT_ID"
+val clientSecret = "YOUR_ZAI_API_SECRET"
+val zaiClient = ZaiClient(clientId, clientSecret)
 ```
 
 
@@ -162,6 +188,21 @@ try {
 }
 ```
 
+### Kotlin
+
+```kotlin
+// 새로운 product detail view event 기록
+val event = ViewEvent("CUSTOMER_ID", "PRODUCT_ID")
+zaiClient.addEventLog(event)
+
+// 위에서 기록된 event의 product ID를 수정
+val newEvent = ViewEvent("CUSTOMER_ID", "NEW_PRODUCT_ID", event.timestamp)
+zaiClient.updateEventLog(newEvent)
+
+// 위에서 기록된 event를 삭제
+zaiClient.deleteEventLog(newEvent)
+```
+
 
 
 ## Events
@@ -188,6 +229,20 @@ Event purchaseEvent = new PurchaseEvent("CUSTOMER_ID", "PRODUCT_ID", 100000);
 Event rateEvent = new RateEvent("CUSTOMER_ID", "PRODUCT_ID", 0.5);
 ```
 
+### Kotlin
+
+```kotlin
+import org.zaikorea.ZaiClient.request.*
+
+...
+
+val viewEvent = ViewEvent("CUSTOMER_ID", "PRODUCT_ID")
+val likeEvent = LikeEvent("CUSTOMER_ID", "PRODUCT_ID")
+val cartaddEvent = CartaddEvent("CUSTOMER_ID", "PRODUCT_ID")
+val purchaseEvent = PurchaseEvent("CUSTOMER_ID", "PRODUCT_ID", 100000)
+val rateEvent = RateEvent("CUSTOMER_ID", "PRODUCT_ID", 0.5)
+```
+
 위와 같은 방식으로 `Event` 오브젝트를 생성하면 오브젝트 생성 시점을 기준으로 이벤트 발생 시간이 결정됩니다. 만약 이벤트 발생 시간을 다르게 기록해야 한다면 아래와 같이 `timestamp`를 직접 입력하는 생성자를 사용할 수 있습니다. 이때 `timestamp`는 유닉스 타임스탬프 값을 사용하며, 가급적 소수점 단위까지(ms단위까지 판별 가능) 있는 값을 사용하는 것을 권장합니다.
 
 ### Java
@@ -206,9 +261,21 @@ Event purchaseEvent = new PurchaseEvent("CUSTOMER_ID", "PRODUCT_ID", 100000, tim
 Event rateEvent = new RateEvent("CUSTOMER_ID", "PRODUCT_ID", 0.5, timestamp);
 ```
 
+### Kotlin
 
+```kotlin
+import org.zaikorea.ZaiClient.request.*;
 
+...
 
+val timestamp = Event.getCurrentUnixTimestamp()
+
+val viewEvent = ViewEvent("CUSTOMER_ID", "PRODUCT_ID", timestamp)
+val likeEvent = LikeEvent("CUSTOMER_ID", "PRODUCT_ID", timestamp)
+val cartaddEvent = CartaddEvent("CUSTOMER_ID", "PRODUCT_ID", timestamp)
+val purchaseEvent = PurchaseEvent("CUSTOMER_ID", "PRODUCT_ID", 100000, timestamp)
+val rateEvent = RateEvent("CUSTOMER_ID", "PRODUCT_ID", 0.5, timestamp)
+```
 
 
 
@@ -243,3 +310,26 @@ try {
   e.printStackTrace();
 }
 ```
+
+### Kotlin
+
+```kotlin
+try {
+  zaiClient.addEventLog(ViewEvent("CUSTOMER_ID", "PRODUCT_ID"));
+} catch (e: ZaiClientException) {
+  println(e.message);
+
+  val httpStatus = e.httpStatusCode;
+
+  when (httpStatus) {
+    403 -> // Handle 403 error
+    422 -> // Handle 422 error
+    500 -> // Handle 500 error
+    ...
+  }
+} catch (e: IOException) {
+  // Server connection error
+  e.printStackTrace();
+}
+```
+
