@@ -2,25 +2,46 @@
 
 ![JitPack](https://jitpack.io/v/zaikorea/zaiclient-java.svg)  
 
-Z.Ai API를 간편하게 이용할 수 있는 REST client SDK입니다.
+Z.Ai API를 Java / Kotlin 환경에서 간편하게 이용할 수 있는 REST client SDK입니다.
 
 
 
 ## Installation
 
-### Java
-
 이 SDK는 [JitPack](https://jitpack.io/#zaikorea/zaiclient-java) 을 통해 배포되어 있습니다. 다음과 같이 프로젝트에 추가할 수 있습니다.
 
-#### Gradle
+
+
+### Gradle (build.gradle)
 
 `build.gradle`의 repository 끝부분에 다음을 추가합니다.
 
 ```css
-allprojects {
-  repositories {
-    ...
-    maven { url 'https://jitpack.io' }
+repositories {
+  ...
+  maven { url 'https://jitpack.io' }
+}
+```
+
+Dependency를 추가합니다.
+
+```css
+dependencies {
+  implementation 'com.github.zaikorea:zaiclient-java:v0.1.0-alpha'
+}
+```
+
+
+
+### Gradle (build.gradle.kts)
+
+`build.gradle.kts`의 repository 끝부분에 다음을 추가합니다.
+
+```css
+repositories {
+  ...
+  maven {
+    url = uri("https://jitpack.io")
   }
 }
 ```
@@ -28,12 +49,14 @@ allprojects {
 Dependency를 추가합니다.
 
 ```css
-	dependencies {
-    implementation 'com.github.zaikorea:zaiclient-java:v0.1.0-alpha'
-	}
+dependencies {
+  implementation("com.github.zaikorea:zaiclient-java:v0.1.0-alpha")
+}
 ```
 
-#### Maven
+
+
+### Maven
 
 다음 태그들을 프로젝트의 POM 파일에 추가합니다.
 
@@ -48,9 +71,9 @@ Dependency를 추가합니다.
 
 ```xml
 	<dependency>
-		<groupId>com.github.jitpack</groupId>
-		<artifactId>maven-simple</artifactId>
-		<version>0.1</version>
+		<groupId>com.github.zaikorea</groupId>
+		<artifactId>zaiclient-java</artifactId>
+		<version>v0.1.0-alpha</version>
 	</dependency>
 ```
 
