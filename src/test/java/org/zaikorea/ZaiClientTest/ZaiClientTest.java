@@ -2,6 +2,7 @@ package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.HashMap;
@@ -55,36 +56,50 @@ public class ZaiClientTest {
         return ThreadLocalRandom.current().nextDouble(min, max);
     }
 
-    private Map<String, String> getEventLog(String partitionValue, String sortValue) {
+    private Map<String, String> getEventLog(String partitionValue) {
 
-        HashMap<String, AttributeValue> keyToGet = new HashMap<>();
+        String partitionAlias = "#pk";
 
-        keyToGet.put(eventTablePartitionKey, AttributeValue.builder().s(partitionValue).build());
-        keyToGet.put(eventTableSortKey, AttributeValue.builder().n(sortValue).build());
+        HashMap<String,String> attrNameAlias = new HashMap<>();
+        attrNameAlias.put(partitionAlias, eventTablePartitionKey);
+        HashMap<String, AttributeValue> attrValues = new HashMap<>();
+        attrValues.put(":" + eventTablePartitionKey, AttributeValue.builder()
+            .s(partitionValue)
+            .build());
 
-        GetItemRequest request = GetItemRequest.builder()
-                .key(keyToGet)
+        QueryRequest request = QueryRequest.builder()
                 .tableName(eventTableName)
-                .consistentRead(false)
+                .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
+                .expressionAttributeNames(attrNameAlias)
+                .expressionAttributeValues(attrValues)
                 .build();
 
         try {
-            Map<String, AttributeValue> returnedItem = ddbClient.getItem(request).item();
+            List<Map<String, AttributeValue>> returnedItems = ddbClient.query(request).items();
+            if (returnedItems.size() > 1)
+                return null;
+            if (returnedItems.size() == 0)
+                return new HashMap<>();
+            Map<String, AttributeValue> returnedItem = returnedItems.get(0);
             Map<String, String> item = new HashMap<>();
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
                     String val = returnedItem.get(key).toString();
                     item.put(key, val.substring(17, val.length() - 1));
                 }
+                return item;
             }
-            return item;
+            return null;
         } catch (DynamoDbException e) {
+            e.printStackTrace();
             System.err.println(e.getMessage());
             return null;
         }
     }
 
-    private boolean deleteEventLog(String partitionValue, String sortValue) {
+    private boolean deleteEventLog(String partitionValue) {
+
+        String sortValue = getEventLog(partitionValue).get(eventTableSortKey);
 
         HashMap<String, AttributeValue> keyToGet = new HashMap<>();
 
@@ -110,19 +125,20 @@ public class ZaiClientTest {
         try {
             testClient.addEventLog(event);
             String userId = event.getUserId();
-            String timestamp = Float.toString(event.getTimestamp());
+            double timestamp = event.getTimestamp();
             String itemId = event.getItemId();
             String eventType = event.getEventType();
             String eventValue = event.getEventValue();
 
-            Map<String, String> logItem = getEventLog(userId, timestamp);
+            Map<String, String> logItem = getEventLog(userId);
+            assertNotNull(logItem);
             assertNotEquals(logItem.size(), 0);
             assertEquals(logItem.get(eventTablePartitionKey), userId);
             assertEquals(logItem.get(eventTableItemIdKey), itemId);
-            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), Double.parseDouble(timestamp), 0.0001);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
             assertEquals(logItem.get(eventTableEventTypeKey), eventType);
             assertEquals(logItem.get(eventTableEventValueKey), eventValue);
-            assertTrue(deleteEventLog(userId, timestamp));
+            assertTrue(deleteEventLog(userId));
         } catch (IOException | ZaiClientException e) {
             fail();
         }
@@ -135,35 +151,37 @@ public class ZaiClientTest {
         try {
             testClient.addEventLog(oldEvent);
             String userId = oldEvent.getUserId();
-            String timestamp = Float.toString(oldEvent.getTimestamp());
+            double timestamp = oldEvent.getTimestamp();
             String itemId = oldEvent.getItemId();
             String eventType = oldEvent.getEventType();
             String eventValue = oldEvent.getEventValue();
 
-            Map<String, String> logItem = getEventLog(userId, timestamp);
+            Map<String, String> logItem = getEventLog(userId);
+            assertNotNull(logItem);
             assertNotEquals(logItem.size(), 0);
             assertEquals(logItem.get(eventTablePartitionKey), userId);
             assertEquals(logItem.get(eventTableItemIdKey), itemId);
-            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), Double.parseDouble(timestamp), 0.0001);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
             assertEquals(logItem.get(eventTableEventTypeKey), eventType);
             assertEquals(logItem.get(eventTableEventValueKey), eventValue);
 
             testClient.updateEventLog(newEvent);
             userId = newEvent.getUserId();
-            timestamp = Float.toString(newEvent.getTimestamp());
+            timestamp = newEvent.getTimestamp();
             itemId = newEvent.getItemId();
             eventType = newEvent.getEventType();
             eventValue = newEvent.getEventValue();
 
-            logItem = getEventLog(userId, timestamp);
+            logItem = getEventLog(userId);
+            assertNotNull(logItem);
             assertNotEquals(logItem.size(), 0);
             assertEquals(logItem.get(eventTablePartitionKey), userId);
             assertEquals(logItem.get(eventTableItemIdKey), itemId);
-            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), Double.parseDouble(timestamp), 0.0001);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
             assertEquals(logItem.get(eventTableEventTypeKey), eventType);
             assertEquals(logItem.get(eventTableEventValueKey), eventValue);
 
-            assertTrue(deleteEventLog(userId, timestamp));
+            assertTrue(deleteEventLog(userId));
         } catch (IOException | ZaiClientException e) {
             fail();
         }
@@ -173,22 +191,24 @@ public class ZaiClientTest {
         try {
             testClient.addEventLog(event);
             String userId = event.getUserId();
-            String timestamp = Float.toString(event.getTimestamp());
+            double timestamp = event.getTimestamp();
             String itemId = event.getItemId();
             String eventType = event.getEventType();
             String eventValue = event.getEventValue();
 
-            Map<String, String> logItem = getEventLog(userId, timestamp);
+            Map<String, String> logItem = getEventLog(userId);
+            assertNotNull(logItem);
             assertNotEquals(logItem.size(), 0);
             assertEquals(logItem.get(eventTablePartitionKey), userId);
             assertEquals(logItem.get(eventTableItemIdKey), itemId);
-            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), Double.parseDouble(timestamp), 0.0001);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
             assertEquals(logItem.get(eventTableEventTypeKey), eventType);
             assertEquals(logItem.get(eventTableEventValueKey), eventValue);
 
             testClient.deleteEventLog(event);
 
-            Map<String, String> newLogItem = getEventLog(userId, timestamp);
+            Map<String, String> newLogItem = getEventLog(userId);
+            assertNotNull(newLogItem);
             assertEquals(newLogItem.size(), 0);
         } catch (IOException | ZaiClientException e) {
             fail();
