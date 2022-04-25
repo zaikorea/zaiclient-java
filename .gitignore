@@ -5,3 +5,6 @@
 # Java
 *.class
 *.jar
+
+# macOS
+.DS_Store
