@@ -11,7 +11,7 @@ public class Event {
     protected String itemId;
 
     @SerializedName("timestamp")
-    protected float timestamp;
+    protected double timestamp;
 
     @SerializedName("event_type")
     protected String eventType;
@@ -19,8 +19,8 @@ public class Event {
     @SerializedName("event_value")
     protected String eventValue;
 
-    public static float getCurrentUnixTimestamp() {
-        return System.currentTimeMillis() / 1000.f;
+    public static double getCurrentUnixTimestamp() {
+        return System.currentTimeMillis() / 1000.d;
     }
 
     public String getUserId() {
@@ -31,7 +31,7 @@ public class Event {
         return itemId;
     }
 
-    public float getTimestamp() {
+    public double getTimestamp() {
         return timestamp;
     }
 
