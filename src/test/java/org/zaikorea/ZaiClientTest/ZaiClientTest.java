@@ -261,7 +261,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -277,7 +277,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -332,7 +332,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -348,7 +348,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -403,7 +403,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -419,7 +419,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -477,7 +477,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -494,7 +494,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -555,7 +555,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -572,7 +572,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
