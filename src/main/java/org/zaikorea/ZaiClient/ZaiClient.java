@@ -101,7 +101,7 @@ public class ZaiClient {
         try {
             assert response.errorBody() != null;
             JsonElement element = JsonParser.parseString(response.errorBody().string());
-            error = element.getAsJsonObject().get("message").getAsString();
+            error = element.toString();
         } catch (JsonSyntaxException | IOException e) {
             e.printStackTrace();
         }
