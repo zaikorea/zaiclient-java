@@ -12,4 +12,6 @@ public class Config {
     public static final String zaiAuthorizationHeader = "X-ZAI-AUTHORIZATION";
     public static final String zaiCallTypeHeader = "X-ZAI-CALL-TYPE";
     public static final String zaiCallType = "sdk_call";
+    public static final String timestampKey = "timestamp";
+    public static final double epsilon = 1e-4;
 }

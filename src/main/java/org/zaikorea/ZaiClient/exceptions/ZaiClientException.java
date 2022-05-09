@@ -11,6 +11,11 @@ public class ZaiClientException extends Exception {
         this.httpStatusCode = exception.code();
     }
 
+    public ZaiClientException(String error, int httpStatusCode) {
+        super(error);
+        this.httpStatusCode = httpStatusCode;
+    }
+
     public int getHttpStatusCode() {
         return httpStatusCode;
     }
