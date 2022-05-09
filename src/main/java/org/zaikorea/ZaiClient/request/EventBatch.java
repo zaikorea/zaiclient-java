@@ -7,9 +7,13 @@ import java.util.ArrayList;
 
 public class EventBatch {
 
+    private static final String defaultEventValue = "1";
+
     protected String userId;
 
     protected ArrayList<String> itemIds;
+
+    protected String eventType;
 
     protected ArrayList<String> eventValues;
 
@@ -25,6 +29,10 @@ public class EventBatch {
 
     public ArrayList<String> getItemIds() { return itemIds; }
 
+    public String getEventType() {
+        return eventType;
+    }
+
     public ArrayList<String> getEventValues() { return eventValues; }
 
     public double getTimestamp() { return timestamp; }
@@ -37,10 +45,7 @@ public class EventBatch {
     }
 
     public void addItem(String itemId) throws ZaiClientException {
-        if (logFlag) {
-            throw new ZaiClientException("Cannot add item after log batch event.", 405);
-        }
-        this.itemIds.add(itemId);
+        addItem(itemId, defaultEventValue);
     }
 
     public void addItem(String itemId, String eventValue) throws ZaiClientException {
@@ -60,7 +65,9 @@ public class EventBatch {
             throw new ZaiClientException("This itemId does not exist in itemIds of the EventBatch object.", 400);
         }
 
-        this.itemIds.removeIf(id -> id.equals(itemId));
+        int idx = itemIds.indexOf(itemId);
+        this.itemIds.remove(idx);
+        this.eventValues.remove(idx);
     }
 
     public void deleteItem(String itemId, String eventValue) throws ZaiClientException {
@@ -72,6 +79,12 @@ public class EventBatch {
             throw new ZaiClientException("This itemId does not exist in itemIds of the EventBatch object.", 400);
         }
 
-        this.itemIds.removeIf(id -> id.equals(itemId));
+        int itemIdx = itemIds.indexOf(itemId);
+        int valueIdx = eventValues.indexOf(eventValue);
+
+        if (itemIdx == valueIdx) {
+            this.itemIds.remove(itemIdx);
+            this.eventValues.remove(valueIdx);
+        }
     }
 }

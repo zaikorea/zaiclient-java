@@ -3,8 +3,13 @@ package org.zaikorea.ZaiClient.request;
 import org.zaikorea.ZaiClient.configs.Config;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class ViewEventBatch extends EventBatch {
+
+    private static final String defaultEventType = "view";
+    private static final String defaultEventValue = "1";
 
     public ViewEventBatch(String userId, ArrayList<String> itemIds) {
         this(userId, itemIds, EventBatch.getCurrentUnixTimestamp());
@@ -14,6 +19,8 @@ public class ViewEventBatch extends EventBatch {
         this.userId = userId;
         this.itemIds = itemIds;
         this.timestamp = timestamp;
+        this.eventType = defaultEventType;
+        this.eventValues = new ArrayList<>(Collections.nCopies(itemIds.size(), defaultEventValue));
     }
 
     @Override

@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 public class RateEventBatch extends EventBatch {
 
+    private static final String defaultEventType = "rate";
+
     public RateEventBatch(String userId, ArrayList<ItemEventValuePair> purchaseItems) {
         this(userId, purchaseItems, EventBatch.getCurrentUnixTimestamp());
     }
@@ -14,8 +16,9 @@ public class RateEventBatch extends EventBatch {
     public RateEventBatch(String userId, ArrayList<ItemEventValuePair> purchaseItems, double timestamp) {
         this.userId = userId;
         this.itemIds = purchaseItems.stream().map(ItemEventValuePair::getItemId).collect(Collectors.toCollection(ArrayList::new));
-        this.eventValues =purchaseItems.stream().map(ItemEventValuePair::getEventValue).collect(Collectors.toCollection(ArrayList::new));
         this.timestamp = timestamp;
+        this.eventType = defaultEventType;
+        this.eventValues = purchaseItems.stream().map(ItemEventValuePair::getEventValue).collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override

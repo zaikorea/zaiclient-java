@@ -3,8 +3,12 @@ package org.zaikorea.ZaiClient.request;
 import org.zaikorea.ZaiClient.configs.Config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class CartaddEventBatch extends EventBatch {
+
+    private static final String defaultEventType = "cartadd";
+    private static final String defaultEventValue = "1";
 
     public CartaddEventBatch(String userId, ArrayList<String> itemIds) {
         this(userId, itemIds, EventBatch.getCurrentUnixTimestamp());
@@ -14,6 +18,8 @@ public class CartaddEventBatch extends EventBatch {
         this.userId = userId;
         this.itemIds = itemIds;
         this.timestamp = timestamp;
+        this.eventType = defaultEventType;
+        this.eventValues = new ArrayList<>(Collections.nCopies(itemIds.size(), defaultEventValue));
     }
 
     @Override
