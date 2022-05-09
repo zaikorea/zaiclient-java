@@ -1,6 +1,7 @@
 package org.zaikorea.ZaiClient.request;
 
 import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -31,4 +32,13 @@ public class RateEventBatch extends EventBatch {
         }
         return events;
     }
+
+    public void addItem(String itemId, double price) throws ZaiClientException {
+        super.addItem(itemId, Double.toString(price));
+    }
+
+    public void deleteItem(String itemId, double price) throws ZaiClientException {
+        super.deleteItem(itemId, Double.toString(price));
+    }
+
 }

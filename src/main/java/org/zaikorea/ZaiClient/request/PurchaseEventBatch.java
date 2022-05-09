@@ -20,7 +20,6 @@ public class PurchaseEventBatch extends EventBatch {
         this.timestamp = timestamp;
         this.eventType = defaultEventType;
         this.eventValues =purchaseItems.stream().map(ItemEventValuePair::getEventValue).collect(Collectors.toCollection(ArrayList::new));
-
     }
 
     @Override
@@ -38,4 +37,7 @@ public class PurchaseEventBatch extends EventBatch {
         super.addItem(itemId, Integer.toString(price));
     }
 
+    public void deleteItem(String itemId, int price) throws ZaiClientException {
+        super.deleteItem(itemId, Integer.toString(price));
+    }
 }
