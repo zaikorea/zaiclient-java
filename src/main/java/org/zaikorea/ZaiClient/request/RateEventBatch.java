@@ -39,8 +39,7 @@ public class RateEventBatch extends EventBatch {
     }
 
     public void deleteItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
-        int idx = itemIds.indexOf(itemId);
-        super.deleteItem(itemId, eventValues.get(idx));
+        super.deleteItem(itemId);
     }
 
     public void deleteItem(String itemId, double rate) throws LoggedEventBatchException, ItemNotFoundException {

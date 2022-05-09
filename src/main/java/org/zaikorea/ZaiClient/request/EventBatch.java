@@ -58,6 +58,16 @@ public class EventBatch {
         this.eventValues.add(eventValue);
     }
 
+    protected void deleteItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+        if (logFlag) throw new LoggedEventBatchException();
+
+        if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
+
+        int idx = this.itemIds.indexOf(itemId);
+        this.itemIds.remove(idx);
+        this.eventValues.remove(idx);
+    }
+
     protected void deleteItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
         if (logFlag) throw new LoggedEventBatchException();
 
