@@ -55,7 +55,7 @@ public class ZaiClient {
         if (!response.isSuccessful())
             throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
 
-        eventBatch.setLogFlagTrue();
+        eventBatch.setLogFlag();
 
         return response.body();
     }

@@ -1,25 +1,25 @@
 package org.zaikorea.ZaiClient.request;
 
 import org.zaikorea.ZaiClient.configs.Config;
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
+import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class RateEventBatch extends EventBatch {
 
     private static final String defaultEventType = "rate";
 
-    public RateEventBatch(String userId, ArrayList<ItemEventValuePair> purchaseItems) {
-        this(userId, purchaseItems, EventBatch.getCurrentUnixTimestamp());
+    public RateEventBatch(String userId) {
+        this(userId, EventBatch.getCurrentUnixTimestamp());
     }
 
-    public RateEventBatch(String userId, ArrayList<ItemEventValuePair> purchaseItems, double timestamp) {
+    public RateEventBatch(String userId, double timestamp) {
         this.userId = userId;
-        this.itemIds = purchaseItems.stream().map(ItemEventValuePair::getItemId).collect(Collectors.toCollection(ArrayList::new));
+        this.itemIds = new ArrayList<>();
         this.timestamp = timestamp;
         this.eventType = defaultEventType;
-        this.eventValues = purchaseItems.stream().map(ItemEventValuePair::getEventValue).collect(Collectors.toCollection(ArrayList::new));
+        this.eventValues = new ArrayList<>();
     }
 
     @Override
@@ -33,12 +33,17 @@ public class RateEventBatch extends EventBatch {
         return events;
     }
 
-    public void addItem(String itemId, double price) throws ZaiClientException {
-        super.addItem(itemId, Double.toString(price));
+    public void addItem(String itemId, double rate) throws LoggedEventBatchException {
+        super.addItem(itemId, Double.toString(rate));
     }
 
-    public void deleteItem(String itemId, double price) throws ZaiClientException {
-        super.deleteItem(itemId, Double.toString(price));
+    public void deleteItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+        int idx = itemIds.indexOf(itemId);
+        super.deleteItem(itemId, eventValues.get(idx));
+    }
+
+    public void deleteItem(String itemId, double rate) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteItem(itemId, Double.toString(rate));
     }
 
 }

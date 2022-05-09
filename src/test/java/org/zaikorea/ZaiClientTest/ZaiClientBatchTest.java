@@ -13,8 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zaikorea.ZaiClient.ZaiClient;
 import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.*;
+import org.zaikorea.ZaiClient.response.EventLoggerResponse;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -160,7 +163,6 @@ public class ZaiClientBatchTest {
 //        }
 //    }
 
-
     public static String getUnixTimestamp() {
         long utcnow = Instant.now().getEpochSecond();
         return Long.toString(utcnow);
@@ -185,17 +187,19 @@ public class ZaiClientBatchTest {
     public void testAddViewEventBatch() {
         String userId = generateUUID();
 
-        ArrayList<String> itemIds = new ArrayList<>();
+        try {
+            ViewEventBatch eventBatch = new ViewEventBatch(userId);
 
-        final int NUM = 10;
+            final int NUM = 10;
 
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
+            fail();
         }
-
-        EventBatch eventBatch = new ViewEventBatch(userId, itemIds);
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -204,42 +208,20 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new ViewEventBatch(userId, itemIds, timestamp);
-        checkSuccessfulEventBatchAdd(eventBatch);
-    }
-
-    @Test
-    public void testAddItemToViewEventBatch() {
-        String userId = generateUUID();
-
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new ViewEventBatch(userId, itemIds);
-
         try {
-            String newItemId = generateUUID();
-            eventBatch.addItem(newItemId);
-        } catch (Exception e) {
+            ViewEventBatch eventBatch = new ViewEventBatch(userId, timestamp);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
             fail();
         }
 
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -247,41 +229,42 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         String itemId = generateUUID();
 
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new ViewEventBatch(userId, itemIds);
-
         try {
+            ViewEventBatch eventBatch = new ViewEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
             eventBatch.deleteItem(itemId);
-        } catch (Exception e) {
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException | ItemNotFoundException e) {
             fail();
         }
-
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
     public void testAddLikeEventBatch() {
         String userId = generateUUID();
 
-        ArrayList<String> itemIds = new ArrayList<>();
+        try {
+            LikeEventBatch eventBatch = new LikeEventBatch(userId);
 
-        final int NUM = 10;
+            final int NUM = 10;
 
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
+            fail();
         }
-
-        EventBatch eventBatch = new LikeEventBatch(userId, itemIds);
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -290,42 +273,20 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new LikeEventBatch(userId, itemIds, timestamp);
-        checkSuccessfulEventBatchAdd(eventBatch);
-    }
-
-    @Test
-    public void testAddItemToLikeEventBatch() {
-        String userId = generateUUID();
-
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new LikeEventBatch(userId, itemIds);
-
         try {
-            String newItemId = generateUUID();
-            eventBatch.addItem(newItemId);
-        } catch (Exception e) {
+            LikeEventBatch eventBatch = new LikeEventBatch(userId, timestamp);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
             fail();
         }
-
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -333,41 +294,42 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         String itemId = generateUUID();
 
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new LikeEventBatch(userId, itemIds);
-
         try {
+            LikeEventBatch eventBatch = new LikeEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
             eventBatch.deleteItem(itemId);
-        } catch (Exception e) {
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException | ItemNotFoundException e) {
             fail();
         }
-
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
     public void testAddCartaddEventBatch() {
         String userId = generateUUID();
 
-        ArrayList<String> itemIds = new ArrayList<>();
+        try {
+            CartaddEventBatch eventBatch = new CartaddEventBatch(userId);
 
-        final int NUM = 10;
+            final int NUM = 10;
 
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
+            fail();
         }
-
-        EventBatch eventBatch = new CartaddEventBatch(userId, itemIds);
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -376,42 +338,20 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new CartaddEventBatch(userId, itemIds, timestamp);
-        checkSuccessfulEventBatchAdd(eventBatch);
-    }
-
-    @Test
-    public void testAddItemToCartaddEventBatch() {
-        String userId = generateUUID();
-
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new CartaddEventBatch(userId, itemIds);
-
         try {
-            String newItemId = generateUUID();
-            eventBatch.addItem(newItemId);
-        } catch (Exception e) {
+            CartaddEventBatch eventBatch = new CartaddEventBatch(userId, timestamp);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
             fail();
         }
-
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -419,43 +359,43 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         String itemId = generateUUID();
 
-        ArrayList<String> itemIds = new ArrayList<>();
-
-        final int NUM = 10;
-
-        for (int i = 0; i < NUM ; i++) {
-            itemId = generateUUID();
-            itemIds.add(itemId);
-        }
-
-        EventBatch eventBatch = new CartaddEventBatch(userId, itemIds);
-
         try {
+            CartaddEventBatch eventBatch = new CartaddEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
             eventBatch.deleteItem(itemId);
-        } catch (Exception e) {
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException | ItemNotFoundException e) {
             fail();
         }
-
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
     public void testAddPurchaseEventBatch() {
         String userId = generateUUID();
 
-        ArrayList<ItemEventValuePair> purchaseItems = new ArrayList<>();
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
 
-        final int NUM = 10;
+            final int NUM = 10;
 
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            int price = generateRandomInteger(10000, 100000);
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                int price = generateRandomInteger(10000, 100000);
 
-            purchaseItems.add(new ItemEventValuePair(itemId, price));
+                eventBatch.addItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
+            fail();
         }
-
-        EventBatch eventBatch = new PurchaseEventBatch(userId, purchaseItems);
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -463,38 +403,68 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        ArrayList<ItemEventValuePair> purchaseItems = new ArrayList<>();
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId, timestamp);
 
-        final int NUM = 10;
+            final int NUM = 10;
 
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            int price = generateRandomInteger(10000, 100000);
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                int price = generateRandomInteger(10000, 100000);
 
-            purchaseItems.add(new ItemEventValuePair(itemId, price));
+                eventBatch.addItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
+            fail();
         }
+    }
 
-        EventBatch eventBatch = new PurchaseEventBatch(userId, purchaseItems, timestamp);
-        checkSuccessfulEventBatchAdd(eventBatch);
+    @Test
+    public void testDeleteItemToPurchaseEventBatch() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        int price;
+
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                itemId = generateUUID();
+                price = generateRandomInteger(10000, 100000);
+                eventBatch.addItem(itemId, price);
+            }
+
+            eventBatch.deleteItem(itemId);
+            checkSuccessfulEventBatchAdd(eventBatch);
+
+        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+            fail();
+        }
     }
 
     @Test
     public void testAddRateEventBatch() {
         String userId = generateUUID();
 
-        ArrayList<ItemEventValuePair> rateItems = new ArrayList<>();
+        try {
+            RateEventBatch eventBatch = new RateEventBatch(userId);
 
-        final int NUM = 10;
+            final int NUM = 10;
 
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            double rate = generateRandomDouble(0, 5);
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
 
-            rateItems.add(new ItemEventValuePair(itemId, rate));
+                eventBatch.addItem(itemId, rate);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
+            fail();
         }
-
-        EventBatch eventBatch = new RateEventBatch(userId, rateItems);
-        checkSuccessfulEventBatchAdd(eventBatch);
     }
 
     @Test
@@ -502,19 +472,72 @@ public class ZaiClientBatchTest {
         String userId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        ArrayList<ItemEventValuePair> rateItems = new ArrayList<>();
+        try {
+            RateEventBatch eventBatch = new RateEventBatch(userId, timestamp);
 
-        final int NUM = 10;
+            final int NUM = 10;
 
-        for (int i = 0; i < NUM ; i++) {
-            String itemId = generateUUID();
-            double rate = generateRandomDouble(0, 5);
+            for (int i = 0; i < NUM; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
 
-            rateItems.add(new ItemEventValuePair(itemId, rate));
+                eventBatch.addItem(itemId, rate);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (LoggedEventBatchException e) {
+            fail();
         }
+    }
 
-        EventBatch eventBatch = new RateEventBatch(userId, rateItems, timestamp);
-        checkSuccessfulEventBatchAdd(eventBatch);
+    @Test
+    public void testDeleteItemToRateEventBatch() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        double rate;
+
+        try {
+            RateEventBatch eventBatch = new RateEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                itemId = generateUUID();
+                rate = generateRandomDouble(0, 5);
+                eventBatch.addItem(itemId, rate);
+            }
+
+            eventBatch.deleteItem(itemId);
+            checkSuccessfulEventBatchAdd(eventBatch);
+
+        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testDeleteItemWithRateToRateEventBatch() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        double rate = generateRandomDouble(0, 5);
+
+        try {
+            RateEventBatch eventBatch = new RateEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                itemId = generateUUID();
+                rate = generateRandomDouble(0,5);
+                eventBatch.addItem(itemId, rate);
+            }
+
+            eventBatch.deleteItem(itemId, rate);
+            checkSuccessfulEventBatchAdd(eventBatch);
+
+        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+            fail();
+        }
     }
 
 }

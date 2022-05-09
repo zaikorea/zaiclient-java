@@ -1,13 +1,13 @@
 package org.zaikorea.ZaiClient.request;
 
-import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 public class EventBatch {
-
-    private static final String defaultEventValue = "1";
 
     protected String userId;
 
@@ -37,54 +37,37 @@ public class EventBatch {
 
     public double getTimestamp() { return timestamp; }
 
-    public void setLogFlagTrue() { this.logFlag = true; }
+    public void setLogFlag() { this.logFlag = true; }
 
     public ArrayList<Event> getEventList() throws ZaiClientException {
-        ArrayList<Event> events = new ArrayList<>();
-        return events;
+        return new ArrayList<>();
     }
 
-    public void addItem(String itemId) throws ZaiClientException {
-        addItem(itemId, defaultEventValue);
-    }
-
-    public void addItem(String itemId, String eventValue) throws ZaiClientException {
-        if (logFlag) {
-            throw new ZaiClientException("Cannot add item after log batch event.", 405);
+    protected void addItem(String itemId, String eventValue) throws LoggedEventBatchException {
+        if (this.logFlag) {
+            throw new LoggedEventBatchException();
         }
         this.itemIds.add(itemId);
         this.eventValues.add(eventValue);
     }
 
-    public void deleteItem(String itemId) throws ZaiClientException {
-        if (logFlag) {
-            throw new ZaiClientException("Cannot delete item after log batch event.", 405);
+    protected void deleteItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
+        if (logFlag) throw new LoggedEventBatchException();
+
+        if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
+
+        int[] indices = IntStream.range(0, itemIds.size()).filter(i -> itemIds.get(i).equals(itemId)).toArray();
+        boolean deleted = false;
+
+        for (int idx: indices) {
+            if (eventValue.equals(eventValues.get(idx))) {
+                this.itemIds.remove(idx);
+                this.eventValues.remove(idx);
+                deleted = true;
+                break;
+            }
         }
 
-        if (!this.itemIds.contains(itemId)) {
-            throw new ZaiClientException("This itemId does not exist in itemIds of the EventBatch object.", 400);
-        }
-
-        int idx = itemIds.indexOf(itemId);
-        this.itemIds.remove(idx);
-        this.eventValues.remove(idx);
-    }
-
-    public void deleteItem(String itemId, String eventValue) throws ZaiClientException {
-        if (logFlag) {
-            throw new ZaiClientException("Cannot delete item after log batch event.", 405);
-        }
-
-        if (!this.itemIds.contains(itemId)) {
-            throw new ZaiClientException("This itemId does not exist in itemIds of the EventBatch object.", 400);
-        }
-
-        int itemIdx = itemIds.indexOf(itemId);
-        int valueIdx = eventValues.indexOf(eventValue);
-
-        if (itemIdx == valueIdx) {
-            this.itemIds.remove(itemIdx);
-            this.eventValues.remove(valueIdx);
-        }
+        if (!deleted) throw new ItemNotFoundException();
     }
 }
