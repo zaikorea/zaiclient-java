@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.zaikorea.ZaiClient.ZaiClient;
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.ItemSizeLimitExceededException;
 import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.*;
@@ -156,7 +157,6 @@ public class ZaiClientBatchTest {
                 assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
                 assertEquals(logItem.get(eventTableEventTypeKey), eventType);
                 assertEquals(logItem.get(eventTableEventValueKey), eventValue);
-                assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
             }
 
             testClient.deleteEventLog(eventBatch);
@@ -278,6 +278,25 @@ public class ZaiClientBatchTest {
     }
 
     @Test
+    public void testAddViewEventBatchExceedMaxLimit() {
+        String userId = generateUUID();
+
+        try {
+            ViewEventBatch eventBatch = new ViewEventBatch(userId);
+
+            final int NUM = Config.batchRequestCap + 1;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            assertTrue(e instanceof ItemSizeLimitExceededException);
+        }
+    }
+
+    @Test
     public void testAddLikeEventBatch() {
         String userId = generateUUID();
 
@@ -363,6 +382,26 @@ public class ZaiClientBatchTest {
     }
 
     @Test
+    public void testAddLikeEventBatchExceedMaxLimit() {
+        String userId = generateUUID();
+
+        try {
+            LikeEventBatch eventBatch = new LikeEventBatch(userId);
+
+            final int NUM = Config.batchRequestCap + 1;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            assertTrue(e instanceof ItemSizeLimitExceededException);
+        }
+    }
+
+    @Test
     public void testAddCartaddEventBatch() {
         String userId = generateUUID();
 
@@ -444,6 +483,26 @@ public class ZaiClientBatchTest {
             checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
             fail();
+        }
+    }
+
+    @Test
+    public void testAddCartaddEventBatchExceedMaxLimit() {
+        String userId = generateUUID();
+
+        try {
+            CartaddEventBatch eventBatch = new CartaddEventBatch(userId);
+
+            final int NUM = Config.batchRequestCap + 1;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                eventBatch.addItem(itemId);
+            }
+
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            assertTrue(e instanceof ItemSizeLimitExceededException);
         }
     }
 
@@ -558,6 +617,27 @@ public class ZaiClientBatchTest {
             checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
             fail();
+        }
+    }
+
+    @Test
+    public void testAddPurchaseEventBatchExceedMaxLimit() {
+        String userId = generateUUID();
+
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
+
+            final int NUM = Config.batchRequestCap + 1;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                int price = generateRandomInteger(10000, 100000);
+
+                eventBatch.addItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            assertTrue(e instanceof ItemSizeLimitExceededException);
         }
     }
 
@@ -679,6 +759,27 @@ public class ZaiClientBatchTest {
     }
 
     @Test
+    public void testAddRateEventBatchExceedMaxLimit() {
+        String userId = generateUUID();
+
+        try {
+            RateEventBatch eventBatch = new RateEventBatch(userId);
+
+            final int NUM = Config.batchRequestCap + 1;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addItem(itemId, rate);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            assertTrue(e instanceof ItemSizeLimitExceededException);
+        }
+    }
+
+    @Test
     public void testAddCustomEventBatch() {
         String userId = generateUUID();
         String eventType = "customEventType";
@@ -796,6 +897,28 @@ public class ZaiClientBatchTest {
             checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
             fail();
+        }
+    }
+
+    @Test
+    public void testAddCustomEventBatchExceedMaxLimit() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = Config.batchRequestCap;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addItem(itemId, Double.toString(rate));
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            assertTrue(e instanceof ItemSizeLimitExceededException);
         }
     }
 
