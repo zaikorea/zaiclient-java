@@ -2,6 +2,7 @@ package org.zaikorea.ZaiClient.request;
 
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.ItemSizeLimitExceededException;
 import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class RateEventBatch extends EventBatch {
         return events;
     }
 
-    public void addItem(String itemId, double rate) throws LoggedEventBatchException {
+    public void addItem(String itemId, double rate) throws LoggedEventBatchException, ItemSizeLimitExceededException {
         super.addItem(itemId, Double.toString(rate));
     }
 

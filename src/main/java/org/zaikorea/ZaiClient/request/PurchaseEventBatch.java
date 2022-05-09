@@ -2,6 +2,7 @@ package org.zaikorea.ZaiClient.request;
 
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.ItemSizeLimitExceededException;
 import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 
 import java.util.ArrayList;
@@ -30,10 +31,11 @@ public class PurchaseEventBatch extends EventBatch {
             Event event = new PurchaseEvent(this.userId, this.itemIds.get(i), Integer.parseInt(this.eventValues.get(i)), this.timestamp + Config.epsilon * i);
             events.add(event);
         }
+
         return events;
     }
 
-    public void addItem(String itemId, int price) throws LoggedEventBatchException {
+    public void addItem(String itemId, int price) throws LoggedEventBatchException, ItemSizeLimitExceededException {
         super.addItem(itemId, Integer.toString(price));
     }
 

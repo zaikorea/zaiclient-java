@@ -197,7 +197,7 @@ public class ZaiClientBatchTest {
                 eventBatch.addItem(itemId);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -218,7 +218,7 @@ public class ZaiClientBatchTest {
                 eventBatch.addItem(itemId);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
 
@@ -242,7 +242,7 @@ public class ZaiClientBatchTest {
             eventBatch.deleteItem(itemId);
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -262,7 +262,7 @@ public class ZaiClientBatchTest {
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -284,7 +284,7 @@ public class ZaiClientBatchTest {
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -307,7 +307,7 @@ public class ZaiClientBatchTest {
             eventBatch.deleteItem(itemId);
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -327,7 +327,7 @@ public class ZaiClientBatchTest {
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -349,7 +349,7 @@ public class ZaiClientBatchTest {
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -372,7 +372,7 @@ public class ZaiClientBatchTest {
             eventBatch.deleteItem(itemId);
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -393,7 +393,7 @@ public class ZaiClientBatchTest {
                 eventBatch.addItem(itemId, price);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -415,7 +415,7 @@ public class ZaiClientBatchTest {
                 eventBatch.addItem(itemId, price);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -440,7 +440,7 @@ public class ZaiClientBatchTest {
             eventBatch.deleteItem(itemId);
             checkSuccessfulEventBatchAdd(eventBatch);
 
-        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -462,7 +462,7 @@ public class ZaiClientBatchTest {
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -485,7 +485,7 @@ public class ZaiClientBatchTest {
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (LoggedEventBatchException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -510,7 +510,7 @@ public class ZaiClientBatchTest {
             eventBatch.deleteItem(itemId);
             checkSuccessfulEventBatchAdd(eventBatch);
 
-        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -535,7 +535,7 @@ public class ZaiClientBatchTest {
             eventBatch.deleteItem(itemId, rate);
             checkSuccessfulEventBatchAdd(eventBatch);
 
-        } catch (LoggedEventBatchException | ItemNotFoundException e) {
+        } catch (Exception e) {
             fail();
         }
     }

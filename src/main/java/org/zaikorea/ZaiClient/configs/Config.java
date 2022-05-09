@@ -14,4 +14,5 @@ public class Config {
     public static final String zaiCallType = "sdk_call";
     public static final String timestampKey = "timestamp";
     public static final double epsilon = 1e-4;
+    public static final int batchRequestCap = 50;
 }
