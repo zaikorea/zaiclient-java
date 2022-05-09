@@ -598,4 +598,53 @@ public class ZaiClientTest {
         Event event = new PurchaseEvent(userId, itemId, price);
         checkSuccessfulEventDelete(event);
     }
+
+    @Test
+    public void testAddCustomEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddCustomEventManualTime() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue, timestamp);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testUpdateCustomEvent() {
+        String userId = generateUUID();
+        String oldItemId = generateUUID();
+        String oldEventType = "oldEventType";
+        String oldEventValue = "oldEventValue";
+        String newItemId = generateUUID();
+        String newEventType = "newEventType";
+        String newEventValue = "newEventValue";
+
+        Event oldEvent = new CustomEvent(userId, oldItemId, oldEventType, oldEventValue);
+        Event newEvent = new CustomEvent(userId, newItemId, newEventType, newEventValue, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteCustomEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        checkSuccessfulEventDelete(event);
+    }
 }
