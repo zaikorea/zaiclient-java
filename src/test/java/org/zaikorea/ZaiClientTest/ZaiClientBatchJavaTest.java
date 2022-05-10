@@ -13,17 +13,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zaikorea.ZaiClient.ZaiClient;
 import org.zaikorea.ZaiClient.configs.Config;
-import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
-import org.zaikorea.ZaiClient.exceptions.ItemSizeLimitExceededException;
-import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
+import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.*;
-import org.zaikorea.ZaiClient.response.EventLoggerResponse;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
-public class ZaiClientBatchTest {
+public class ZaiClientBatchJavaTest {
 
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for testing purposes only
@@ -292,7 +289,7 @@ public class ZaiClientBatchTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
-            assertTrue(e instanceof ItemSizeLimitExceededException);
+            assertTrue(e instanceof BatchSizeLimitExceededException);
         }
     }
 
@@ -397,7 +394,7 @@ public class ZaiClientBatchTest {
 
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
-            assertTrue(e instanceof ItemSizeLimitExceededException);
+            assertTrue(e instanceof BatchSizeLimitExceededException);
         }
     }
 
@@ -502,7 +499,7 @@ public class ZaiClientBatchTest {
 
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
-            assertTrue(e instanceof ItemSizeLimitExceededException);
+            assertTrue(e instanceof BatchSizeLimitExceededException);
         }
     }
 
@@ -637,7 +634,7 @@ public class ZaiClientBatchTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
-            assertTrue(e instanceof ItemSizeLimitExceededException);
+            assertTrue(e instanceof BatchSizeLimitExceededException);
         }
     }
 
@@ -775,7 +772,7 @@ public class ZaiClientBatchTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
-            assertTrue(e instanceof ItemSizeLimitExceededException);
+            assertTrue(e instanceof BatchSizeLimitExceededException);
         }
     }
 
@@ -918,7 +915,7 @@ public class ZaiClientBatchTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
-            assertTrue(e instanceof ItemSizeLimitExceededException);
+            assertTrue(e instanceof BatchSizeLimitExceededException);
         }
     }
 

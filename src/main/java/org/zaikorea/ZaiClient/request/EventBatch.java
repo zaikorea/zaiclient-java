@@ -2,7 +2,7 @@ package org.zaikorea.ZaiClient.request;
 
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
-import org.zaikorea.ZaiClient.exceptions.ItemSizeLimitExceededException;
+import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
 import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 
@@ -21,7 +21,7 @@ public class EventBatch {
 
     protected double timestamp;
 
-    protected boolean logFlag = false;
+    private boolean logFlag = false;
 
     public static double getCurrentUnixTimestamp() {
         return System.currentTimeMillis() / 1000.d;
@@ -43,20 +43,20 @@ public class EventBatch {
 
     public ArrayList<Event> getEventList() throws ZaiClientException { return new ArrayList<>(); }
 
-    protected void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemSizeLimitExceededException {
+    void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, BatchSizeLimitExceededException {
         if (this.logFlag) {
             throw new LoggedEventBatchException();
         }
 
         if (this.itemIds.size() == Config.batchRequestCap) {
-            throw new ItemSizeLimitExceededException();
+            throw new BatchSizeLimitExceededException();
         }
 
         this.itemIds.add(itemId);
         this.eventValues.add(eventValue);
     }
 
-    protected void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+    void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
         if (logFlag) throw new LoggedEventBatchException();
 
         if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
@@ -66,12 +66,15 @@ public class EventBatch {
         this.eventValues.remove(idx);
     }
 
-    protected void deleteEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
+    void deleteEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
         if (logFlag) throw new LoggedEventBatchException();
 
         if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
 
-        int[] indices = IntStream.range(0, itemIds.size()).filter(i -> itemIds.get(i).equals(itemId)).toArray();
+        int[] indices = IntStream
+                .range(0, itemIds.size())
+                .filter(i -> itemIds.get(i).equals(itemId))
+                .toArray();
         boolean deleted = false;
 
         for (int idx: indices) {

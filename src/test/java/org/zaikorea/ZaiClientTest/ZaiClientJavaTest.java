@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 
-public class ZaiClientTest {
+public class ZaiClientJavaTest {
 
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for testing purposes only
@@ -64,8 +64,8 @@ public class ZaiClientTest {
         attrNameAlias.put(partitionAlias, eventTablePartitionKey);
         HashMap<String, AttributeValue> attrValues = new HashMap<>();
         attrValues.put(":" + eventTablePartitionKey, AttributeValue.builder()
-            .s(partitionValue)
-            .build());
+                .s(partitionValue)
+                .build());
 
         QueryRequest request = QueryRequest.builder()
                 .tableName(eventTableName)
@@ -221,8 +221,8 @@ public class ZaiClientTest {
         incorrectIdClient = new ZaiClient("." + clientId, clientSecret);
         incorrectSecretClient = new ZaiClient(clientId, "." + clientSecret);
         ddbClient = DynamoDbClient.builder()
-            .region(region)
-            .build();
+                .region(region)
+                .build();
     }
 
     @After
