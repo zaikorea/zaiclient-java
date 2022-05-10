@@ -39,5 +39,4 @@ public class Event {
 
     public String getEventValue() { return eventValue; }
 
-    public void setTimestamp(double timestamp) { this.timestamp = timestamp; }
 }
