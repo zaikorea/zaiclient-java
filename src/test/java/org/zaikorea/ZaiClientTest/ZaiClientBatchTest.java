@@ -205,7 +205,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -226,7 +226,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -247,10 +247,10 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
-            eventBatch.deleteItem(itemId);
+            eventBatch.deleteEventItem(itemId);
 
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -269,7 +269,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
             checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
@@ -288,7 +288,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -307,7 +307,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -329,7 +329,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -350,10 +350,10 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
-            eventBatch.deleteItem(itemId);
+            eventBatch.deleteEventItem(itemId);
 
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -372,7 +372,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchDelete(eventBatch);
@@ -392,7 +392,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -412,7 +412,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -434,7 +434,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -455,10 +455,10 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
-            eventBatch.deleteItem(itemId);
+            eventBatch.deleteEventItem(itemId);
 
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -477,7 +477,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchDelete(eventBatch);
@@ -497,7 +497,7 @@ public class ZaiClientBatchTest {
 
             for (int i = 0; i < NUM ; i++) {
                 String itemId = generateUUID();
-                eventBatch.addItem(itemId);
+                eventBatch.addEventItem(itemId);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -519,7 +519,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 int price = generateRandomInteger(10000, 100000);
 
-                eventBatch.addItem(itemId, price);
+                eventBatch.addEventItem(itemId, price);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -541,7 +541,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 int price = generateRandomInteger(10000, 100000);
 
-                eventBatch.addItem(itemId, price);
+                eventBatch.addEventItem(itemId, price);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -563,10 +563,10 @@ public class ZaiClientBatchTest {
             for (int i = 0; i < NUM ; i++) {
                 itemId = generateUUID();
                 price = generateRandomInteger(10000, 100000);
-                eventBatch.addItem(itemId, price);
+                eventBatch.addEventItem(itemId, price);
             }
 
-            eventBatch.deleteItem(itemId);
+            eventBatch.deleteEventItem(itemId);
             checkSuccessfulEventBatchAdd(eventBatch);
 
         } catch (Exception e) {
@@ -588,10 +588,10 @@ public class ZaiClientBatchTest {
             for (int i = 0; i < NUM ; i++) {
                 itemId = generateUUID();
                 price = generateRandomInteger(10000, 100000);
-                eventBatch.addItem(itemId, price);
+                eventBatch.addEventItem(itemId, price);
             }
 
-            eventBatch.deleteItem(itemId, price);
+            eventBatch.deleteEventItem(itemId, price);
             checkSuccessfulEventBatchAdd(eventBatch);
 
         } catch (Exception e) {
@@ -612,7 +612,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 int price = generateRandomInteger(10000, 100000);
 
-                eventBatch.addItem(itemId, price);
+                eventBatch.addEventItem(itemId, price);
             }
             checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
@@ -633,7 +633,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 int price = generateRandomInteger(10000, 100000);
 
-                eventBatch.addItem(itemId, price);
+                eventBatch.addEventItem(itemId, price);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -654,7 +654,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, rate);
+                eventBatch.addEventItem(itemId, rate);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -677,7 +677,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, rate);
+                eventBatch.addEventItem(itemId, rate);
             }
 
             checkSuccessfulEventBatchAdd(eventBatch);
@@ -700,10 +700,10 @@ public class ZaiClientBatchTest {
             for (int i = 0; i < NUM ; i++) {
                 itemId = generateUUID();
                 rate = generateRandomDouble(0, 5);
-                eventBatch.addItem(itemId, rate);
+                eventBatch.addEventItem(itemId, rate);
             }
 
-            eventBatch.deleteItem(itemId);
+            eventBatch.deleteEventItem(itemId);
             checkSuccessfulEventBatchAdd(eventBatch);
 
         } catch (Exception e) {
@@ -725,10 +725,10 @@ public class ZaiClientBatchTest {
             for (int i = 0; i < NUM ; i++) {
                 itemId = generateUUID();
                 rate = generateRandomDouble(0,5);
-                eventBatch.addItem(itemId, rate);
+                eventBatch.addEventItem(itemId, rate);
             }
 
-            eventBatch.deleteItem(itemId, rate);
+            eventBatch.deleteEventItem(itemId, rate);
             checkSuccessfulEventBatchAdd(eventBatch);
 
         } catch (Exception e) {
@@ -749,7 +749,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, rate);
+                eventBatch.addEventItem(itemId, rate);
             }
 
             checkSuccessfulEventBatchDelete(eventBatch);
@@ -771,7 +771,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, rate);
+                eventBatch.addEventItem(itemId, rate);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -793,7 +793,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, Double.toString(rate));
+                eventBatch.addEventItem(itemId, Double.toString(rate));
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -816,7 +816,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, Double.toString(rate));
+                eventBatch.addEventItem(itemId, Double.toString(rate));
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -841,9 +841,9 @@ public class ZaiClientBatchTest {
                 itemId = generateUUID();
                 eventValue = Double.toString(generateRandomDouble(0, 5));
 
-                eventBatch.addItem(itemId, eventValue);
+                eventBatch.addEventItem(itemId, eventValue);
             }
-            eventBatch.deleteItem(itemId);
+            eventBatch.deleteEventItem(itemId);
 
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -868,9 +868,9 @@ public class ZaiClientBatchTest {
                 itemId = generateUUID();
                 eventValue = Double.toString(generateRandomDouble(0, 5));
 
-                eventBatch.addItem(itemId, eventValue);
+                eventBatch.addEventItem(itemId, eventValue);
             }
-            eventBatch.deleteItem(itemId, eventValue);
+            eventBatch.deleteEventItem(itemId, eventValue);
 
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -892,7 +892,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, Double.toString(rate));
+                eventBatch.addEventItem(itemId, Double.toString(rate));
             }
             checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
@@ -914,7 +914,7 @@ public class ZaiClientBatchTest {
                 String itemId = generateUUID();
                 double rate = generateRandomDouble(0, 5);
 
-                eventBatch.addItem(itemId, Double.toString(rate));
+                eventBatch.addEventItem(itemId, Double.toString(rate));
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {

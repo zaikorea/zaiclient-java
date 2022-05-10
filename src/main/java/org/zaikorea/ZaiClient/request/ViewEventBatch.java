@@ -36,12 +36,12 @@ public class ViewEventBatch extends EventBatch {
         return events;
     }
 
-    public void addItem(String itemId) throws LoggedEventBatchException, ItemSizeLimitExceededException {
-        super.addItem(itemId, defaultEventValue);
+    public void addEventItem(String itemId) throws LoggedEventBatchException, ItemSizeLimitExceededException {
+        super.addEventItem(itemId, defaultEventValue);
     }
 
-    public void deleteItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
-        super.deleteItem(itemId, defaultEventValue);
+    public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteEventItem(itemId, defaultEventValue);
     }
 
 }

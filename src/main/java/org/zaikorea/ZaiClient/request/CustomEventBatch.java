@@ -32,16 +32,16 @@ public class CustomEventBatch extends EventBatch {
         return events;
     }
 
-    public void addItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemSizeLimitExceededException {
-        super.addItem(itemId, eventValue);
+    public void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemSizeLimitExceededException {
+        super.addEventItem(itemId, eventValue);
     }
 
-    public void deleteItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
-        super.deleteItem(itemId);
+    public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteEventItem(itemId);
     }
 
-    public void deleteItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
-        super.deleteItem(itemId, eventValue);
+    public void deleteEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteEventItem(itemId, eventValue);
     }
 
 }

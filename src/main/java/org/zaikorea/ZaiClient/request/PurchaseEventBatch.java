@@ -35,16 +35,16 @@ public class PurchaseEventBatch extends EventBatch {
         return events;
     }
 
-    public void addItem(String itemId, int price) throws LoggedEventBatchException, ItemSizeLimitExceededException {
-        super.addItem(itemId, Integer.toString(price));
+    public void addEventItem(String itemId, int price) throws LoggedEventBatchException, ItemSizeLimitExceededException {
+        super.addEventItem(itemId, Integer.toString(price));
     }
 
-    public void deleteItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
-        super.deleteItem(itemId);
+    public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteEventItem(itemId);
     }
 
-    public void deleteItem(String itemId, int price) throws LoggedEventBatchException, ItemNotFoundException {
-        super.deleteItem(itemId, Integer.toString(price));
+    public void deleteEventItem(String itemId, int price) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteEventItem(itemId, Integer.toString(price));
     }
 
 }

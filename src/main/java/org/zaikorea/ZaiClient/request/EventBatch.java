@@ -41,11 +41,9 @@ public class EventBatch {
 
     public void setLogFlag() { this.logFlag = true; }
 
-    public ArrayList<Event> getEventList() throws ZaiClientException {
-        return new ArrayList<>();
-    }
+    public ArrayList<Event> getEventList() throws ZaiClientException { return new ArrayList<>(); }
 
-    protected void addItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemSizeLimitExceededException {
+    protected void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemSizeLimitExceededException {
         if (this.logFlag) {
             throw new LoggedEventBatchException();
         }
@@ -58,7 +56,7 @@ public class EventBatch {
         this.eventValues.add(eventValue);
     }
 
-    protected void deleteItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+    protected void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
         if (logFlag) throw new LoggedEventBatchException();
 
         if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
@@ -68,7 +66,7 @@ public class EventBatch {
         this.eventValues.remove(idx);
     }
 
-    protected void deleteItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
+    protected void deleteEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
         if (logFlag) throw new LoggedEventBatchException();
 
         if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
