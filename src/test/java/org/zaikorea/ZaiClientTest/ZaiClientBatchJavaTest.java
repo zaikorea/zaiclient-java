@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.zaikorea.ZaiClient.ZaiClient;
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
+import org.zaikorea.ZaiClient.exceptions.EmptyBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.*;
 import software.amazon.awssdk.regions.Region;
@@ -127,7 +128,8 @@ public class ZaiClientBatchJavaTest {
                 assertEquals(logItem.get(eventTableEventValueKey), eventValue);
                 assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
             }
-        } catch (IOException | ZaiClientException e) {
+        } catch (IOException | ZaiClientException | EmptyBatchException e) {
+            e.printStackTrace();
             fail();
         }
     }
@@ -166,7 +168,7 @@ public class ZaiClientBatchJavaTest {
                 assertNotNull(newLogItem);
                 assertEquals(newLogItem.size(), 0);
             }
-        } catch (IOException | ZaiClientException e) {
+        } catch (IOException | ZaiClientException | EmptyBatchException e) {
             fail();
         }
     }

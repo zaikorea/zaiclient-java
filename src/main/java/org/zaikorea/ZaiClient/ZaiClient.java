@@ -13,6 +13,7 @@ import com.google.gson.JsonSyntaxException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.ZaiClient.exceptions.EmptyBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.Event;
 import org.zaikorea.ZaiClient.request.EventBatch;
@@ -46,8 +47,10 @@ public class ZaiClient {
         return response.body();
     }
 
-    public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException {
+    public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
         ArrayList<Event> events = eventBatch.getEventList();
+
+        if (eventBatch.getItemIds().size() == 0) throw new EmptyBatchException();
 
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
         Response<EventLoggerResponse> response = call.execute();
@@ -80,8 +83,10 @@ public class ZaiClient {
         return response.body();
     }
 
-    public EventLoggerResponse deleteEventLog(EventBatch eventBatch) throws IOException, ZaiClientException {
+    public EventLoggerResponse deleteEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
         ArrayList<Event> events = eventBatch.getEventList();
+
+        if (eventBatch.getItemIds().size() == 0) throw new EmptyBatchException();
 
         Call<EventLoggerResponse> call = zaiAPI.deleteEventLog(events);
         Response<EventLoggerResponse> response = call.execute();
