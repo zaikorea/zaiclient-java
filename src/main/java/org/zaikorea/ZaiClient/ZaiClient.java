@@ -50,7 +50,7 @@ public class ZaiClient {
     public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
         ArrayList<Event> events = eventBatch.getEventList();
 
-        if (eventBatch.getItemIds().size() == 0) throw new EmptyBatchException();
+        if (events.size() == 0) throw new EmptyBatchException();
 
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
         Response<EventLoggerResponse> response = call.execute();
@@ -86,7 +86,7 @@ public class ZaiClient {
     public EventLoggerResponse deleteEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
         ArrayList<Event> events = eventBatch.getEventList();
 
-        if (eventBatch.getItemIds().size() == 0) throw new EmptyBatchException();
+        if (events.size() == 0) throw new EmptyBatchException();
 
         Call<EventLoggerResponse> call = zaiAPI.deleteEventLog(events);
         Response<EventLoggerResponse> response = call.execute();
