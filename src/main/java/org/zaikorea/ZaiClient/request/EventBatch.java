@@ -41,7 +41,7 @@ public class EventBatch {
 
     public void setLogFlag() { this.logFlag = true; }
 
-    public ArrayList<Event> getEventList() throws ZaiClientException { return new ArrayList<>(); }
+    public ArrayList<Event> getEventList() { return new ArrayList<>(); }
 
     void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, BatchSizeLimitExceededException {
         if (this.logFlag) {
