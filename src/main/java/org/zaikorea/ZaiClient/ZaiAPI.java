@@ -1,6 +1,6 @@
 package org.zaikorea.ZaiClient;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.request.Event;
@@ -17,7 +17,7 @@ public interface ZaiAPI {
 
     @POST(Config.eventsApiPath)
     Call<EventLoggerResponse> addEventLog(
-        @Body ArrayList<Event> event
+        @Body List<Event> event
     );
 
     @PUT(Config.eventsApiPath)
@@ -32,6 +32,6 @@ public interface ZaiAPI {
 
     @HTTP(method="DELETE", path=Config.eventsApiPath, hasBody=true)
     Call<EventLoggerResponse> deleteEventLog(
-        @Body ArrayList<Event> event
+        @Body List<Event> event
     );
 }

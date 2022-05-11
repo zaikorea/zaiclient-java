@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +49,7 @@ public class ZaiClient {
     }
 
     public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
-        ArrayList<Event> events = eventBatch.getEventList();
+        List<Event> events = eventBatch.getEventList();
 
         if (events.size() == 0) throw new EmptyBatchException();
 
@@ -84,7 +85,7 @@ public class ZaiClient {
     }
 
     public EventLoggerResponse deleteEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
-        ArrayList<Event> events = eventBatch.getEventList();
+        List<Event> events = eventBatch.getEventList();
 
         if (events.size() == 0) throw new EmptyBatchException();
 

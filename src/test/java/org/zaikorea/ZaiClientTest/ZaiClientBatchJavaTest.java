@@ -108,7 +108,7 @@ public class ZaiClientBatchJavaTest {
         try {
             testClient.addEventLog(eventBatch);
 
-            ArrayList<Event> events = eventBatch.getEventList();
+            List<Event> events = eventBatch.getEventList();
 
             for (Event event : events) {
 
@@ -138,7 +138,7 @@ public class ZaiClientBatchJavaTest {
         try {
             testClient.addEventLog(eventBatch);
 
-            ArrayList<Event> events = eventBatch.getEventList();
+            List<Event> events = eventBatch.getEventList();
 
             for (Event event : events) {
 
