@@ -42,5 +42,4 @@ public class Event {
     public String getEventValue() {
         return eventValue;
     }
-
 }
