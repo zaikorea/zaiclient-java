@@ -1,11 +1,12 @@
 package org.zaikorea.ZaiClient.request;
 
-import org.zaikorea.ZaiClient.configs.Config;
-import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
-import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
-import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
-
 import java.util.ArrayList;
+import java.util.List;
+
+import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
+import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 
 public class LikeEventBatch extends EventBatch {
 
@@ -25,14 +26,18 @@ public class LikeEventBatch extends EventBatch {
     }
 
     @Override
-    public ArrayList<Event> getEventList() {
-        ArrayList<Event> events = new ArrayList<>();
+    public List<Event> getEventList() {
+        List<Event> events = new ArrayList<>();
         int i = 0;
 
         for (String itemId : itemIds) {
-            Event event = new LikeEvent(this.userId, itemId, this.timestamp + Config.epsilon * i++);
-            events.add(event);
+            events.add(new LikeEvent(
+                this.userId, 
+                itemId, 
+                this.timestamp + Config.epsilon * i++
+            ));
         }
+        
         return events;
     }
 
@@ -43,5 +48,4 @@ public class LikeEventBatch extends EventBatch {
     public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
         super.deleteEventItem(itemId, defaultEventValue);
     }
-
 }
