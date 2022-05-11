@@ -13,8 +13,6 @@ public class Config {
     public static final String zaiCallTypeHeader = "X-ZAI-CALL-TYPE";
     public static final String zaiCallType = "sdk_call";
     
-    public static final String timestampKey = "timestamp";
-    
     public static final int batchRequestCap = 50;
     public static final double epsilon = 1e-4;
 }
