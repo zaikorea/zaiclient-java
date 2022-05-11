@@ -40,12 +40,12 @@ public class PurchaseEventBatch extends EventBatch {
         return events;
     }
 
-    public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
-        super.deleteEventItem(itemId);
-    }
-
     public void addEventItem(String itemId, int price) throws LoggedEventBatchException, BatchSizeLimitExceededException {
         super.addEventItem(itemId, Integer.toString(price));
+    }
+    
+    public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteEventItem(itemId);
     }
 
     public void deleteEventItem(String itemId, int price) throws LoggedEventBatchException, ItemNotFoundException {
