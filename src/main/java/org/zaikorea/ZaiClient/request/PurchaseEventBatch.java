@@ -1,11 +1,12 @@
 package org.zaikorea.ZaiClient.request;
 
-import org.zaikorea.ZaiClient.configs.Config;
-import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
-import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
-import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
-
 import java.util.ArrayList;
+import java.util.List;
+
+import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
+import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
+import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 
 public class PurchaseEventBatch extends EventBatch {
 
@@ -24,27 +25,30 @@ public class PurchaseEventBatch extends EventBatch {
     }
 
     @Override
-    public ArrayList<Event> getEventList() {
-        ArrayList<Event> events = new ArrayList<>();
+    public List<Event> getEventList() {
+        List<Event> events = new ArrayList<>();
 
         for (int i = 0; i < this.itemIds.size(); i++) {
-            Event event = new PurchaseEvent(this.userId, this.itemIds.get(i), Integer.parseInt(this.eventValues.get(i)), this.timestamp + Config.epsilon * i);
-            events.add(event);
+            events.add(new PurchaseEvent(
+                this.userId, 
+                this.itemIds.get(i), 
+                Integer.parseInt(this.eventValues.get(i)), 
+                this.timestamp + Config.epsilon * i
+            ));
         }
 
         return events;
-    }
-
-    public void addEventItem(String itemId, int price) throws LoggedEventBatchException, BatchSizeLimitExceededException {
-        super.addEventItem(itemId, Integer.toString(price));
     }
 
     public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
         super.deleteEventItem(itemId);
     }
 
+    public void addEventItem(String itemId, int price) throws LoggedEventBatchException, BatchSizeLimitExceededException {
+        super.addEventItem(itemId, Integer.toString(price));
+    }
+
     public void deleteEventItem(String itemId, int price) throws LoggedEventBatchException, ItemNotFoundException {
         super.deleteEventItem(itemId, Integer.toString(price));
     }
-
 }
