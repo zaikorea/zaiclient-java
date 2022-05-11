@@ -24,9 +24,9 @@ public class EventLoggerResponse {
     @Override
     public String toString() {
         return "EventLoggerResponse{" +
-                "message='" + message + "\'  " +
-                "failure count=" + failureCount + "  " +
+                "message='" + message + "', " +
+                "failure count=" + failureCount + ", " +
                 "timestamp=" + timestamp +
-                '}';
+                "}";
     }
 }
