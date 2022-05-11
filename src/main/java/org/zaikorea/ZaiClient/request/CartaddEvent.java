@@ -16,5 +16,4 @@ public class CartaddEvent extends Event {
         this.eventType = defaultEventType;
         this.eventValue = defaultEventValue;
     }
-
 }
