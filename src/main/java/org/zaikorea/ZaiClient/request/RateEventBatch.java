@@ -40,15 +40,15 @@ public class RateEventBatch extends EventBatch {
         return events;
     }
 
-    public void addEventItem(String itemId, double rate) throws LoggedEventBatchException, BatchSizeLimitExceededException {
-        super.addEventItem(itemId, Double.toString(rate));
+    public void addEventItem(String itemId, double rating) throws LoggedEventBatchException, BatchSizeLimitExceededException {
+        super.addEventItem(itemId, Double.toString(rating));
     }
     
     public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
         super.deleteEventItem(itemId);
     }
 
-    public void deleteEventItem(String itemId, double rate) throws LoggedEventBatchException, ItemNotFoundException {
-        super.deleteEventItem(itemId, Double.toString(rate));
+    public void deleteEventItem(String itemId, double rating) throws LoggedEventBatchException, ItemNotFoundException {
+        super.deleteEventItem(itemId, Double.toString(rating));
     }
 }
