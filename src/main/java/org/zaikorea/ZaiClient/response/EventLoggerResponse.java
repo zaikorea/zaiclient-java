@@ -17,7 +17,7 @@ public class EventLoggerResponse {
         return this.message;
     }
 
-    public Integer getFailureCount() { return this.failureCount; }
+    public int getFailureCount() { return this.failureCount; }
 
     public double getTimestamp() { return this.timestamp; }
 
