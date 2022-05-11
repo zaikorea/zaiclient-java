@@ -1,54 +1,65 @@
 package org.zaikorea.ZaiClient.request;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
 import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
 import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 
-import java.util.ArrayList;
-import java.util.stream.IntStream;
-
 public class EventBatch {
 
     protected String userId;
 
-    protected ArrayList<String> itemIds;
+    protected List<String> itemIds;
 
     protected String eventType;
 
-    protected ArrayList<String> eventValues;
+    protected List<String> eventValues;
 
     protected double timestamp;
 
     private boolean logFlag = false;
 
-    public static double getCurrentUnixTimestamp() {
-        return System.currentTimeMillis() / 1000.d;
+    public String getUserId() {
+        return userId;
     }
 
-    public String getUserId() { return userId; }
-
-    public ArrayList<String> getItemIds() { return itemIds; }
+    public List<String> getItemIds() {
+        return itemIds;
+    }
 
     public String getEventType() {
         return eventType;
     }
 
-    public ArrayList<String> getEventValues() { return eventValues; }
+    public List<String> getEventValues() {
+        return eventValues;
+    }
 
-    public double getTimestamp() { return timestamp; }
+    public double getTimestamp() {
+        return timestamp;
+    }
 
-    public void setLogFlag() { this.logFlag = true; }
+    public void setLogFlag() {
+        this.logFlag = true;
+    }
 
-    public ArrayList<Event> getEventList() { return new ArrayList<>(); }
+    public static double getCurrentUnixTimestamp() {
+        return System.currentTimeMillis() / 1000.d;
+    }
+
+    public List<Event> getEventList() {
+        return new ArrayList<>();
+    }
 
     void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, BatchSizeLimitExceededException {
-        if (this.logFlag) {
-            throw new LoggedEventBatchException();
-        }
+        if (this.logFlag) throw new LoggedEventBatchException();
 
-        if (this.itemIds.size() == Config.batchRequestCap) {
+        if (this.itemIds.size() >= Config.batchRequestCap) {
             throw new BatchSizeLimitExceededException();
         }
 
