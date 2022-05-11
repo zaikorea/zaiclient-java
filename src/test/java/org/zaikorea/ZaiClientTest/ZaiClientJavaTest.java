@@ -64,15 +64,15 @@ public class ZaiClientJavaTest {
         attrNameAlias.put(partitionAlias, eventTablePartitionKey);
         HashMap<String, AttributeValue> attrValues = new HashMap<>();
         attrValues.put(":" + eventTablePartitionKey, AttributeValue.builder()
-                .s(partitionValue)
-                .build());
+            .s(partitionValue)
+            .build());
 
         QueryRequest request = QueryRequest.builder()
-                .tableName(eventTableName)
-                .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
-                .expressionAttributeNames(attrNameAlias)
-                .expressionAttributeValues(attrValues)
-                .build();
+            .tableName(eventTableName)
+            .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
+            .expressionAttributeNames(attrNameAlias)
+            .expressionAttributeValues(attrValues)
+            .build();
 
         try {
             List<Map<String, AttributeValue>> returnedItems = ddbClient.query(request).items();
@@ -107,9 +107,9 @@ public class ZaiClientJavaTest {
         keyToGet.put(eventTableSortKey, AttributeValue.builder().n(sortValue).build());
 
         DeleteItemRequest deleteReq = DeleteItemRequest.builder()
-                .key(keyToGet)
-                .tableName(eventTableName)
-                .build();
+            .key(keyToGet)
+            .tableName(eventTableName)
+            .build();
 
         try {
             ddbClient.deleteItem(deleteReq);
