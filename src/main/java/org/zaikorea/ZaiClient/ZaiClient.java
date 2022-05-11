@@ -139,8 +139,9 @@ public class ZaiClient {
             e.printStackTrace();
         }
 
+        String responseMessage = response.message();
         if (error == null)
-            error = response.message();
+            error = (responseMessage != null) ? responseMessage : "Internal server error.";
 
         return error;
     }
