@@ -135,7 +135,7 @@ public class ZaiClient {
             assert response.errorBody() != null;
             JsonElement element = JsonParser.parseString(response.errorBody().string());
             error = element.toString();
-        } catch (JsonSyntaxException | IOException e) {
+        } catch (Exception | AssertionError e) {
             e.printStackTrace();
         }
 
