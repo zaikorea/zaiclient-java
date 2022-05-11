@@ -10,7 +10,7 @@ Z.Ai API를 Java / Kotlin 환경에서 간편하게 이용할 수 있는 REST cl
 
 ## Documentation
 
-SDK에 대한 보다 구조적인 설명은 [ZAiDocs](https://docs.zaikorea.org/)에서 확인 가능합니다.
+SDK에 대한 documentation은 [ZAiDocs](https://docs.zaikorea.org/)에서 확인 가능합니다.
 
 
 
