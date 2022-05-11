@@ -1,12 +1,12 @@
 package org.zaikorea.ZaiClient;
 
+import java.util.ArrayList;
+
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.request.Event;
 import org.zaikorea.ZaiClient.response.EventLoggerResponse;
 import retrofit2.Call;
 import retrofit2.http.*;
-
-import java.util.ArrayList;
 
 public interface ZaiAPI {
 
