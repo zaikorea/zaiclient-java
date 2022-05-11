@@ -1,0 +1,8 @@
+package org.zaikorea.ZaiClient.exceptions;
+
+public class BatchSizeLimitExceededException extends Exception {
+
+    public BatchSizeLimitExceededException() {
+        super("The number of items in event batch exceeded the size limit.");
+    }
+}

@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 
-public class ZaiClientTest {
+public class ZaiClientJavaTest {
 
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for testing purposes only
@@ -68,11 +68,11 @@ public class ZaiClientTest {
             .build());
 
         QueryRequest request = QueryRequest.builder()
-                .tableName(eventTableName)
-                .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
-                .expressionAttributeNames(attrNameAlias)
-                .expressionAttributeValues(attrValues)
-                .build();
+            .tableName(eventTableName)
+            .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
+            .expressionAttributeNames(attrNameAlias)
+            .expressionAttributeValues(attrValues)
+            .build();
 
         try {
             List<Map<String, AttributeValue>> returnedItems = ddbClient.query(request).items();
@@ -107,9 +107,9 @@ public class ZaiClientTest {
         keyToGet.put(eventTableSortKey, AttributeValue.builder().n(sortValue).build());
 
         DeleteItemRequest deleteReq = DeleteItemRequest.builder()
-                .key(keyToGet)
-                .tableName(eventTableName)
-                .build();
+            .key(keyToGet)
+            .tableName(eventTableName)
+            .build();
 
         try {
             ddbClient.deleteItem(deleteReq);
@@ -221,8 +221,8 @@ public class ZaiClientTest {
         incorrectIdClient = new ZaiClient("." + clientId, clientSecret);
         incorrectSecretClient = new ZaiClient(clientId, "." + clientSecret);
         ddbClient = DynamoDbClient.builder()
-            .region(region)
-            .build();
+                .region(region)
+                .build();
     }
 
     @After
@@ -261,7 +261,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -277,7 +277,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -332,7 +332,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -348,7 +348,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -403,7 +403,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -419,7 +419,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -477,7 +477,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -494,7 +494,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -555,7 +555,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -572,7 +572,7 @@ public class ZaiClientTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 403);
+            assertEquals(e.getHttpStatusCode(), 401);
         }
     }
 
@@ -596,6 +596,55 @@ public class ZaiClientTest {
         int price = generateRandomInteger(10000, 100000);
 
         Event event = new PurchaseEvent(userId, itemId, price);
+        checkSuccessfulEventDelete(event);
+    }
+
+    @Test
+    public void testAddCustomEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddCustomEventManualTime() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue, timestamp);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testUpdateCustomEvent() {
+        String userId = generateUUID();
+        String oldItemId = generateUUID();
+        String oldEventType = "oldEventType";
+        String oldEventValue = "oldEventValue";
+        String newItemId = generateUUID();
+        String newEventType = "newEventType";
+        String newEventValue = "newEventValue";
+
+        Event oldEvent = new CustomEvent(userId, oldItemId, oldEventType, oldEventValue);
+        Event newEvent = new CustomEvent(userId, newItemId, newEventType, newEventValue, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteCustomEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue);
         checkSuccessfulEventDelete(event);
     }
 }
