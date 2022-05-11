@@ -31,12 +31,16 @@ public class Event {
         return itemId;
     }
 
-    public double getTimestamp() { return timestamp; }
+    public double getTimestamp() {
+        return timestamp;
+    }
 
     public String getEventType() {
         return eventType;
     }
 
-    public String getEventValue() { return eventValue; }
+    public String getEventValue() {
+        return eventValue;
+    }
 
 }
