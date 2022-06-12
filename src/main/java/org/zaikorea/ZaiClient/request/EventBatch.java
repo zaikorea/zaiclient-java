@@ -8,7 +8,6 @@ import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
 import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
 import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 
 public class EventBatch {
 
