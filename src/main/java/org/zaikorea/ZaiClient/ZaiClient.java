@@ -11,12 +11,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.EmptyBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.Event;
 import org.zaikorea.ZaiClient.request.EventBatch;
+import org.zaikorea.ZaiClient.request.RecommendItemsToUser;
 import org.zaikorea.ZaiClient.response.EventLoggerResponse;
+import org.zaikorea.ZaiClient.response.RecommenderResponse;
 import org.zaikorea.ZaiClient.security.ZaiHeaders;
 import retrofit2.Call;
 import retrofit2.HttpException;
@@ -38,6 +41,7 @@ public class ZaiClient {
 
     public EventLoggerResponse addEventLog(Event event) throws IOException, ZaiClientException {
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(event);
+
         Response<EventLoggerResponse> response = call.execute();
 
         if (!response.isSuccessful())
@@ -89,6 +93,16 @@ public class ZaiClient {
 
         Call<EventLoggerResponse> call = zaiAPI.deleteEventLog(events);
         Response<EventLoggerResponse> response = call.execute();
+
+        if (!response.isSuccessful())
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+
+        return response.body();
+    }
+
+    public RecommenderResponse getRecommendation(RecommendItemsToUser recommendation) throws IOException, ZaiClientException {
+        Call<RecommenderResponse> call = zaiAPI.getUserRecommendation(recommendation.getPath(this.zaiClientId), recommendation);
+        Response<RecommenderResponse> response = call.execute();
 
         if (!response.isSuccessful())
             throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
