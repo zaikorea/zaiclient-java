@@ -1,11 +1,8 @@
 package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.HashMap;
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -209,7 +206,7 @@ public class ZaiClientRecommenderJavaTest {
 
     @Test
     public void testGetTooLongUserRecommendation() {
-        String userId = "a".repeat(101);
+        String userId = String.join("a", Collections.nCopies(101, "a"));
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
@@ -229,7 +226,7 @@ public class ZaiClientRecommenderJavaTest {
         String userId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
-        String recommendationType = "a".repeat(101);
+        String recommendationType = String.join("a", Collections.nCopies(101, "a"));
 
         RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset, recommendationType);
         
