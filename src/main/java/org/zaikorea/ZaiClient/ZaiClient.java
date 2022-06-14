@@ -17,9 +17,9 @@ import org.zaikorea.ZaiClient.exceptions.EmptyBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.Event;
 import org.zaikorea.ZaiClient.request.EventBatch;
-import org.zaikorea.ZaiClient.request.RecommendItemsToUser;
+import org.zaikorea.ZaiClient.request.RecommendationRequest;
 import org.zaikorea.ZaiClient.response.EventLoggerResponse;
-import org.zaikorea.ZaiClient.response.RecommenderResponse;
+import org.zaikorea.ZaiClient.response.RecommendationResponse;
 import org.zaikorea.ZaiClient.security.ZaiHeaders;
 import retrofit2.Call;
 import retrofit2.HttpException;
@@ -100,9 +100,9 @@ public class ZaiClient {
         return response.body();
     }
 
-    public RecommenderResponse getRecommendation(RecommendItemsToUser recommendation) throws IOException, ZaiClientException {
-        Call<RecommenderResponse> call = zaiAPI.getUserRecommendation(recommendation.getPath(this.zaiClientId), recommendation);
-        Response<RecommenderResponse> response = call.execute();
+    public RecommendationResponse getRecommendations(RecommendationRequest recommendation) throws IOException, ZaiClientException {
+        Call<RecommendationResponse> call = zaiAPI.getRecommendations(recommendation.getPath(this.zaiClientId), recommendation);
+        Response<RecommendationResponse> response = call.execute();
 
         if (!response.isSuccessful())
             throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
