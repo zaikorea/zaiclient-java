@@ -150,11 +150,31 @@ public class ZaiClientRecommenderJavaTest {
         String userId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
+        
+        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        checkSuccessfulGetUserRecommendation(recommendation);
+    }
+
+    @Test
+    public void testGetNullUserRecommendation() {
+        String userId = null;
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
 
         RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
         checkSuccessfulGetUserRecommendation(recommendation);
     }
 
+    @Test
+    public void testGetUserRecommendationWithRecommendationType() {
+        String userId = generateUUID();
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+
+        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset, "home_page");
+        checkSuccessfulGetUserRecommendation(recommendation);
+    }
+    
     @Test
     public void testGetUserRecommendationWrongClientId() {
         String userId = generateUUID();
@@ -188,13 +208,72 @@ public class ZaiClientRecommenderJavaTest {
     }
 
     @Test
-    public void testGetNullUserRecommendation() {
-        String userId = null;
+    public void testGetTooLongUserRecommendation() {
+        String userId = "a".repeat(101);
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
         RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
-        checkSuccessfulGetUserRecommendation(recommendation);
+        
+        try {
+            testClient.getRecommendation(recommendation);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 422);
+        }
+    }
+
+    @Test
+    public void testGetTooLongRecommendationTypeRecommendation() {
+        String userId = generateUUID();
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+        String recommendationType = "a".repeat(101);
+
+        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset, recommendationType);
+        
+        try {
+            testClient.getRecommendation(recommendation);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 422);
+        }
+    }
+
+    @Test
+    public void testGetTooBigLimitRecommendation() {
+        String userId = generateUUID();
+        int limit = 1_000_001;
+        int offset = generateRandomInteger(20, 40);
+
+        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        
+        try {
+            testClient.getRecommendation(recommendation);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 422);
+        }
+    }
+
+    @Test
+    public void testGetTooBigOffsetRecommendation() {
+        String userId = generateUUID();
+        int limit = generateRandomInteger(20, 40);
+        int offset = 1_000_001;
+
+        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        
+        try {
+            testClient.getRecommendation(recommendation);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 422);
+        }
     }
 
 }
