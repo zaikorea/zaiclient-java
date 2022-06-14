@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 
-public class RecommenderResponse {
+public class RecommendationResponse {
     
     @SerializedName("items")
     private ArrayList<String> items;
