@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.zaikorea.ZaiClient.ZaiClient;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.*;
-import org.zaikorea.ZaiClient.response.RecommenderResponse;
+import org.zaikorea.ZaiClient.response.RecommendationResponse;
 
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.*;
@@ -108,16 +108,21 @@ public class ZaiClientRecommenderJavaTest {
         return true;
     }
 
-    private void checkSuccessfulGetUserRecommendation(RecommendItemsToUser recommendation) {
+    private void checkSuccessfulGetUserRecommendation(RecommendationRequest recommendation, String userId) {
         try {
-            RecommenderResponse response = testClient.getRecommendation(recommendation);
-            String userId = recommendation.getUserId();
+            RecommendationResponse response = testClient.getRecommendations(recommendation);
             int limit = recommendation.getLimit();
 
-            // Map<String, String> logItem = getRecLog(userId);
+            Map<String, String> logItem = getRecLog(userId);
+
+            if (userId == null) {
+                userId = "null";
+                logItem = getRecLog("null");
+            }
+
             // assertNotNull(logItem);
             // assertNotEquals(logItem.size(), 0);
-            // assertEquals(logItem.get(recLogTablePartitionKey), userId);
+            // assertEquals(logItem.get(recLogRecommendations).split(",").length, response.getItems().size());
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
             // assertTrue(deleteRecLog(userId));
@@ -148,8 +153,8 @@ public class ZaiClientRecommenderJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
-        checkSuccessfulGetUserRecommendation(recommendation);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
+        checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
     @Test
@@ -158,8 +163,8 @@ public class ZaiClientRecommenderJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
-        checkSuccessfulGetUserRecommendation(recommendation);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
+        checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
     @Test
@@ -168,8 +173,8 @@ public class ZaiClientRecommenderJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset, "home_page");
-        checkSuccessfulGetUserRecommendation(recommendation);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset, "home_page");
+        checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
     
     @Test
@@ -178,9 +183,9 @@ public class ZaiClientRecommenderJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
         try {
-            incorrectIdClient.getRecommendation(recommendation);
+            incorrectIdClient.getRecommendations(recommendation);
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
@@ -194,9 +199,9 @@ public class ZaiClientRecommenderJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
         try {
-            incorrectSecretClient.getRecommendation(recommendation);
+            incorrectSecretClient.getRecommendations(recommendation);
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
@@ -210,28 +215,10 @@ public class ZaiClientRecommenderJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
         
         try {
-            testClient.getRecommendation(recommendation);
-        } catch (IOException e) {
-            fail();
-        } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 422);
-        }
-    }
-
-    @Test
-    public void testGetTooLongRecommendationTypeRecommendation() {
-        String userId = generateUUID();
-        int limit = generateRandomInteger(1, 10);
-        int offset = generateRandomInteger(20, 40);
-        String recommendationType = String.join("a", Collections.nCopies(101, "a"));
-
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset, recommendationType);
-        
-        try {
-            testClient.getRecommendation(recommendation);
+            testClient.getRecommendations(recommendation);
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
@@ -245,10 +232,10 @@ public class ZaiClientRecommenderJavaTest {
         int limit = 1_000_001;
         int offset = generateRandomInteger(20, 40);
 
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
         
         try {
-            testClient.getRecommendation(recommendation);
+            testClient.getRecommendations(recommendation);
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
@@ -262,10 +249,10 @@ public class ZaiClientRecommenderJavaTest {
         int limit = generateRandomInteger(20, 40);
         int offset = 1_000_001;
 
-        RecommendItemsToUser recommendation = new RecommendItemsToUser(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
         
         try {
-            testClient.getRecommendation(recommendation);
+            testClient.getRecommendations(recommendation);
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
