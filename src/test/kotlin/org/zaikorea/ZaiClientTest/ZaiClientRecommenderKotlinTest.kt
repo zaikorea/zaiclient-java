@@ -8,14 +8,15 @@ import org.zaikorea.ZaiClientTest.ZaiClientRecommenderKotlinTest
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
-import org.zaikorea.ZaiClient.request.RecommendItemsToUser
-import org.zaikorea.ZaiClient.response.RecommenderResponse
+import org.zaikorea.ZaiClient.request.RecommendationRequest
+import org.zaikorea.ZaiClient.response.RecommendationResponse
 import java.io.IOException
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException
 import org.junit.Before
 import org.junit.After
 import org.junit.Assert
 import org.junit.Test
+import org.zaikorea.ZaiClient.request.UserRecommendationRequest
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import java.util.Collections
@@ -34,7 +35,7 @@ class ZaiClientRecommenderKotlinTest {
         return ThreadLocalRandom.current().nextInt(min, max + 1)
     }
 
-    private fun getRecLog(partitionValue: String): Map<String, String>? {
+    private fun getRecLog(partitionValue: String?): Map<String, String>? {
         val partitionAlias = "#pk"
         val attrNameAlias = HashMap<String, String>()
         attrNameAlias[partitionAlias] = recLogTablePartitionKey
@@ -87,16 +88,20 @@ class ZaiClientRecommenderKotlinTest {
         return true
     }
 
-    private fun checkSuccessfulGetUserRecommendation(recommendation: RecommendItemsToUser) {
+    private fun checkSuccessfulGetUserRecommendation(recommendation: RecommendationRequest, userId: String?) {
+        var userId = userId
         try {
-            val response = testClient!!.getRecommendation(recommendation)
-            val userId = recommendation.userId
+            val response = testClient!!.getRecommendations(recommendation)
             val limit = recommendation.limit
+            var logItem = getRecLog(userId)
+            if (userId == null) {
+                userId = "null"
+                logItem = getRecLog("null")
+            }
 
-            // Map<String, String> logItem = getRecLog(userId);
             // assertNotNull(logItem);
             // assertNotEquals(logItem.size(), 0);
-            // assertEquals(logItem.get(recLogTablePartitionKey), userId);
+            // assertEquals(logItem.get(recLogRecommendations).split(",").length, response.getItems().size());
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
             Assert.assertEquals(response.count.toLong(), limit.toLong())
             // assertTrue(deleteRecLog(userId));
@@ -127,8 +132,8 @@ class ZaiClientRecommenderKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation = RecommendItemsToUser(userId, limit, offset)
-        checkSuccessfulGetUserRecommendation(recommendation)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
+        checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
     @Test
@@ -136,8 +141,8 @@ class ZaiClientRecommenderKotlinTest {
         val userId: String? = null
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation = RecommendItemsToUser(userId, limit, offset)
-        checkSuccessfulGetUserRecommendation(recommendation)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
+        checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
     @Test
@@ -145,8 +150,8 @@ class ZaiClientRecommenderKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation = RecommendItemsToUser(userId, limit, offset, "home_page")
-        checkSuccessfulGetUserRecommendation(recommendation)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset, "home_page")
+        checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
     @Test
@@ -154,9 +159,9 @@ class ZaiClientRecommenderKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation = RecommendItemsToUser(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
         try {
-            incorrectIdClient!!.getRecommendation(recommendation)
+            incorrectIdClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
@@ -169,9 +174,9 @@ class ZaiClientRecommenderKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation = RecommendItemsToUser(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
         try {
-            incorrectSecretClient!!.getRecommendation(recommendation)
+            incorrectSecretClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
@@ -184,25 +189,9 @@ class ZaiClientRecommenderKotlinTest {
         val userId = java.lang.String.join("a", Collections.nCopies(101, "a"))
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation = RecommendItemsToUser(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
         try {
-            testClient!!.getRecommendation(recommendation)
-        } catch (e: IOException) {
-            Assert.fail()
-        } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 422)
-        }
-    }
-
-    @Test
-    fun testGetTooLongRecommendationTypeRecommendation() {
-        val userId = generateUUID()
-        val limit = generateRandomInteger(1, 10)
-        val offset = generateRandomInteger(20, 40)
-        val recommendationType = java.lang.String.join("a", Collections.nCopies(101, "a"))
-        val recommendation = RecommendItemsToUser(userId, limit, offset, recommendationType)
-        try {
-            testClient!!.getRecommendation(recommendation)
+            testClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
@@ -215,9 +204,9 @@ class ZaiClientRecommenderKotlinTest {
         val userId = generateUUID()
         val limit = 1000001
         val offset = generateRandomInteger(20, 40)
-        val recommendation = RecommendItemsToUser(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
         try {
-            testClient!!.getRecommendation(recommendation)
+            testClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
@@ -230,9 +219,9 @@ class ZaiClientRecommenderKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(20, 40)
         val offset = 1000001
-        val recommendation = RecommendItemsToUser(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
         try {
-            testClient!!.getRecommendation(recommendation)
+            testClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {

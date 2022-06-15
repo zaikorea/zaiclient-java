@@ -1,13 +1,13 @@
 package org.zaikorea.ZaiClient.response;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 
 public class RecommendationResponse {
     
     @SerializedName("items")
-    private ArrayList<String> items;
+    private List<String> items;
 
     @SerializedName("count")
     private int count;
@@ -15,7 +15,7 @@ public class RecommendationResponse {
     @SerializedName("timestamp")
     private double timestamp;
 
-    public ArrayList<String> getItems() { return items; }
+    public List<String> getItems() { return items; }
 
     public int getCount() { return count; }
 
