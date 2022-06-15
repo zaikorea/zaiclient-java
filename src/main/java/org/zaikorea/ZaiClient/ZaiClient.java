@@ -3,22 +3,23 @@ package org.zaikorea.ZaiClient;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.EmptyBatchException;
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
 import org.zaikorea.ZaiClient.request.Event;
 import org.zaikorea.ZaiClient.request.EventBatch;
+import org.zaikorea.ZaiClient.request.RecommendationRequest;
 import org.zaikorea.ZaiClient.response.EventLoggerResponse;
+import org.zaikorea.ZaiClient.response.RecommendationResponse;
 import org.zaikorea.ZaiClient.security.ZaiHeaders;
 import retrofit2.Call;
 import retrofit2.HttpException;
@@ -40,6 +41,7 @@ public class ZaiClient {
 
     public EventLoggerResponse addEventLog(Event event) throws IOException, ZaiClientException {
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(event);
+
         Response<EventLoggerResponse> response = call.execute();
 
         if (!response.isSuccessful())
@@ -91,6 +93,16 @@ public class ZaiClient {
 
         Call<EventLoggerResponse> call = zaiAPI.deleteEventLog(events);
         Response<EventLoggerResponse> response = call.execute();
+
+        if (!response.isSuccessful())
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+
+        return response.body();
+    }
+
+    public RecommendationResponse getRecommendations(RecommendationRequest recommendation) throws IOException, ZaiClientException {
+        Call<RecommendationResponse> call = zaiAPI.getRecommendations(recommendation.getPath(this.zaiClientId), recommendation);
+        Response<RecommendationResponse> response = call.execute();
 
         if (!response.isSuccessful())
             throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));

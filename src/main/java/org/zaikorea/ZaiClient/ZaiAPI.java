@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.request.Event;
+import org.zaikorea.ZaiClient.request.RecommendationRequest;
 import org.zaikorea.ZaiClient.response.EventLoggerResponse;
+import org.zaikorea.ZaiClient.response.RecommendationResponse;
+
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -34,4 +37,11 @@ public interface ZaiAPI {
     Call<EventLoggerResponse> deleteEventLog(
         @Body List<Event> event
     );
+
+    @POST
+    Call<RecommendationResponse> getRecommendations(
+        @Url String url,
+        @Body RecommendationRequest recommendation
+    );
+
 }
