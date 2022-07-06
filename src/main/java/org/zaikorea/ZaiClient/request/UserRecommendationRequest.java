@@ -21,6 +21,19 @@ public class UserRecommendationRequest extends RecommendationRequest {
     }
 
     public UserRecommendationRequest(String userId, int limit, int offset, String recommendationType) {
+        if (!(userId == null || (0 < userId.length() && userId.length() <= 100))) {
+            throw new IllegalArgumentException("Length of user id must be between 1 and 100.");
+        }
+        if (!(0 < limit && limit <= 1_000_000)) {
+            throw new IllegalArgumentException("Limit must be between 1 and 1000,000.");
+        }
+        if (!(0 <= offset && offset <= 1_000_000)) {
+            throw new IllegalArgumentException("Offset must be between 0 and 1000,000.");
+        }
+        if (!(0 < recommendationType.length() && recommendationType.length() <= 100)) {
+            throw new IllegalArgumentException("Length of recommendation type must be between 1 and 100.");
+        }
+
         this.userId = userId;
         this.limit = limit;
         this.recommendationType = recommendationType;

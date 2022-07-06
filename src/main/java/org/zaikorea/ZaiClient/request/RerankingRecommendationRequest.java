@@ -31,6 +31,27 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
 
     public RerankingRecommendationRequest(String userId, List<String> itemIds, int limit, int offset,
             String recommendationType) {
+        if (!(0 < itemIds.size() && itemIds.size() <= 1_000_000)) {
+            throw new IllegalArgumentException("Length of item_ids must be between 1 and 1000,000.");
+        }
+        itemIds.forEach(id -> {
+            if (!(0 < id.length() && id.length() <= 100)) {
+                throw new IllegalArgumentException("Length of item id in item id list must be between 1 and 100.");
+            }
+        });
+        if (!(userId == null || (0 < userId.length() && userId.length() <= 100))) {
+            throw new IllegalArgumentException("Length of user id must be between 1 and 100.");
+        }
+        if (!(0 < limit && limit <= 1_000_000)) {
+            throw new IllegalArgumentException("Limit must be between 1 and 1000,000.");
+        }
+        if (!(0 <= offset && offset <= 1_000_000)) {
+            throw new IllegalArgumentException("Offset must be between 0 and 1000,000.");
+        }
+        if (!(0 < recommendationType.length() && recommendationType.length() <= 100)) {
+            throw new IllegalArgumentException("Length of recommendation type must be between 1 and 100.");
+        }
+
         this.userId = userId;
         this.itemIds = itemIds;
         this.limit = limit;
