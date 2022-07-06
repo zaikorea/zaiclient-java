@@ -30,7 +30,7 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
         if (!(0 <= offset && offset <= 1_000_000)) {
             throw new IllegalArgumentException("Offset must be between 0 and 1000,000.");
         }
-        if (!(0 < recommendationType.length() && recommendationType.length() <= 100)) {
+        if (recommendationType == null || !(0 < recommendationType.length() && recommendationType.length() <= 100)) {
             throw new IllegalArgumentException("Length of recommendation type must be between 1 and 100.");
         }
         this.itemId = itemId;
