@@ -8,6 +8,10 @@ public class UserRecommendationRequest extends RecommendationRequest {
     private static final String defaultRecommendationType = "homepage";
     private static final String recommenderPath = "/user-recommendations";
 
+    public UserRecommendationRequest(String userId, int limit) {
+        this(userId, limit, defaultOffset, defaultRecommendationType);
+    }
+
     public UserRecommendationRequest(String userId, int limit, String recommendationType) {
         this(userId, limit, defaultOffset, recommendationType);
     }
