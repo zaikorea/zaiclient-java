@@ -1,7 +1,8 @@
 package org.zaikorea.ZaiClient.request;
+
 import org.zaikorea.ZaiClient.configs.Config;
 
-public class UserRecommendationRequest extends RecommendationRequest{
+public class UserRecommendationRequest extends RecommendationRequest {
 
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "homepage";
@@ -18,14 +19,14 @@ public class UserRecommendationRequest extends RecommendationRequest{
     public UserRecommendationRequest(String userId, int limit, int offset, String recommendationType) {
         this.userId = userId;
         this.limit = limit;
-        this.recommendationType = defaultRecommendationType;
+        this.recommendationType = recommendationType;
         this.offset = offset;
     }
 
     @Override
     public String getPath(String clientId) {
-        return String.format(Config.mlApiEndPoint + 
-                             Config.mlApiPathPrefix + 
-                             recommenderPath, clientId);
+        return String.format(Config.mlApiEndPoint +
+                Config.mlApiPathPrefix +
+                recommenderPath, clientId);
     }
 }
