@@ -7,7 +7,6 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
 
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "category_page";
-    private static final String recommenderPath = "/reranking";
 
     public RerankingRecommendationRequest(String userId, List<String> itemIds) {
         this(userId, itemIds, itemIds.size(), defaultOffset, defaultRecommendationType);
@@ -35,7 +34,7 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
             throw new IllegalArgumentException("Length of item_ids must be between 1 and 1000,000.");
         }
         itemIds.forEach(id -> {
-            if (!(0 < id.length() && id.length() <= 100)) {
+            if (id == null || !(0 < id.length() && id.length() <= 100)) {
                 throw new IllegalArgumentException("Length of item id in item id list must be between 1 and 100.");
             }
         });
@@ -63,6 +62,6 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
     public String getPath(String clientId) {
         return String.format(Config.mlApiEndPoint +
                 Config.mlApiPathPrefix +
-                recommenderPath, clientId);
+                Config.rerankingRecommendationPathPrefix, clientId);
     }
 }

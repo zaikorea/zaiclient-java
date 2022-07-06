@@ -6,7 +6,6 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
 
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "product_detail_page";
-    private static final String recommenderPath = "/related-items";
 
     public RelatedItemsRecommendationRequest(String itemId, int limit) {
         this(itemId, limit, defaultOffset, defaultRecommendationType);
@@ -43,6 +42,6 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
     public String getPath(String clientId) {
         return String.format(Config.mlApiEndPoint +
                 Config.mlApiPathPrefix +
-                recommenderPath, clientId);
+                Config.relatedItemsRecommendationPathPrefix, clientId);
     }
 }

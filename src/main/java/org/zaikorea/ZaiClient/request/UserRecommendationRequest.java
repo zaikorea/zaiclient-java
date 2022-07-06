@@ -6,7 +6,6 @@ public class UserRecommendationRequest extends RecommendationRequest {
 
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "homepage";
-    private static final String recommenderPath = "/user-recommendations";
 
     public UserRecommendationRequest(String userId, int limit) {
         this(userId, limit, defaultOffset, defaultRecommendationType);
@@ -44,6 +43,6 @@ public class UserRecommendationRequest extends RecommendationRequest {
     public String getPath(String clientId) {
         return String.format(Config.mlApiEndPoint +
                 Config.mlApiPathPrefix +
-                recommenderPath, clientId);
+                Config.userRecommendationPathPrefix, clientId);
     }
 }
