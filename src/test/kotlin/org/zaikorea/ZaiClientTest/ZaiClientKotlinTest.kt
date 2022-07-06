@@ -5,6 +5,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import java.time.Instant
 import java.util.UUID
 import java.util.HashMap
+import org.zaikorea.ZaiClientTest.ZaiClientKotlinTest
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
@@ -27,7 +28,7 @@ class ZaiClientKotlinTest {
     private val unixTimestamp: String
         private get() {
             val utcnow = Instant.now().epochSecond
-            return utcnow.toString()
+            return java.lang.Long.toString(utcnow)
         }
 
     private fun generateUUID(): String {
@@ -47,15 +48,15 @@ class ZaiClientKotlinTest {
         val attrNameAlias = HashMap<String, String>()
         attrNameAlias[partitionAlias] = eventTablePartitionKey
         val attrValues = HashMap<String, AttributeValue>()
-        attrValues[":$eventTablePartitionKey"] = AttributeValue.builder()
-                .s(partitionValue)
-                .build()
+        attrValues[":" + eventTablePartitionKey] = AttributeValue.builder()
+            .s(partitionValue)
+            .build()
         val request = QueryRequest.builder()
-                .tableName(eventTableName)
-                .keyConditionExpression("$partitionAlias = :$eventTablePartitionKey")
-                .expressionAttributeNames(attrNameAlias)
-                .expressionAttributeValues(attrValues)
-                .build()
+            .tableName(eventTableName)
+            .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
+            .expressionAttributeNames(attrNameAlias)
+            .expressionAttributeValues(attrValues)
+            .build()
         return try {
             val returnedItems = ddbClient!!.query(request).items()
             if (returnedItems.size > 1) return null
@@ -83,9 +84,9 @@ class ZaiClientKotlinTest {
         keyToGet[eventTablePartitionKey] = AttributeValue.builder().s(partitionValue).build()
         keyToGet[eventTableSortKey] = AttributeValue.builder().n(sortValue).build()
         val deleteReq = DeleteItemRequest.builder()
-                .key(keyToGet)
-                .tableName(eventTableName)
-                .build()
+            .key(keyToGet)
+            .tableName(eventTableName)
+            .build()
         try {
             ddbClient!!.deleteItem(deleteReq)
         } catch (e: DynamoDbException) {
@@ -189,11 +190,11 @@ class ZaiClientKotlinTest {
     @Before
     fun setup() {
         testClient = ZaiClient(clientId, clientSecret)
-        incorrectIdClient = ZaiClient(".$clientId", clientSecret)
-        incorrectSecretClient = ZaiClient(clientId, ".$clientSecret")
+        incorrectIdClient = ZaiClient("." + clientId, clientSecret)
+        incorrectSecretClient = ZaiClient(clientId, "." + clientSecret)
         ddbClient = DynamoDbClient.builder()
-                .region(region)
-                .build()
+            .region(region)
+            .build()
     }
 
     @After
@@ -587,7 +588,8 @@ class ZaiClientKotlinTest {
 
     companion object {
         private const val clientId = "test"
-        private const val clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for testing purposes only
+        private const val clientSecret =
+            "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for testing purposes only
         private const val eventTableName = "events_test"
         private const val eventTablePartitionKey = "user_id"
         private const val eventTableSortKey = "timestamp"

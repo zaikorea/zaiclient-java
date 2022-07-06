@@ -1,5 +1,7 @@
 package org.zaikorea.ZaiClient.request;
 
+import java.util.List;
+
 import com.google.gson.annotations.SerializedName;
 
 public class RecommendationRequest {
@@ -11,23 +13,31 @@ public class RecommendationRequest {
     protected String itemId;
 
     @SerializedName("item_ids")
-    protected String itemIds;
+    protected List<String> itemIds;
 
     @SerializedName("limit")
     protected int limit;
-    
+
     @SerializedName("recommendation_type")
     protected String recommendationType;
-    
+
     @SerializedName("offset")
     protected int offset;
 
-    public String getPath(String clientId) { return ""; };
+    public String getPath(String clientId) {
+        return "";
+    };
 
-    public int getLimit() { return limit; }
+    public int getLimit() {
+        return limit;
+    }
 
-    public int getOffset() { return offset; }
+    public int getOffset() {
+        return offset;
+    }
 
-    public String getRecommendationType() { return recommendationType; }
-    
+    public String getRecommendationType() {
+        return recommendationType;
+    }
+
 }

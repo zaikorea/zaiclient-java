@@ -8,6 +8,7 @@ import java.math.BigDecimal
 import org.zaikorea.ZaiClient.request.EventBatch
 import java.io.IOException
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException
+import org.zaikorea.ZaiClient.exceptions.EmptyBatchException
 import org.junit.Before
 import org.junit.After
 import org.junit.Assert
@@ -47,11 +48,11 @@ class ZaiClientBatchKotlinTest {
         val keyToGet = HashMap<String, AttributeValue>()
         val sortValue_ = BigDecimal(sortValue)
         keyToGet[eventTablePartitionKey] = AttributeValue.builder()
-                .s(partitionValue)
-                .build()
+            .s(partitionValue)
+            .build()
         keyToGet[eventTableSortKey] = AttributeValue.builder()
-                .n(sortValue_.toString())
-                .build()
+            .n(sortValue_.toString())
+            .build()
         val request = GetItemRequest.builder().tableName(eventTableName).key(keyToGet).build()
         return try {
             val returnedItems = ddbClient!!.getItem(request)
@@ -78,9 +79,9 @@ class ZaiClientBatchKotlinTest {
         keyToGet[eventTablePartitionKey] = AttributeValue.builder().s(partitionValue).build()
         keyToGet[eventTableSortKey] = AttributeValue.builder().n(sortValue_.toString()).build()
         val deleteReq = DeleteItemRequest.builder()
-                .key(keyToGet)
-                .tableName(eventTableName)
-                .build()
+            .key(keyToGet)
+            .tableName(eventTableName)
+            .build()
         try {
             ddbClient!!.deleteItem(deleteReq)
         } catch (e: DynamoDbException) {
@@ -105,14 +106,21 @@ class ZaiClientBatchKotlinTest {
                 Assert.assertNotEquals(logItem!!.size.toLong(), 0)
                 Assert.assertEquals(logItem[eventTablePartitionKey], userId)
                 Assert.assertEquals(logItem[eventTableItemIdKey], itemId)
-                Assert.assertEquals(logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001)
+                Assert.assertEquals(
+                    logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001
+                )
                 Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
                 Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
                 Assert.assertTrue(deleteEventLogWithTimestamp(userId, timestamp))
             }
         } catch (e: IOException) {
+            e.printStackTrace()
             Assert.fail()
         } catch (e: ZaiClientException) {
+            e.printStackTrace()
+            Assert.fail()
+        } catch (e: EmptyBatchException) {
+            e.printStackTrace()
             Assert.fail()
         }
     }
@@ -132,7 +140,9 @@ class ZaiClientBatchKotlinTest {
                 Assert.assertNotEquals(logItem!!.size.toLong(), 0)
                 Assert.assertEquals(logItem[eventTablePartitionKey], userId)
                 Assert.assertEquals(logItem[eventTableItemIdKey], itemId)
-                Assert.assertEquals(logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001)
+                Assert.assertEquals(
+                    logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001
+                )
                 Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
                 Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
             }
@@ -148,17 +158,19 @@ class ZaiClientBatchKotlinTest {
             Assert.fail()
         } catch (e: ZaiClientException) {
             Assert.fail()
+        } catch (e: EmptyBatchException) {
+            Assert.fail()
         }
     }
 
     @Before
     fun setup() {
         testClient = ZaiClient(clientId, clientSecret)
-        incorrectIdClient = ZaiClient(".$clientId", clientSecret)
-        incorrectSecretClient = ZaiClient(clientId, ".$clientSecret")
+        incorrectIdClient = ZaiClient("." + clientId, clientSecret)
+        incorrectSecretClient = ZaiClient(clientId, "." + clientSecret)
         ddbClient = DynamoDbClient.builder()
-                .region(region)
-                .build()
+            .region(region)
+            .build()
     }
 
     @After
@@ -643,7 +655,7 @@ class ZaiClientBatchKotlinTest {
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
                 val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, rate.toString())
+                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
             }
             checkSuccessfulEventBatchAdd(eventBatch)
         } catch (e: Exception) {
@@ -662,7 +674,7 @@ class ZaiClientBatchKotlinTest {
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
                 val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, rate.toString())
+                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
             }
             checkSuccessfulEventBatchAdd(eventBatch)
         } catch (e: Exception) {
@@ -682,7 +694,7 @@ class ZaiClientBatchKotlinTest {
             val NUM = 10
             for (i in 0 until NUM) {
                 itemId = generateUUID()
-                eventValue = generateRandomDouble(0, 5).toString()
+                eventValue = java.lang.Double.toString(generateRandomDouble(0, 5))
                 eventBatch.addEventItem(itemId, eventValue)
             }
             eventBatch.deleteEventItem(itemId)
@@ -704,7 +716,7 @@ class ZaiClientBatchKotlinTest {
             val NUM = 10
             for (i in 0 until NUM) {
                 itemId = generateUUID()
-                eventValue = generateRandomDouble(0, 5).toString()
+                eventValue = java.lang.Double.toString(generateRandomDouble(0, 5))
                 eventBatch.addEventItem(itemId, eventValue)
             }
             eventBatch.deleteEventItem(itemId, eventValue)
@@ -724,7 +736,7 @@ class ZaiClientBatchKotlinTest {
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
                 val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, rate.toString())
+                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
             }
             checkSuccessfulEventBatchDelete(eventBatch)
         } catch (e: Exception) {
@@ -742,7 +754,7 @@ class ZaiClientBatchKotlinTest {
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
                 val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, rate.toString())
+                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
             }
             checkSuccessfulEventBatchAdd(eventBatch)
         } catch (e: Exception) {
@@ -752,7 +764,8 @@ class ZaiClientBatchKotlinTest {
 
     companion object {
         private const val clientId = "test"
-        private const val clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for testing purposes only
+        private const val clientSecret =
+            "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for testing purposes only
         private const val eventTableName = "events_test"
         private const val eventTablePartitionKey = "user_id"
         private const val eventTableSortKey = "timestamp"
