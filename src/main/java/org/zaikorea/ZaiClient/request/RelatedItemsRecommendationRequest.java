@@ -21,7 +21,7 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
     }
 
     public RelatedItemsRecommendationRequest(String itemId, int limit, int offset, String recommendationType) {
-        if (!(0 < itemId.length() && itemId.length() <= 100)) {
+        if (itemId == null || !(0 < itemId.length() && itemId.length() <= 100)) {
             throw new IllegalArgumentException("Length of item id must be between 1 and 100.");
         }
         if (!(0 < limit && limit <= 1_000_000)) {
