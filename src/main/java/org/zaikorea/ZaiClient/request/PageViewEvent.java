@@ -3,7 +3,7 @@ package org.zaikorea.ZaiClient.request;
 public class PageViewEvent extends Event {
 
     private static final String defaultEventType = "page_view";
-    private static final String defaultItemId = "1";
+    private static final String defaultItemId = "null";
 
     public PageViewEvent(String userId, String pageType) {
         this(userId, pageType, Event.getCurrentUnixTimestamp());

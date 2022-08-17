@@ -3,7 +3,7 @@ package org.zaikorea.ZaiClient.request;
 public class SearchEvent extends Event {
 
     private static final String defaultEventType = "search";
-    private static final String defaultItemId = "1";
+    private static final String defaultItemId = "null";
 
     public SearchEvent(String userId, String searchKey) {
         this(userId, searchKey, Event.getCurrentUnixTimestamp());

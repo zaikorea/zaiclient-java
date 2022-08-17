@@ -11,7 +11,7 @@ import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
 public class LikeEventBatch extends EventBatch {
 
     private static final String defaultEventType = "like";
-    private static final String defaultEventValue = "1";
+    private static final String defaultEventValue = "null";
 
     public LikeEventBatch(String userId) {
         this(userId, EventBatch.getCurrentUnixTimestamp());

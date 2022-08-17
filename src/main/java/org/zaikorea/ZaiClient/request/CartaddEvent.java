@@ -3,7 +3,7 @@ package org.zaikorea.ZaiClient.request;
 public class CartaddEvent extends Event {
 
     private static final String defaultEventType = "cartadd";
-    private static final String defaultEventValue = "1";
+    private static final String defaultEventValue = "null";
 
     public CartaddEvent(String userId, String itemId) {
         this(userId, itemId, Event.getCurrentUnixTimestamp());

@@ -3,7 +3,7 @@ package org.zaikorea.ZaiClient.request;
 public class ViewEvent extends Event {
 
     private static final String defaultEventType = "view";
-    private static final String defaultEventValue = "1";
+    private static final String defaultEventValue = "null";
 
     public ViewEvent(String userId, String itemId) {
         this(userId, itemId, Event.getCurrentUnixTimestamp());
