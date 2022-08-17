@@ -5,8 +5,8 @@ public class SearchEvent extends Event {
     private static final String defaultEventType = "search";
     private static final String defaultItemId = "null";
 
-    public SearchEvent(String userId, String searchKey) {
-        this(userId, searchKey, Event.getCurrentUnixTimestamp());
+    public SearchEvent(String userId, String searchQuery) {
+        this(userId, searchQuery, Event.getCurrentUnixTimestamp());
     }
 
     public SearchEvent(String userId, String searchKey, double timestamp) {
