@@ -2,11 +2,8 @@ package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.HashMap;
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -46,6 +43,23 @@ public class ZaiClientJavaTest {
 
     private String generateUUID() {
         return UUID.randomUUID().toString();
+    }
+
+    private String generatePageType() {
+
+        String[] products = { "homepage", "category", "today's pick" };
+        int randomIndex = new Random().nextInt(products.length);
+
+        return products[randomIndex];
+    }
+
+    private String generateQuery() {
+
+        String[] products = { "waterproof camera", "headphones with NAC", "book for coding" };
+        int randomIndex = new Random().nextInt(products.length);
+
+        return products[randomIndex];
+
     }
 
     private int generateRandomInteger(int min, int max) {
@@ -302,6 +316,77 @@ public class ZaiClientJavaTest {
     }
 
     @Test
+    public void testAddProductDetailViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ProductDetailViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddProductDetailViewEventManualTime() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new ProductDetailViewEvent(userId, itemId, timestamp);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddProductDetailViewEventWrongClientId() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new ProductDetailViewEvent(userId, itemId, timestamp);
+        try {
+            incorrectIdClient.addEventLog(event);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 401);
+        }
+    }
+
+    @Test
+    public void testAddProductDetailViewEventWrongSecret() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new ProductDetailViewEvent(userId, itemId, timestamp);
+        try {
+            incorrectSecretClient.addEventLog(event);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 401);
+        }
+    }
+
+    @Test
+    public void testUpdateProductDetailViewEvent() {
+        String userId = generateUUID();
+        String oldItemId = generateUUID();
+        String newItemId = generateUUID();
+
+        Event oldEvent = new ProductDetailViewEvent(userId, oldItemId);
+        Event newEvent = new ProductDetailViewEvent(userId, newItemId, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteProductDetailViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ProductDetailViewEvent(userId, itemId);
+        checkSuccessfulEventDelete(event);
+    }
+
+    @Test
     public void testAddLikeEvent() {
         String userId = generateUUID();
         String itemId = generateUUID();
@@ -369,6 +454,148 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
 
         Event event = new LikeEvent(userId, itemId);
+        checkSuccessfulEventDelete(event);
+    }
+
+    @Test
+    public void testAddPageViewEvent() {
+        String userId = generateUUID();
+        String pageType = generatePageType();
+
+        Event event = new PageViewEvent(userId, pageType);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddPageViewEventManualTime() {
+        String userId = generateUUID();
+        String pageType = generatePageType();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new PageViewEvent(userId, pageType, timestamp);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddPageViewEventWrongClientId() {
+        String userId = generateUUID();
+        String pageType = generatePageType();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new PageViewEvent(userId, pageType, timestamp);
+        try {
+            incorrectIdClient.addEventLog(event);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 401);
+        }
+    }
+
+    @Test
+    public void testAddPageViewEventWrongSecret() {
+        String userId = generateUUID();
+        String pageType = generatePageType();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new PageViewEvent(userId, pageType, timestamp);
+        try {
+            incorrectSecretClient.addEventLog(event);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 401);
+        }
+    }
+
+    @Test
+    public void testUpdatePageViewEvent() {
+        String userId = generateUUID();
+        String oldpageType = generatePageType();
+        String newpageType = generatePageType();
+
+        Event oldEvent = new PageViewEvent(userId, oldpageType);
+        Event newEvent = new PageViewEvent(userId, newpageType, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testAddSearchEvent() {
+        String userId = generateUUID();
+        String searchQuery = generateQuery();
+
+        Event event = new SearchEvent(userId, searchQuery);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddSearchEventManualTime() {
+        String userId = generateUUID();
+        String searchQuery = generateQuery();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new SearchEvent(userId, searchQuery, timestamp);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddSearchEventWrongClientId() {
+        String userId = generateUUID();
+        String searchQuery = generateQuery();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new SearchEvent(userId, searchQuery, timestamp);
+        try {
+            incorrectIdClient.addEventLog(event);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 401);
+        }
+    }
+
+    @Test
+    public void testAddSearchEventWrongSecret() {
+        String userId = generateUUID();
+        String searchQuery = generateQuery();
+        long timestamp = Long.parseLong(getUnixTimestamp());
+
+        Event event = new SearchEvent(userId, searchQuery, timestamp);
+        try {
+            incorrectSecretClient.addEventLog(event);
+        } catch (IOException e) {
+            fail();
+        } catch (ZaiClientException e) {
+            assertEquals(e.getHttpStatusCode(), 401);
+        }
+    }
+
+    @Test
+    public void testUpdateSearchEvent() {
+        String userId = generateUUID();
+        String oldsearchQuery = generateQuery();
+        String newsearchQuery = generateQuery();
+
+        Event oldEvent = new SearchEvent(userId, oldsearchQuery);
+        Event newEvent = new SearchEvent(userId, newsearchQuery, oldEvent.getTimestamp());
+        checkSuccessfulEventUpdate(oldEvent, newEvent);
+    }
+
+    @Test
+    public void testDeleteSearchEvent() {
+        String userId = generateUUID();
+        String searchQuery = generateQuery();
+
+        Event event = new SearchEvent(userId, searchQuery);
+        checkSuccessfulEventDelete(event);
+    }
+
+    @Test
+    public void testDeletePageViewEvent() {
+        String userId = generateUUID();
+        String pageType = generateUUID();
+
+        Event event = new PageViewEvent(userId, pageType);
         checkSuccessfulEventDelete(event);
     }
 
