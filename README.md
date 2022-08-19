@@ -81,6 +81,6 @@ dependencies {
   <dependency>
     <groupId>com.github.zaikorea</groupId>
     <artifactId>zaiclient-java</artifactId>
-    <version>v0.4.0</version>
+    <version>v1.0.0</version>
   </dependency>
 ```
