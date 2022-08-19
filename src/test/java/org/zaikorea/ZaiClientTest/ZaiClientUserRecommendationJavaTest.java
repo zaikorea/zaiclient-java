@@ -121,17 +121,21 @@ public class ZaiClientUserRecommendationJavaTest {
 
             if (userId == null) {
                 userId = "null";
+                assertEquals(response.getItems().size(), limit);
+                assertEquals(response.getCount(), limit);
+
+                return ;
             }
 
             Map<String, String> logItem = getRecLog(userId);
 
-//            assertNotNull(logItem);
-//            assertNotEquals(logItem.size(), 0);
-//            assertEquals(logItem.get(recLogRecommendations).split(",").length,
-//            response.getItems().size());
+            assertNotNull(logItem);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(recLogRecommendations).split(",").length,
+            response.getItems().size());
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
-//            assertTrue(deleteRecLog(userId));
+            assertTrue(deleteRecLog(userId));
 
         } catch (IOException | ZaiClientException e) {
             fail();
