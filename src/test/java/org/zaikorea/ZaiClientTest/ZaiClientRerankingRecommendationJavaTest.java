@@ -119,20 +119,23 @@ public class ZaiClientRerankingRecommendationJavaTest {
             RecommendationResponse response = testClient.getRecommendations(recommendation);
             int limit = recommendation.getLimit();
 
-            Map<String, String> logItem = getRecLog(userId);
-
             if (userId == null) {
                 userId = "null";
-                logItem = getRecLog("null");
+                assertEquals(response.getItems().size(), limit);
+                assertEquals(response.getCount(), limit);
+
+                return ;
             }
 
-            // assertNotNull(logItem);
-            // assertNotEquals(logItem.size(), 0);
-            // assertEquals(logItem.get(recLogRecommendations).split(",").length,
-            // response.getItems().size());
+            Map<String, String> logItem = getRecLog(userId);
+
+            assertNotNull(logItem);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(recLogRecommendations).split(",").length,
+            response.getItems().size());
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
-            // assertTrue(deleteRecLog(userId));
+            assertTrue(deleteRecLog(userId));
 
         } catch (IOException | ZaiClientException e) {
             fail();

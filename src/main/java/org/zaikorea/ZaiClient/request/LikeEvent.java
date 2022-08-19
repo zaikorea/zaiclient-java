@@ -3,7 +3,7 @@ package org.zaikorea.ZaiClient.request;
 public class LikeEvent extends Event {
 
     private static final String defaultEventType = "like";
-    private static final String defaultEventValue = "1";
+    private static final String defaultEventValue = "null";
 
     public LikeEvent(String userId, String itemId) {
         this(userId, itemId, Event.getCurrentUnixTimestamp());

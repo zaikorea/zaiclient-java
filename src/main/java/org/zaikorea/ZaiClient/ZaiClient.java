@@ -146,7 +146,7 @@ public class ZaiClient {
         String error = null;
         try {
             assert response.errorBody() != null;
-            JsonElement element = JsonParser.parseString(response.errorBody().string());
+            JsonElement element = JsonParser.parseString(response.errorBody().toString());
             error = element.toString();
         } catch (Exception | AssertionError e) {
             e.printStackTrace();
