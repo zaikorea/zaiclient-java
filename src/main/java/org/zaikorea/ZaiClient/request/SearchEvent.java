@@ -9,11 +9,11 @@ public class SearchEvent extends Event {
         this(userId, searchQuery, Event.getCurrentUnixTimestamp());
     }
 
-    public SearchEvent(String userId, String searchKey, double timestamp) {
+    public SearchEvent(String userId, String searchQuery, double timestamp) {
         this.userId = userId;
         this.itemId = defaultItemId;
         this.timestamp = timestamp;
         this.eventType = defaultEventType;
-        this.eventValue = searchKey;
+        this.eventValue = searchQuery;
     }
 }
