@@ -53,7 +53,7 @@ public class ZaiClientJavaTest {
         return products[randomIndex];
     }
 
-    private String generateQuery() {
+    private String generateSearchQuery() {
 
         String[] products = { "waterproof camera", "headphones with NAC", "book for coding" };
         int randomIndex = new Random().nextInt(products.length);
@@ -522,7 +522,7 @@ public class ZaiClientJavaTest {
     @Test
     public void testAddSearchEvent() {
         String userId = generateUUID();
-        String searchQuery = generateQuery();
+        String searchQuery = generateSearchQuery();
 
         Event event = new SearchEvent(userId, searchQuery);
         checkSuccessfulEventAdd(event);
@@ -531,7 +531,7 @@ public class ZaiClientJavaTest {
     @Test
     public void testAddSearchEventManualTime() {
         String userId = generateUUID();
-        String searchQuery = generateQuery();
+        String searchQuery = generateSearchQuery();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         Event event = new SearchEvent(userId, searchQuery, timestamp);
@@ -541,7 +541,7 @@ public class ZaiClientJavaTest {
     @Test
     public void testAddSearchEventWrongClientId() {
         String userId = generateUUID();
-        String searchQuery = generateQuery();
+        String searchQuery = generateSearchQuery();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         Event event = new SearchEvent(userId, searchQuery, timestamp);
@@ -557,7 +557,7 @@ public class ZaiClientJavaTest {
     @Test
     public void testAddSearchEventWrongSecret() {
         String userId = generateUUID();
-        String searchQuery = generateQuery();
+        String searchQuery = generateSearchQuery();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         Event event = new SearchEvent(userId, searchQuery, timestamp);
@@ -573,8 +573,8 @@ public class ZaiClientJavaTest {
     @Test
     public void testUpdateSearchEvent() {
         String userId = generateUUID();
-        String oldsearchQuery = generateQuery();
-        String newsearchQuery = generateQuery();
+        String oldsearchQuery = generateSearchQuery();
+        String newsearchQuery = generateSearchQuery();
 
         Event oldEvent = new SearchEvent(userId, oldsearchQuery);
         Event newEvent = new SearchEvent(userId, newsearchQuery, oldEvent.getTimestamp());
@@ -584,7 +584,7 @@ public class ZaiClientJavaTest {
     @Test
     public void testDeleteSearchEvent() {
         String userId = generateUUID();
-        String searchQuery = generateQuery();
+        String searchQuery = generateSearchQuery();
 
         Event event = new SearchEvent(userId, searchQuery);
         checkSuccessfulEventDelete(event);
