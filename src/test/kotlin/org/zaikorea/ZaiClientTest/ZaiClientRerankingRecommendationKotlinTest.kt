@@ -96,19 +96,27 @@ class ZaiClientRerankingRecommendationKotlinTest {
         try {
             val response = testClient!!.getRecommendations(recommendation)
             val limit = recommendation.limit
-            var logItem = getRecLog(userId)
             if (userId == null) {
                 userId = "null"
-                logItem = getRecLog("null")
+                Assert.assertEquals(response.items.size.toLong(), limit.toLong())
+                Assert.assertEquals(response.count.toLong(), limit.toLong())
+
+                return ;
             }
 
-            // assertNotNull(logItem);
-            // assertNotEquals(logItem.size(), 0);
-            // assertEquals(logItem.get(recLogRecommendations).split(",").length,
-            // response.getItems().size());
+            var logItem = getRecLog(userId)
+
+            Assert.assertNotNull(logItem);
+            if (logItem != null) {
+                Assert.assertNotEquals(logItem.size.toLong(), 0)
+                Assert.assertEquals(
+                    logItem.get(recLogRecommendations)!!.split(",").size,
+                    response.getItems().size
+                )
+            };
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
             Assert.assertEquals(response.count.toLong(), limit.toLong())
-            // assertTrue(deleteRecLog(userId));
+            Assert.assertTrue(deleteRecLog(userId));
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {

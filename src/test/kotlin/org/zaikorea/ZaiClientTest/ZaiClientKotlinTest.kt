@@ -1,23 +1,21 @@
 package org.zaikorea.ZaiClientTest
 
-import org.zaikorea.ZaiClient.ZaiClient
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import java.time.Instant
-import java.util.UUID
-import java.util.HashMap
-import org.zaikorea.ZaiClientTest.ZaiClientKotlinTest
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest
-import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
-import java.io.IOException
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException
-import org.junit.Before
 import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
+import org.zaikorea.ZaiClient.ZaiClient
+import org.zaikorea.ZaiClient.exceptions.ZaiClientException
 import org.zaikorea.ZaiClient.request.*
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
+import java.io.IOException
+import java.time.Instant
+import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
 class ZaiClientKotlinTest {
@@ -41,6 +39,18 @@ class ZaiClientKotlinTest {
 
     private fun generateRandomDouble(min: Int, max: Int): Double {
         return ThreadLocalRandom.current().nextDouble(min.toDouble(), max.toDouble())
+    }
+
+    private fun generatePageType(): String? {
+        val products = arrayOf("homepage", "category", "today's pick")
+        val randomIndex = Random().nextInt(products.size)
+        return products[randomIndex]
+    }
+
+    private fun generateSearchQuery(): String? {
+        val products = arrayOf("waterproof camera", "headphones with NAC", "book for coding")
+        val randomIndex = Random().nextInt(products.size)
+        return products[randomIndex]
     }
 
     private fun getEventLog(partitionValue: String): Map<String, String>? {
@@ -264,6 +274,120 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val event: Event = ViewEvent(userId, itemId)
+        checkSuccessfulEventDelete(event)
+    }
+
+    @Test
+    fun testAddProductDetailViewEventManualTime() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = ProductDetailViewEvent(userId, itemId, timestamp.toDouble())
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddProductDetailViewEventWrongClientId() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = ProductDetailViewEvent(userId, itemId, timestamp.toDouble())
+        try {
+            incorrectIdClient!!.addEventLog(event)
+        } catch (e: IOException) {
+            Assert.fail()
+        } catch (e: ZaiClientException) {
+            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+        }
+    }
+
+    @Test
+    fun testAddProductDetailViewEventWrongSecret() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = ProductDetailViewEvent(userId, itemId, timestamp.toDouble())
+        try {
+            incorrectSecretClient!!.addEventLog(event)
+        } catch (e: IOException) {
+            Assert.fail()
+        } catch (e: ZaiClientException) {
+            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+        }
+    }
+
+    @Test
+    fun testUpdateProductDetailViewEvent() {
+        val userId = generateUUID()
+        val oldItemId = generateUUID()
+        val newItemId = generateUUID()
+        val oldEvent: Event = ProductDetailViewEvent(userId, oldItemId)
+        val newEvent: Event = ProductDetailViewEvent(userId, newItemId, oldEvent.timestamp)
+        checkSuccessfulEventUpdate(oldEvent, newEvent)
+    }
+
+    @Test
+    fun testDeleteProductDetailViewEvent() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val event: Event = ProductDetailViewEvent(userId, itemId)
+        checkSuccessfulEventDelete(event)
+    }
+
+    @Test
+    fun testAddPageViewEventManualTime() {
+        val userId = generateUUID()
+        val pageType = generatePageType()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = PageViewEvent(userId, pageType, timestamp.toDouble())
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddPageViewEventWrongClientId() {
+        val userId = generateUUID()
+        val pageType = generatePageType()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = PageViewEvent(userId, pageType, timestamp.toDouble())
+        try {
+            incorrectIdClient!!.addEventLog(event)
+        } catch (e: IOException) {
+            Assert.fail()
+        } catch (e: ZaiClientException) {
+            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+        }
+    }
+
+    @Test
+    fun testAddPageViewEventWrongSecret() {
+        val userId = generateUUID()
+        val pageType = generatePageType()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = PageViewEvent(userId, pageType, timestamp.toDouble())
+        try {
+            incorrectSecretClient!!.addEventLog(event)
+        } catch (e: IOException) {
+            Assert.fail()
+        } catch (e: ZaiClientException) {
+            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+        }
+    }
+
+    @Test
+    fun testUpdatePageViewEvent() {
+        val userId = generateUUID()
+        val oldPageType = generatePageType()
+        val newPageType = generatePageType()
+        val oldEvent: Event = PageViewEvent(userId, oldPageType)
+        val newEvent: Event = PageViewEvent(userId, newPageType, oldEvent.timestamp)
+        checkSuccessfulEventUpdate(oldEvent, newEvent)
+    }
+
+    @Test
+    fun testDeletePageViewEvent() {
+        val userId = generateUUID()
+        val pageType = generatePageType()
+        val event: Event = PageViewEvent(userId, pageType)
         checkSuccessfulEventDelete(event)
     }
 
@@ -538,6 +662,64 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val price = generateRandomInteger(10000, 100000)
         val event: Event = PurchaseEvent(userId, itemId, price)
+        checkSuccessfulEventDelete(event)
+    }
+
+
+    @Test
+    fun testAddSearchEventManualTime() {
+        val userId = generateUUID()
+        val searchQuery = generateSearchQuery()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = SearchEvent(userId, searchQuery, timestamp.toDouble())
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddSearchEventWrongClientId() {
+        val userId = generateUUID()
+        val searchQuery = generatePageType()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = SearchEvent(userId, searchQuery, timestamp.toDouble())
+        try {
+            incorrectIdClient!!.addEventLog(event)
+        } catch (e: IOException) {
+            Assert.fail()
+        } catch (e: ZaiClientException) {
+            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+        }
+    }
+
+    @Test
+    fun testAddSearchEventWrongSecret() {
+        val userId = generateUUID()
+        val searchQuery = generatePageType()
+        val timestamp = unixTimestamp.toLong()
+        val event: Event = SearchEvent(userId, searchQuery, timestamp.toDouble())
+        try {
+            incorrectSecretClient!!.addEventLog(event)
+        } catch (e: IOException) {
+            Assert.fail()
+        } catch (e: ZaiClientException) {
+            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+        }
+    }
+
+    @Test
+    fun testUpdateSearchEvent() {
+        val userId = generateUUID()
+        val oldSearchQuery = generatePageType()
+        val newSearchQuery = generatePageType()
+        val oldEvent: Event = SearchEvent(userId, oldSearchQuery)
+        val newEvent: Event = SearchEvent(userId, newSearchQuery, oldEvent.timestamp)
+        checkSuccessfulEventUpdate(oldEvent, newEvent)
+    }
+
+    @Test
+    fun testDeleteSearchEvent() {
+        val userId = generateUUID()
+        val searchQuery = generatePageType()
+        val event: Event = SearchEvent(userId, searchQuery)
         checkSuccessfulEventDelete(event)
     }
 
