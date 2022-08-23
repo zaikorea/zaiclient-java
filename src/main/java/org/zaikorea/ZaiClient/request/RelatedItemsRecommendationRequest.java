@@ -12,61 +12,14 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
 
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "product_detail_page";
-    private static final Map<String, String> defaultOptions = new HashMap<>();
+    private static final String defaultOptions = "";
 
-    public RelatedItemsRecommendationRequest(String itemId, int limit) {
-        this(itemId, limit, defaultOffset, defaultRecommendationType, defaultOptions);
-    }
-
-    public RelatedItemsRecommendationRequest(String itemId, int limit, String recommendationType) {
-        this(itemId, limit, defaultOffset, recommendationType, defaultOptions);
-    }
-
-    public RelatedItemsRecommendationRequest(String itemId, int limit, int offset) {
-        this(itemId, limit, offset, defaultRecommendationType, defaultOptions);
-    }
-
-    public RelatedItemsRecommendationRequest(String userId, int limit, int offset, String recommendationType) {
-        this(userId, limit, offset, recommendationType, defaultOptions);
-    }
-
-    public RelatedItemsRecommendationRequest(
-            String itemId,
-            int limit,
-            int offset,
-            String recommendationType,
-            Map options
-    ) {
-        if (itemId == null || !(0 < itemId.length() && itemId.length() <= 100)) {
-            throw new IllegalArgumentException("Length of item id must be between 1 and 100.");
-        }
-        if (!(0 < limit && limit <= 1_000_000)) {
-            throw new IllegalArgumentException("Limit must be between 1 and 1000,000.");
-        }
-        if (!(0 <= offset && offset <= 1_000_000)) {
-            throw new IllegalArgumentException("Offset must be between 0 and 1000,000.");
-        }
-        if (recommendationType == null || !(0 < recommendationType.length() && recommendationType.length() <= 100)) {
-            throw new IllegalArgumentException("Length of recommendation type must be between 1 and 100.");
-        }
-
-        String jsonString;
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            jsonString = mapper.writeValueAsString(options);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-        if (jsonString.length() > 1000) {
-            throw new IllegalArgumentException("Total length of options must be less than 1000");
-        }
-
-        this.itemId = itemId;
-        this.limit = limit;
-        this.recommendationType = recommendationType;
-        this.offset = offset;
-        this.options = jsonString;
+    public RelatedItemsRecommendationRequest(Builder builder) {
+        this.itemId = builder.itemId;
+        this.limit = builder.limit;
+        this.recommendationType = builder.recommendationType;
+        this.offset = builder.offset;
+        this.options = builder.options;
     }
 
     @Override
@@ -74,5 +27,63 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
         return String.format(Config.mlApiEndPoint +
                 Config.mlApiPathPrefix +
                 Config.relatedItemsRecommendationPathPrefix, clientId);
+    }
+
+    public static class Builder {
+        private final String itemId;
+        private final int limit;
+        private int offset = defaultOffset;
+        private String recommendationType = defaultRecommendationType;
+        private String options = defaultOptions;
+
+        public Builder(String itemId, int limit) {
+            if (!(itemId == null || (0 < itemId.length() && itemId.length() <= 100))) {
+                throw new IllegalArgumentException("Length of user id must be between 1 and 100.");
+            }
+            if (!(0 < limit && limit <= 1_000_000)) {
+                throw new IllegalArgumentException("Limit must be between 1 and 1000,000.");
+            }
+            this.itemId = itemId;
+            this.limit = limit;
+        }
+
+        public Builder offset(int offset) {
+            if (!(0 <= offset && offset <= 1_000_000)) {
+                throw new IllegalArgumentException("Offset must be between 0 and 1000,000.");
+            }
+            this.offset = offset;
+
+            return this;
+        }
+
+        public Builder recommendationType(String recommendationType) {
+            if (recommendationType == null || !(0 < recommendationType.length() && recommendationType.length() <= 100)) {
+                throw new IllegalArgumentException("Length of recommendation type must be between 1 and 100.");
+            }
+            this.recommendationType = recommendationType;
+
+            return this;
+        }
+
+        public Builder options(Map options) {
+            String jsonString;
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                jsonString = mapper.writeValueAsString(options);
+            } catch (JsonProcessingException e) {
+                jsonString = "Error";
+            }
+
+            if (jsonString.length() >= 1000) {
+                throw new IllegalArgumentException("Length of options must be less than 1000 when converted to string.");
+            }
+            this.options = jsonString;
+
+            return this;
+        }
+
+        public RelatedItemsRecommendationRequest build() {
+            return new RelatedItemsRecommendationRequest(this);
+        }
     }
 }
