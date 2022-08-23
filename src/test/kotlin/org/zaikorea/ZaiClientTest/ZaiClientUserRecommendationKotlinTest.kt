@@ -1,27 +1,21 @@
 package org.zaikorea.ZaiClientTest
 
-import org.zaikorea.ZaiClient.ZaiClient
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import java.util.UUID
-import java.util.HashMap
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest
-import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
-import org.zaikorea.ZaiClient.request.RecommendationRequest
-import org.zaikorea.ZaiClient.response.RecommendationResponse
-import java.io.IOException
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException
-import org.junit.Before
 import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
-import org.zaikorea.ZaiClient.request.RerankingRecommendationRequest
-import java.util.Collections
-import java.lang.IllegalArgumentException
+import org.zaikorea.ZaiClient.ZaiClient
+import org.zaikorea.ZaiClient.exceptions.ZaiClientException
+import org.zaikorea.ZaiClient.request.RecommendationRequest
 import org.zaikorea.ZaiClient.request.UserRecommendationRequest
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-import java.lang.Error
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
+import java.io.IOException
+import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
 class ZaiClientUserRecommendationKotlinTest {
@@ -438,6 +432,30 @@ class ZaiClientUserRecommendationKotlinTest {
         }
     }
 
+    @Test
+    fun testGetTooLongOptionsUserRecommendation() {
+        val userId = generateUUID()
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        map[java.lang.String.join("a", Collections.nCopies(1000, "a"))] = 3
+        try {
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .options(map)
+                .build()
+            Assert.fail()
+        } catch (e: IllegalArgumentException) {
+            Assert.assertEquals(e.message, optionsExceptionMessage)
+        } catch (e: Error) {
+            Assert.fail()
+        }
+    }
+
     companion object {
         private const val clientId = "test"
         private const val clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for
@@ -452,6 +470,7 @@ class ZaiClientUserRecommendationKotlinTest {
             "Length of recommendation type must be between 1 and 100."
         private const val limitExceptionMessage = "Limit must be between 1 and 1000,000."
         private const val offsetExceptionMessage = "Offset must be between 0 and 1000,000."
+        private const val optionsExceptionMessage = "Length of options must be less than 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }
 }

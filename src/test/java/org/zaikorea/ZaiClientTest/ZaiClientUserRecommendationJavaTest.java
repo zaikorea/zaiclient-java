@@ -33,6 +33,7 @@ public class ZaiClientUserRecommendationJavaTest {
     private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 100.";
     private static final String limitExceptionMessage = "Limit must be between 1 and 1000,000.";
     private static final String offsetExceptionMessage = "Offset must be between 0 and 1000,000.";
+    private static final String optionsExceptionMessage = "Length of options must be less than 1000 when converted to string.";
 
     private ZaiClient testClient;
     private ZaiClient incorrectIdClient;
@@ -489,6 +490,35 @@ public class ZaiClientUserRecommendationJavaTest {
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), recommendationTypeExceptionMessage);
         } catch (Error e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetTooLongOptionsUserRecommendation() {
+        String userId = generateUUID();
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+        String recommendationType = "home_page";
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("call_type", 1);
+        map.put("response_type", 2);
+        map.put(
+                String.join("a", Collections.nCopies(1000, "a")),
+                3
+        );
+
+        try {
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .recommendationType(recommendationType)
+                    .options(map)
+                    .build();
+            fail();
+        } catch(IllegalArgumentException e) {
+            assertEquals(e.getMessage(), optionsExceptionMessage);
+        } catch(Error e) {
             fail();
         }
     }
