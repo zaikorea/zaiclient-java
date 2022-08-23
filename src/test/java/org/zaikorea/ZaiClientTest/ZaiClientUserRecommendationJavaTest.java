@@ -285,6 +285,25 @@ public class ZaiClientUserRecommendationJavaTest {
     }
 
     @Test
+    public void testGetNullUserRecommendation_5() {
+        String userId = null;
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+        String recommendationType = "home_page";
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("call_type", 1);
+        map.put("response_type", 2);
+
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .options(map)
+                .build();
+        checkSuccessfulGetUserRecommendation(recommendation, userId);
+    }
+
+    @Test
     public void testGetUserRecommendationWrongClientId() {
         String userId = generateUUID();
         int limit = generateRandomInteger(1, 10);

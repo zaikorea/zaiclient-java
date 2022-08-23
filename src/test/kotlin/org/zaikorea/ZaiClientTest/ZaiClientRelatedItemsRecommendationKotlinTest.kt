@@ -177,6 +177,23 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
     }
 
     @Test
+    fun testGetRelatedRecommendation_5() {
+        val itemId = generateUUID()
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        val recommendation: RecommendationRequest = RelatedItemsRecommendationRequest.Builder(itemId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .options(map)
+            .build()
+        checkSuccessfulGetRelatedRecommendation(recommendation, itemId)
+    }
+
+    @Test
     fun testGetNullRelatedRecommendation() {
         val itemId: String? = null
         val limit = generateRandomInteger(1, 10)

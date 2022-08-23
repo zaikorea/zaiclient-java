@@ -187,6 +187,23 @@ class ZaiClientUserRecommendationKotlinTest {
     }
 
     @Test
+    fun testGetUserRecommendation_5() {
+        val userId = generateUUID()
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .options(map)
+            .build()
+        checkSuccessfulGetUserRecommendation(recommendation, userId)
+    }
+
+    @Test
     fun testGetNullUserRecommendation_1() {
         val userId: String? = null
         val limit = generateRandomInteger(1, 10)
@@ -226,6 +243,23 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId: String? = null
         val limit = generateRandomInteger(1, 10)
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .build()
+        checkSuccessfulGetUserRecommendation(recommendation, userId)
+    }
+
+    @Test
+    fun testGetNullUserRecommendation_5() {
+        val userId = null
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .options(map)
             .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }

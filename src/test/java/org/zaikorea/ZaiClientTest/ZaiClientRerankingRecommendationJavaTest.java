@@ -264,6 +264,29 @@ public class ZaiClientRerankingRecommendationJavaTest {
     }
 
     @Test
+    public void testGetRerankingRecommendation_7() {
+        String userId = generateUUID();
+        List<String> itemIds = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            itemIds.add(generateUUID());
+        }
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+        String recommendationType = "home_page";
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("call_type", 1);
+        map.put("response_type", 2);
+
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .options(map)
+                .build();
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+    }
+
+    @Test
     public void testGetNullRerankingRecommendation_1() {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
@@ -354,6 +377,29 @@ public class ZaiClientRerankingRecommendationJavaTest {
         }
 
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .build();
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+    }
+
+    @Test
+    public void testGetNullRerankingRecommendation_7() {
+        String userId = null;
+        List<String> itemIds = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            itemIds.add(generateUUID());
+        }
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+        String recommendationType = "home_page";
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("call_type", 1);
+        map.put("response_type", 2);
+
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .options(map)
                 .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }

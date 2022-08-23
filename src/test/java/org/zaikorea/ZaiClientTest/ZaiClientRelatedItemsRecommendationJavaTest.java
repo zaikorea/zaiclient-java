@@ -212,6 +212,25 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
     }
 
     @Test
+    public void testGetRelatedRecommendation_5() {
+        String itemId = generateUUID();
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+        String recommendationType = "home_page";
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("call_type", 1);
+        map.put("response_type", 2);
+
+        RecommendationRequest recommendation = new RelatedItemsRecommendationRequest.Builder(itemId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .options(map)
+                .build();
+        checkSuccessfulGetRelatedRecommendation(recommendation, itemId);
+    }
+
+    @Test
     public void testGetNullRelatedRecommendation() {
         String itemId = null;
         int limit = generateRandomInteger(1, 10);

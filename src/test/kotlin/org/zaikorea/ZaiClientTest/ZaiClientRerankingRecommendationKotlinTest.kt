@@ -8,6 +8,7 @@ import org.zaikorea.ZaiClient.ZaiClient
 import org.zaikorea.ZaiClient.exceptions.ZaiClientException
 import org.zaikorea.ZaiClient.request.RecommendationRequest
 import org.zaikorea.ZaiClient.request.RerankingRecommendationRequest
+import org.zaikorea.ZaiClient.request.UserRecommendationRequest
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
@@ -231,6 +232,27 @@ class ZaiClientRerankingRecommendationKotlinTest {
     }
 
     @Test
+    fun testGetRerankingRecommendation_7() {
+        val userId = generateUUID()
+        val itemIds: MutableList<String> = ArrayList()
+        for (i in 0..49) {
+            itemIds.add(generateUUID())
+        }
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .options(map)
+            .build()
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+    }
+
+    @Test
     fun testGetNullRerankingRecommendation_1() {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
@@ -316,6 +338,27 @@ class ZaiClientRerankingRecommendationKotlinTest {
             itemIds.add(generateUUID())
         }
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .build()
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+    }
+
+    @Test
+    fun testGetNullRerankingRecommendation_7() {
+        val userId: String? = null
+        val itemIds: MutableList<String> = ArrayList()
+        for (i in 0..49) {
+            itemIds.add(generateUUID())
+        }
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .options(map)
             .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
