@@ -177,8 +177,11 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
         String recommendationType = "category_page";
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit, offset,
-                recommendationType);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -192,7 +195,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -205,7 +211,9 @@ public class ZaiClientRerankingRecommendationJavaTest {
         }
         int limit = generateRandomInteger(1, 10);
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -219,8 +227,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         String recommendationType = "category_page";
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit,
-                recommendationType);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .recommendationType(recommendationType)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -233,7 +243,9 @@ public class ZaiClientRerankingRecommendationJavaTest {
         }
         String recommendationType = "category_page";
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, recommendationType);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .recommendationType(recommendationType)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -245,7 +257,8 @@ public class ZaiClientRerankingRecommendationJavaTest {
             itemIds.add(generateUUID());
         }
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -260,8 +273,11 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
         String recommendationType = "category_page";
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit, offset,
-                recommendationType);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -275,7 +291,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -289,8 +308,9 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         String recommendationType = "category_page";
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit,
-                recommendationType);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -303,7 +323,9 @@ public class ZaiClientRerankingRecommendationJavaTest {
         }
         int limit = generateRandomInteger(1, 10);
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -316,7 +338,9 @@ public class ZaiClientRerankingRecommendationJavaTest {
         }
         String recommendationType = "category_page";
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, recommendationType);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .recommendationType(recommendationType)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -328,7 +352,8 @@ public class ZaiClientRerankingRecommendationJavaTest {
             itemIds.add(generateUUID());
         }
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -342,7 +367,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build();
         try {
             incorrectIdClient.getRecommendations(recommendation);
         } catch (IOException e) {
@@ -362,7 +390,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build();
         try {
             incorrectSecretClient.getRecommendations(recommendation);
         } catch (IOException e) {
@@ -382,7 +413,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+             new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), userIdExceptionMessage);
@@ -402,7 +436,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
 
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), limitExceptionMessage);
@@ -422,7 +459,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int offset = 1_000_001;
 
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), offsetExceptionMessage);
@@ -442,8 +482,11 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset,
-                    recommendationType);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .recommendationType(recommendationType)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), recommendationTypeExceptionMessage);
@@ -462,7 +505,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), userIdExceptionMessage);
@@ -482,7 +528,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
 
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), limitExceptionMessage);
@@ -502,7 +551,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
 
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), limitExceptionMessage);
@@ -521,7 +573,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(20, 40);
         int offset = 0;
 
-        RecommendationRequest recommendation = new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build();
         checkSuccessfulGetRerankingRecommendation(recommendation, userId);
     }
 
@@ -536,7 +591,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int offset = -1;
 
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset);
+             new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), offsetExceptionMessage);
@@ -556,8 +614,11 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset,
-                    recommendationType);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .recommendationType(recommendationType)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), recommendationTypeExceptionMessage);
@@ -577,8 +638,11 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset,
-                    recommendationType);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .recommendationType(recommendationType)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), itemIdsExceptionMessage);
@@ -599,8 +663,11 @@ public class ZaiClientRerankingRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new RerankingRecommendationRequest(userId, itemIds, limit, offset,
-                    recommendationType);
+            new RerankingRecommendationRequest.Builder(userId, itemIds)
+                    .limit(limit)
+                    .offset(offset)
+                    .recommendationType(recommendationType)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), itemIdInListExceptionMessage);

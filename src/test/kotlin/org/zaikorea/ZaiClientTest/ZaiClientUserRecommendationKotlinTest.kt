@@ -154,7 +154,10 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         val recommendationType = "home_page"
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset, recommendationType)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -163,7 +166,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -171,7 +176,8 @@ class ZaiClientUserRecommendationKotlinTest {
     fun testGetUserRecommendation_3() {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -180,7 +186,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val recommendationType = "home_page"
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, recommendationType)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -190,7 +198,10 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         val recommendationType = "home_page"
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset, recommendationType)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -199,7 +210,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId: String? = null
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -208,7 +221,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId: String? = null
         val limit = generateRandomInteger(1, 10)
         val recommendationType = "home_page"
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, recommendationType)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -216,7 +231,8 @@ class ZaiClientUserRecommendationKotlinTest {
     fun testGetNullUserRecommendation_4() {
         val userId: String? = null
         val limit = generateRandomInteger(1, 10)
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -225,7 +241,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .build()
         try {
             incorrectIdClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
@@ -240,7 +258,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .build()
         try {
             incorrectSecretClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
@@ -256,7 +276,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            UserRecommendationRequest(userId, limit, offset)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, userIdExceptionMessage)
@@ -271,7 +293,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = 1000001
         val offset = generateRandomInteger(20, 40)
         try {
-            UserRecommendationRequest(userId, limit, offset)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, limitExceptionMessage)
@@ -286,7 +310,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(20, 40)
         val offset = 1000001
         try {
-            UserRecommendationRequest(userId, limit, offset)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, offsetExceptionMessage)
@@ -302,7 +328,10 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            UserRecommendationRequest(userId, limit, offset, recommendationType)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, recommendationTypeExceptionMessage)
@@ -317,7 +346,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            UserRecommendationRequest(userId, limit, offset)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, userIdExceptionMessage)
@@ -332,7 +363,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = 0
         val offset = generateRandomInteger(20, 40)
         try {
-            UserRecommendationRequest(userId, limit, offset)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, limitExceptionMessage)
@@ -347,7 +380,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = -1
         val offset = generateRandomInteger(20, 40)
         try {
-            UserRecommendationRequest(userId, limit, offset)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, limitExceptionMessage)
@@ -361,7 +396,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val userId = generateUUID()
         val limit = generateRandomInteger(20, 40)
         val offset = 0
-        val recommendation: RecommendationRequest = UserRecommendationRequest(userId, limit, offset)
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .build()
         checkSuccessfulGetUserRecommendation(recommendation, userId)
     }
 
@@ -371,7 +408,9 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(20, 40)
         val offset = -1
         try {
-            UserRecommendationRequest(userId, limit, offset)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, offsetExceptionMessage)
@@ -387,7 +426,10 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            UserRecommendationRequest(userId, limit, offset, recommendationType)
+            UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, recommendationTypeExceptionMessage)

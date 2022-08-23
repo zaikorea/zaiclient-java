@@ -34,12 +34,12 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
     public static class Builder {
         private final String userId;
         private final List<String> itemIds;
-        private final int limit;
+        private int limit;
         private int offset = defaultOffset;
         private String recommendationType = defaultRecommendationType;
         private String options = defaultOptions;
 
-        public Builder(String userId, List<String> itemIds, int limit) {
+        public Builder(String userId, List<String> itemIds) {
             if (!(userId == null || (0 < userId.length() && userId.length() <= 100))) {
                 throw new IllegalArgumentException("Length of user id must be between 1 and 100.");
             }
@@ -53,9 +53,17 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
             });
             this.userId = userId;
             this.itemIds = itemIds;
-            this.limit = limit;
+            this.limit = itemIds.size();
         }
 
+        public Builder limit(int limit) {
+            if (!(0 < limit && limit <= 1_000_000)) {
+                throw new IllegalArgumentException("Limit must be between 1 and 1000,000.");
+            }
+            this.limit = limit;
+
+            return this;
+        }
         public Builder offset(int offset) {
             if (!(0 <= offset && offset <= 1_000_000)) {
                 throw new IllegalArgumentException("Offset must be between 0 and 1000,000.");

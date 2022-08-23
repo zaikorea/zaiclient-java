@@ -175,7 +175,10 @@ public class ZaiClientUserRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
         String recommendationType = "home_page";
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset, recommendationType);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -185,7 +188,10 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build();
+
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -194,7 +200,8 @@ public class ZaiClientUserRecommendationJavaTest {
         String userId = generateUUID();
         int limit = generateRandomInteger(1, 10);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -204,7 +211,28 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         String recommendationType = "home_page";
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, recommendationType);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .recommendationType(recommendationType)
+                .build();
+        checkSuccessfulGetUserRecommendation(recommendation, userId);
+    }
+
+    @Test
+    public void testGetUserRecommendation_5() {
+        String userId = generateUUID();
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+        String recommendationType = "home_page";
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("call_type", 1);
+        map.put("response_type", 2);
+
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .options(map)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -215,7 +243,10 @@ public class ZaiClientUserRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
         String recommendationType = "home_page";
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset, recommendationType);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -225,7 +256,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -235,7 +268,8 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         String recommendationType = "home_page";
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, recommendationType);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -244,7 +278,8 @@ public class ZaiClientUserRecommendationJavaTest {
         String userId = null;
         int limit = generateRandomInteger(1, 10);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -254,7 +289,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build();
         try {
             incorrectIdClient.getRecommendations(recommendation);
         } catch (IOException e) {
@@ -270,7 +307,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build();
         try {
             incorrectSecretClient.getRecommendations(recommendation);
         } catch (IOException e) {
@@ -286,7 +325,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new UserRecommendationRequest(userId, limit, offset);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), userIdExceptionMessage);
@@ -302,7 +343,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
 
         try {
-            new UserRecommendationRequest(userId, limit, offset);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), limitExceptionMessage);
@@ -318,7 +361,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int offset = 1_000_001;
 
         try {
-            new UserRecommendationRequest(userId, limit, offset);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), offsetExceptionMessage);
@@ -334,7 +379,10 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new UserRecommendationRequest(userId, limit, offset, recommendationType);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .recommendationType(recommendationType)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), recommendationTypeExceptionMessage);
@@ -349,7 +397,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new UserRecommendationRequest(userId, limit, offset);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), userIdExceptionMessage);
@@ -365,7 +415,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
 
         try {
-            new UserRecommendationRequest(userId, limit, offset);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), limitExceptionMessage);
@@ -381,7 +433,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int offset = generateRandomInteger(20, 40);
 
         try {
-            new UserRecommendationRequest(userId, limit, offset);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), limitExceptionMessage);
@@ -396,7 +450,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(20, 40);
         int offset = 0;
 
-        RecommendationRequest recommendation = new UserRecommendationRequest(userId, limit, offset);
+        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+                .offset(offset)
+                .build();
         checkSuccessfulGetUserRecommendation(recommendation, userId);
     }
 
@@ -407,7 +463,9 @@ public class ZaiClientUserRecommendationJavaTest {
         int offset = -1;
 
         try {
-            new UserRecommendationRequest(userId, limit, offset);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), offsetExceptionMessage);
@@ -423,7 +481,10 @@ public class ZaiClientUserRecommendationJavaTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
-            new UserRecommendationRequest(userId, limit, offset, recommendationType);
+            new UserRecommendationRequest.Builder(userId, limit)
+                    .offset(offset)
+                    .recommendationType(recommendationType)
+                    .build();
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), recommendationTypeExceptionMessage);

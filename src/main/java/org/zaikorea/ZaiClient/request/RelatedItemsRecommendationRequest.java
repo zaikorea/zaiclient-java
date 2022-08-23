@@ -37,8 +37,8 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
         private String options = defaultOptions;
 
         public Builder(String itemId, int limit) {
-            if (!(itemId == null || (0 < itemId.length() && itemId.length() <= 100))) {
-                throw new IllegalArgumentException("Length of user id must be between 1 and 100.");
+            if (itemId == null || !(0 < itemId.length() && itemId.length() <= 100)) {
+                throw new IllegalArgumentException("Length of item id must be between 1 and 100.");
             }
             if (!(0 < limit && limit <= 1_000_000)) {
                 throw new IllegalArgumentException("Limit must be between 1 and 1000,000.");
