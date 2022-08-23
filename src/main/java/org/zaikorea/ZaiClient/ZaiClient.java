@@ -196,5 +196,7 @@ public class ZaiClient {
         public ZaiClient build() {
             return new ZaiClient(this);
         }
+
     }
+
 }
