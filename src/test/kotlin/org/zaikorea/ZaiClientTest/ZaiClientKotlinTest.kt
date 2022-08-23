@@ -199,9 +199,18 @@ class ZaiClientKotlinTest {
 
     @Before
     fun setup() {
-        testClient = ZaiClient(clientId, clientSecret)
-        incorrectIdClient = ZaiClient("." + clientId, clientSecret)
-        incorrectSecretClient = ZaiClient(clientId, "." + clientSecret)
+        testClient = ZaiClient.Builder(clientId, clientSecret)
+            .connectTimeout(30)
+            .readTimeout(10)
+            .build()
+        incorrectIdClient = ZaiClient.Builder("." + clientId, clientSecret)
+            .connectTimeout(0)
+            .readTimeout(0)
+            .build()
+        incorrectSecretClient = ZaiClient.Builder(clientId, "." + clientSecret)
+            .connectTimeout(-1)
+            .readTimeout(-1)
+            .build()
         ddbClient = DynamoDbClient.builder()
             .region(region)
             .build()

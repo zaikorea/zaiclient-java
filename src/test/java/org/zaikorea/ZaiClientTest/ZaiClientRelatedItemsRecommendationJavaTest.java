@@ -140,9 +140,18 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
 
     @Before
     public void setup() {
-        testClient = new ZaiClient(clientId, clientSecret);
-        incorrectIdClient = new ZaiClient("." + clientId, clientSecret);
-        incorrectSecretClient = new ZaiClient(clientId, "." + clientSecret);
+        testClient = new ZaiClient.Builder(clientId, clientSecret)
+                .connectTimeout(30)
+                .readTimeout(10)
+                .build();
+        incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
+                .connectTimeout(0)
+                .readTimeout(0)
+                .build();
+        incorrectSecretClient = new ZaiClient.Builder(clientId, "." + clientSecret)
+                .connectTimeout(-1)
+                .readTimeout(-1)
+                .build();
         ddbClient = DynamoDbClient.builder()
                 .region(region)
                 .build();

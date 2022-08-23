@@ -32,10 +32,16 @@ public class ZaiClient {
     private final String zaiClientId;
     private final String zaiSecret;
     private final ZaiAPI zaiAPI;
+    private final int defaultConnectTimeout = 30;
+    private final int defaultReadTimeout = 10;
+    private int connectTimeout;
+    private int readTimeout;
 
-    public ZaiClient(String zaiClientId, String zaiSecret) {
-        this.zaiClientId = zaiClientId;
-        this.zaiSecret = zaiSecret;
+    public ZaiClient(Builder builder) {
+        this.zaiClientId = builder.zaiClientId;
+        this.zaiSecret = builder.zaiSecret;
+        this.connectTimeout = builder.connectTimeout;
+        this.readTimeout = builder.readTimeout;
         this.zaiAPI = this.instantiateZaiAPI();
     }
 
@@ -115,8 +121,8 @@ public class ZaiClient {
         String zaiSecret = this.zaiSecret;
 
         OkHttpClient client = new OkHttpClient.Builder()
-            .readTimeout(30, TimeUnit.SECONDS)
-            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(this.readTimeout, TimeUnit.SECONDS)
+            .connectTimeout(this.connectTimeout, TimeUnit.SECONDS)
             .addInterceptor(chain -> {
                 Request request = chain.request();
                 String path = request.url().encodedPath();
@@ -157,5 +163,38 @@ public class ZaiClient {
             error = (responseMessage != null) ? responseMessage : "Internal server error.";
 
         return error;
+    }
+
+    public static class Builder {
+
+        private final String zaiClientId;
+        private final String zaiSecret;
+        private int connectTimeout;
+        private int readTimeout;
+
+        public Builder(String zaiClientId, String zaiSecret) {
+            this.zaiClientId = zaiClientId;
+            this.zaiSecret = zaiSecret;
+            this.connectTimeout = 30;
+            this.readTimeout = 10;
+        }
+
+        public Builder connectTimeout(int seconds) {
+            if (seconds > 0) {
+                this.connectTimeout = seconds;
+            }
+            return this;
+        }
+
+        public Builder readTimeout(int seconds) {
+            if (seconds > 0) {
+                this.readTimeout = seconds;
+            }
+            return this;
+        }
+
+        public ZaiClient build() {
+            return new ZaiClient(this);
+        }
     }
 }
