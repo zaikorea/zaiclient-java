@@ -13,7 +13,7 @@ public class UserRecommendationRequest extends RecommendationRequest {
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "homepage";
 
-    private static final String defaultOptions = "";
+    private static final String defaultOptions = null;
 
     public UserRecommendationRequest(Builder builder) {
         this.userId = builder.userId;

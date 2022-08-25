@@ -13,7 +13,7 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
 
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "category_page";
-    private static final String defaultOptions = "";
+    private static final String defaultOptions = null;
 
     public RerankingRecommendationRequest(Builder builder) {
         this.userId = builder.userId;

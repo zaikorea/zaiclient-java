@@ -12,7 +12,7 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
 
     private static final int defaultOffset = 0;
     private static final String defaultRecommendationType = "product_detail_page";
-    private static final String defaultOptions = "";
+    private static final String defaultOptions = null;
 
     public RelatedItemsRecommendationRequest(Builder builder) {
         this.itemId = builder.itemId;
