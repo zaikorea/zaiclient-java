@@ -200,8 +200,8 @@ class ZaiClientKotlinTest {
     @Before
     fun setup() {
         testClient = ZaiClient.Builder(clientId, clientSecret)
-            .connectTimeout(30)
-            .readTimeout(10)
+            .connectTimeout(10)
+            .readTimeout(30)
             .build()
         incorrectIdClient = ZaiClient.Builder("." + clientId, clientSecret)
             .connectTimeout(0)

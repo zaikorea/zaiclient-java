@@ -232,8 +232,8 @@ public class ZaiClientJavaTest {
     @Before
     public void setup() {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
-                .connectTimeout(30)
-                .readTimeout(10)
+                .connectTimeout(10)
+                .readTimeout(30)
                 .build();
         incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
                 .connectTimeout(0)

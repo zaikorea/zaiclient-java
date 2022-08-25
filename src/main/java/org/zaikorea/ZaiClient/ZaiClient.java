@@ -175,8 +175,8 @@ public class ZaiClient {
         public Builder(String zaiClientId, String zaiSecret) {
             this.zaiClientId = zaiClientId;
             this.zaiSecret = zaiSecret;
-            this.connectTimeout = 30;
-            this.readTimeout = 10;
+            this.connectTimeout = 10;
+            this.readTimeout = 30;
         }
 
         public Builder connectTimeout(int seconds) {
