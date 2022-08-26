@@ -719,7 +719,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
             "Length of recommendation type must be between 1 and 100."
         private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
         private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
-        private const val optionsExceptionMessage = "Length of options must be less than 1000 when converted to string."
+        private const val optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }
 }

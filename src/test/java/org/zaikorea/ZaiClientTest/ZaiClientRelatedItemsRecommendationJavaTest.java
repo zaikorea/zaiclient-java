@@ -32,7 +32,7 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
     private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 100.";
     private static final String limitExceptionMessage = "Limit must be between 1 and 1,000,000.";
     private static final String offsetExceptionMessage = "Offset must be between 0 and 1,000,000.";
-    private static final String optionsExceptionMessage = "Length of options must be less than 1000 when converted to string.";
+    private static final String optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string.";
 
     private ZaiClient testClient;
     private ZaiClient incorrectIdClient;

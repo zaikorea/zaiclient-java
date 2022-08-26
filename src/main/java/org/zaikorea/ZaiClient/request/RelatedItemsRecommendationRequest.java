@@ -75,7 +75,7 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
             }
 
             if (jsonString.length() > 1000) {
-                throw new IllegalArgumentException("Length of options must be less than 1000 when converted to string.");
+                throw new IllegalArgumentException("Length of options must be less than or equal to 1000 when converted to string.");
             }
             this.options = jsonString;
 
