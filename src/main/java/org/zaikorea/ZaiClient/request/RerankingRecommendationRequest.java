@@ -15,7 +15,7 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
     private static final String defaultRecommendationType = "category_page";
     private static final String defaultOptions = null;
 
-    public RerankingRecommendationRequest(Builder builder) {
+    private RerankingRecommendationRequest(Builder builder) {
         this.userId = builder.userId;
         this.itemIds = builder.itemIds;
         this.limit = builder.limit;

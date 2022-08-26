@@ -14,7 +14,7 @@ public class RelatedItemsRecommendationRequest extends RecommendationRequest {
     private static final String defaultRecommendationType = "product_detail_page";
     private static final String defaultOptions = null;
 
-    public RelatedItemsRecommendationRequest(Builder builder) {
+    private RelatedItemsRecommendationRequest(Builder builder) {
         this.itemId = builder.itemId;
         this.limit = builder.limit;
         this.recommendationType = builder.recommendationType;

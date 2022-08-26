@@ -15,7 +15,7 @@ public class UserRecommendationRequest extends RecommendationRequest {
 
     private static final String defaultOptions = null;
 
-    public UserRecommendationRequest(Builder builder) {
+    private UserRecommendationRequest(Builder builder) {
         this.userId = builder.userId;
         this.limit = builder.limit;
         this.recommendationType = builder.recommendationType;
