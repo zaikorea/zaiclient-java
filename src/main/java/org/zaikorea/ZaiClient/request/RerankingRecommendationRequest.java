@@ -44,7 +44,7 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
                 throw new IllegalArgumentException("Length of user id must be between 1 and 100.");
             }
             if (!(0 < itemIds.size() && itemIds.size() <= 1_000_000)) {
-                throw new IllegalArgumentException("Length of item_ids must be between 1 and 1000,000.");
+                throw new IllegalArgumentException("Length of item_ids must be between 1 and 1,000,000.");
             }
             itemIds.forEach(id -> {
                 if (id == null || !(0 < id.length() && id.length() <= 100)) {
@@ -58,7 +58,7 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
 
         public Builder limit(int limit) {
             if (!(0 < limit && limit <= 1_000_000)) {
-                throw new IllegalArgumentException("Limit must be between 1 and 1000,000.");
+                throw new IllegalArgumentException("Limit must be between 1 and 1,000,000.");
             }
             this.limit = limit;
 
@@ -66,7 +66,7 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
         }
         public Builder offset(int offset) {
             if (!(0 <= offset && offset <= 1_000_000)) {
-                throw new IllegalArgumentException("Offset must be between 0 and 1000,000.");
+                throw new IllegalArgumentException("Offset must be between 0 and 1,000,000.");
             }
             this.offset = offset;
 
@@ -91,7 +91,7 @@ public class RerankingRecommendationRequest extends RecommendationRequest {
                 jsonString = "Error";
             }
 
-            if (jsonString.length() >= 1000) {
+            if (jsonString.length() > 1000) {
                 throw new IllegalArgumentException("Length of options must be less than 1000 when converted to string.");
             }
             this.options = jsonString;

@@ -713,12 +713,12 @@ class ZaiClientRerankingRecommendationKotlinTest {
         private const val recLogTableSortKey = "timestamp"
         private const val recLogRecommendations = "recommendations"
         private const val userIdExceptionMessage = "Length of user id must be between 1 and 100."
-        private const val itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1000,000."
+        private const val itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1,000,000."
         private const val itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 100."
         private const val recommendationTypeExceptionMessage =
             "Length of recommendation type must be between 1 and 100."
-        private const val limitExceptionMessage = "Limit must be between 1 and 1000,000."
-        private const val offsetExceptionMessage = "Offset must be between 0 and 1000,000."
+        private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
+        private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
         private const val optionsExceptionMessage = "Length of options must be less than 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }

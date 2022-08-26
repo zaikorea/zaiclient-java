@@ -28,11 +28,11 @@ public class ZaiClientRerankingRecommendationJavaTest {
     private static final String recLogRecommendations = "recommendations";
 
     private static final String userIdExceptionMessage = "Length of user id must be between 1 and 100.";
-    private static final String itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1000,000.";
+    private static final String itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1,000,000.";
     private static final String itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 100.";
     private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 100.";
-    private static final String limitExceptionMessage = "Limit must be between 1 and 1000,000.";
-    private static final String offsetExceptionMessage = "Offset must be between 0 and 1000,000.";
+    private static final String limitExceptionMessage = "Limit must be between 1 and 1,000,000.";
+    private static final String offsetExceptionMessage = "Offset must be between 0 and 1,000,000.";
     private static final String optionsExceptionMessage = "Length of options must be less than 1000 when converted to string.";
 
     private ZaiClient testClient;
