@@ -32,8 +32,8 @@ public class ZaiClient {
     private final String zaiClientId;
     private final String zaiSecret;
     private final ZaiAPI zaiAPI;
-    private final int defaultConnectTimeout = 30;
-    private final int defaultReadTimeout = 10;
+    private static final int defaultConnectTimeout = 10;
+    private static final int defaultReadTimeout = 30;
     private int connectTimeout;
     private int readTimeout;
 
@@ -175,8 +175,8 @@ public class ZaiClient {
         public Builder(String zaiClientId, String zaiSecret) {
             this.zaiClientId = zaiClientId;
             this.zaiSecret = zaiSecret;
-            this.connectTimeout = 10;
-            this.readTimeout = 30;
+            this.connectTimeout = defaultConnectTimeout;
+            this.readTimeout = defaultReadTimeout;
         }
 
         public Builder connectTimeout(int seconds) {
