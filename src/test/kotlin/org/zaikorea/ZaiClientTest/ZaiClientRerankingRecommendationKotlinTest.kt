@@ -1,28 +1,22 @@
 package org.zaikorea.ZaiClientTest
 
-import org.zaikorea.ZaiClient.ZaiClient
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import java.util.UUID
-import java.util.HashMap
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest
-import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
-import org.zaikorea.ZaiClient.request.RecommendationRequest
-import org.zaikorea.ZaiClient.response.RecommendationResponse
-import java.io.IOException
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException
-import org.junit.Before
 import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
+import org.zaikorea.ZaiClient.ZaiClient
+import org.zaikorea.ZaiClient.exceptions.ZaiClientException
+import org.zaikorea.ZaiClient.request.RecommendationRequest
 import org.zaikorea.ZaiClient.request.RerankingRecommendationRequest
-import java.util.Collections
-import java.lang.IllegalArgumentException
 import org.zaikorea.ZaiClient.request.UserRecommendationRequest
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-import java.lang.Error
-import java.util.ArrayList
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
+import java.io.IOException
+import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
 class ZaiClientRerankingRecommendationKotlinTest {
@@ -126,9 +120,18 @@ class ZaiClientRerankingRecommendationKotlinTest {
 
     @Before
     fun setup() {
-        testClient = ZaiClient(clientId, clientSecret)
-        incorrectIdClient = ZaiClient("." + clientId, clientSecret)
-        incorrectSecretClient = ZaiClient(clientId, "." + clientSecret)
+        testClient = ZaiClient.Builder(clientId, clientSecret)
+            .connectTimeout(30)
+            .readTimeout(10)
+            .build()
+        incorrectIdClient = ZaiClient.Builder("." + clientId, clientSecret)
+            .connectTimeout(0)
+            .readTimeout(0)
+            .build()
+        incorrectSecretClient = ZaiClient.Builder(clientId, "." + clientSecret)
+            .connectTimeout(-1)
+            .readTimeout(-1)
+            .build()
         ddbClient = DynamoDbClient.builder()
             .region(region)
             .build()
@@ -149,10 +152,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         val recommendationType = "category_page"
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(
-            userId, itemIds, limit, offset,
-            recommendationType
-        )
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .offset(offset)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -165,7 +168,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, limit, offset)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .offset(offset)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -177,7 +183,9 @@ class ZaiClientRerankingRecommendationKotlinTest {
             itemIds.add(generateUUID())
         }
         val limit = generateRandomInteger(1, 10)
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, limit)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -190,10 +198,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val limit = generateRandomInteger(1, 10)
         val recommendationType = "category_page"
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(
-            userId, itemIds, limit,
-            recommendationType
-        )
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -205,7 +213,9 @@ class ZaiClientRerankingRecommendationKotlinTest {
             itemIds.add(generateUUID())
         }
         val recommendationType = "category_page"
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, recommendationType)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -216,7 +226,29 @@ class ZaiClientRerankingRecommendationKotlinTest {
         for (i in 0..49) {
             itemIds.add(generateUUID())
         }
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .build()
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+    }
+
+    @Test
+    fun testGetRerankingRecommendation_7() {
+        val userId = generateUUID()
+        val itemIds: MutableList<String> = ArrayList()
+        for (i in 0..49) {
+            itemIds.add(generateUUID())
+        }
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .options(map)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -230,10 +262,11 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         val recommendationType = "category_page"
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(
-            userId, itemIds, limit, offset,
-            recommendationType
-        )
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -246,7 +279,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, limit, offset)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .offset(offset)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -259,10 +295,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val limit = generateRandomInteger(1, 10)
         val recommendationType = "category_page"
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(
-            userId, itemIds, limit,
-            recommendationType
-        )
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -274,7 +310,9 @@ class ZaiClientRerankingRecommendationKotlinTest {
             itemIds.add(generateUUID())
         }
         val limit = generateRandomInteger(1, 10)
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, limit)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -286,7 +324,9 @@ class ZaiClientRerankingRecommendationKotlinTest {
             itemIds.add(generateUUID())
         }
         val recommendationType = "category_page"
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, recommendationType)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .recommendationType(recommendationType)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -297,7 +337,29 @@ class ZaiClientRerankingRecommendationKotlinTest {
         for (i in 0..49) {
             itemIds.add(generateUUID())
         }
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .build()
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+    }
+
+    @Test
+    fun testGetNullRerankingRecommendation_7() {
+        val userId: String? = null
+        val itemIds: MutableList<String> = ArrayList()
+        for (i in 0..49) {
+            itemIds.add(generateUUID())
+        }
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+            .offset(offset)
+            .recommendationType(recommendationType)
+            .options(map)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -310,7 +372,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, limit, offset)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .offset(offset)
+            .build()
         try {
             incorrectIdClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
@@ -329,7 +394,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, limit, offset)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .offset(offset)
+            .build()
         try {
             incorrectSecretClient!!.getRecommendations(recommendation)
         } catch (e: IOException) {
@@ -349,7 +417,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(userId, itemIds, limit, offset)
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, userIdExceptionMessage)
@@ -368,7 +439,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = 1000001
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(userId, itemIds, limit, offset)
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, limitExceptionMessage)
@@ -387,7 +461,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(20, 40)
         val offset = 1000001
         try {
-            RerankingRecommendationRequest(userId, itemIds, limit, offset)
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, offsetExceptionMessage)
@@ -407,10 +484,11 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(
-                userId, itemIds, limit, offset,
-                recommendationType
-            )
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, recommendationTypeExceptionMessage)
@@ -429,7 +507,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(userId, itemIds, limit, offset)
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, userIdExceptionMessage)
@@ -448,7 +529,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = 0
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(userId, itemIds, limit, offset)
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, limitExceptionMessage)
@@ -467,7 +551,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = -1
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(userId, itemIds, limit, offset)
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, limitExceptionMessage)
@@ -485,7 +572,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val limit = generateRandomInteger(20, 40)
         val offset = 0
-        val recommendation: RecommendationRequest = RerankingRecommendationRequest(userId, itemIds, limit, offset)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
+            .offset(offset)
+            .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
 
@@ -499,7 +589,10 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(20, 40)
         val offset = -1
         try {
-            RerankingRecommendationRequest(userId, itemIds, limit, offset)
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, offsetExceptionMessage)
@@ -519,10 +612,11 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(
-                userId, itemIds, limit, offset,
-                recommendationType
-            )
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, recommendationTypeExceptionMessage)
@@ -542,10 +636,11 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(
-                userId, itemIds, limit, offset,
-                recommendationType
-            )
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, itemIdsExceptionMessage)
@@ -566,10 +661,11 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
-            RerankingRecommendationRequest(
-                userId, itemIds, limit, offset,
-                recommendationType
-            )
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .build()
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, itemIdInListExceptionMessage)
@@ -577,6 +673,36 @@ class ZaiClientRerankingRecommendationKotlinTest {
             Assert.fail()
         }
     }
+
+    @Test
+    fun testGetTooLongOptionsRerankingRecommendation() {
+        val userId = generateUUID()
+        val itemIds: MutableList<String> = ArrayList()
+        for (i in 0..49) {
+            itemIds.add(generateUUID())
+        }
+        val limit = generateRandomInteger(1, 10)
+        val offset = generateRandomInteger(20, 40)
+        val recommendationType = "home_page"
+        val map: MutableMap<String?, Int?> = HashMap()
+        map["call_type"] = 1
+        map["response_type"] = 2
+        map[java.lang.String.join("a", Collections.nCopies(1000, "a"))] = 3
+        try {
+            RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
+                .offset(offset)
+                .recommendationType(recommendationType)
+                .options(map)
+                .build()
+            Assert.fail()
+        } catch (e: IllegalArgumentException) {
+            Assert.assertEquals(e.message, optionsExceptionMessage)
+        } catch (e: Error) {
+            Assert.fail()
+        }
+    }
+
 
     companion object {
         private const val clientId = "test"
@@ -587,12 +713,13 @@ class ZaiClientRerankingRecommendationKotlinTest {
         private const val recLogTableSortKey = "timestamp"
         private const val recLogRecommendations = "recommendations"
         private const val userIdExceptionMessage = "Length of user id must be between 1 and 100."
-        private const val itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1000,000."
+        private const val itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1,000,000."
         private const val itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 100."
         private const val recommendationTypeExceptionMessage =
             "Length of recommendation type must be between 1 and 100."
-        private const val limitExceptionMessage = "Limit must be between 1 and 1000,000."
-        private const val offsetExceptionMessage = "Offset must be between 0 and 1000,000."
+        private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
+        private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
+        private const val optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }
 }

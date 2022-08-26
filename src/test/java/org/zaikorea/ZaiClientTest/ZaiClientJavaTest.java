@@ -231,9 +231,18 @@ public class ZaiClientJavaTest {
 
     @Before
     public void setup() {
-        testClient = new ZaiClient(clientId, clientSecret);
-        incorrectIdClient = new ZaiClient("." + clientId, clientSecret);
-        incorrectSecretClient = new ZaiClient(clientId, "." + clientSecret);
+        testClient = new ZaiClient.Builder(clientId, clientSecret)
+                .connectTimeout(10)
+                .readTimeout(30)
+                .build();
+        incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
+                .connectTimeout(0)
+                .readTimeout(0)
+                .build();
+        incorrectSecretClient = new ZaiClient.Builder(clientId, "." + clientSecret)
+                .connectTimeout(-1)
+                .readTimeout(-1)
+                .build();
         ddbClient = DynamoDbClient.builder()
                 .region(region)
                 .build();

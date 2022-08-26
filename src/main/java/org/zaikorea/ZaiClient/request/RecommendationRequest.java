@@ -24,6 +24,9 @@ public class RecommendationRequest {
     @SerializedName("offset")
     protected int offset;
 
+    @SerializedName("options")
+    protected String options;
+
     public String getPath(String clientId) {
         return "";
     };
@@ -38,6 +41,10 @@ public class RecommendationRequest {
 
     public String getRecommendationType() {
         return recommendationType;
+    }
+
+    public String getOptions() {
+        return options;
     }
 
 }
