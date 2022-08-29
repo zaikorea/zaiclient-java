@@ -181,8 +181,8 @@ public class ZaiClientUserRecommendationJavaTest {
     @Before
     public void setup() {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
-                .connectTimeout(30)
-                .readTimeout(10)
+                .connectTimeout(20)
+                .readTimeout(40)
                 .build();
         incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
                 .connectTimeout(0)

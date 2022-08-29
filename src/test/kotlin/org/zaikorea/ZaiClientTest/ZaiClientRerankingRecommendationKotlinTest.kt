@@ -149,8 +149,8 @@ class ZaiClientRerankingRecommendationKotlinTest {
     @Before
     fun setup() {
         testClient = ZaiClient.Builder(clientId, clientSecret)
-            .connectTimeout(30)
-            .readTimeout(10)
+            .connectTimeout(20)
+            .readTimeout(40)
             .build()
         incorrectIdClient = ZaiClient.Builder("." + clientId, clientSecret)
             .connectTimeout(0)
