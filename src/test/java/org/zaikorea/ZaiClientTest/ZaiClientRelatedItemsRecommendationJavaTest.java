@@ -6,6 +6,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,24 +117,48 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
     }
 
     private void checkSuccessfulGetRelatedRecommendation(RecommendationRequest recommendation, String itemId) {
+        int limit = recommendation.getLimit();
+        int offset = recommendation.getOffset();
+        String recommendationType = recommendation.getRecommendationType();
+        String options = recommendation.getOptions();
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Integer> optionsObj = null;
+        if (options != null) {
+            try {
+                optionsObj = mapper.readValue(options, Map.class);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        if (optionsObj != null) {
+            optionsObj.forEach((k,v) -> builder.append(
+                    k + ":" + v
+            ).append("|"));
+        } else {
+            builder.append("|");
+        }
+        String expectedOptions = builder.toString();
+
         try {
             RecommendationResponse response = testClient.getRecommendations(recommendation);
-            int limit = recommendation.getLimit();
 
-            Map<String, String> logItem = getRecLog(itemId);
-
-            if (itemId == null) {
-                itemId = "null";
-                logItem = getRecLog("null");
+            // Response Testing
+            List<String> responseItems = response.getItems();
+            for (int i = 0; i < recommendation.getLimit(); i++) {
+                String expectedItem = itemId + "|" +
+                        recommendationType + "|" +
+                        expectedOptions +
+                        String.format("ITEM_ID_%d", i+offset);
+                assertEquals(expectedItem, responseItems.get(i));
             }
 
-            // assertNotNull(logItem);
-            // assertNotEquals(logItem.size(), 0);
-            // assertEquals(logItem.get(recLogRecommendations).split(",").length,
-            // response.getItems().size());
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
-            // assertTrue(deleteRecLog(itemId));
+
+            // No log test for related recommendation, DynamoDB partition key is userID
+            // multiple null userIds prevent log testing for related recommendation
 
         } catch (IOException | ZaiClientException e) {
             fail();
@@ -142,8 +168,8 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
     @Before
     public void setup() {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
-                .connectTimeout(30)
-                .readTimeout(10)
+                .connectTimeout(20)
+                .readTimeout(40)
                 .build();
         incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
                 .connectTimeout(0)

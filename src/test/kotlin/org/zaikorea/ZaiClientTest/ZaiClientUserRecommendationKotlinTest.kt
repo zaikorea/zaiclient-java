@@ -1,5 +1,9 @@
 package org.zaikorea.ZaiClientTest
 
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -31,7 +35,7 @@ class ZaiClientUserRecommendationKotlinTest {
         return ThreadLocalRandom.current().nextInt(min, max + 1)
     }
 
-    private fun getRecLog(partitionValue: String?): Map<String, String>? {
+    private fun getRecLog(partitionValue: String): Map<String, String>? {
         val partitionAlias = "#pk"
         val attrNameAlias = HashMap<String, String>()
         attrNameAlias[partitionAlias] = recLogTablePartitionKey
@@ -85,32 +89,55 @@ class ZaiClientUserRecommendationKotlinTest {
     }
 
     private fun checkSuccessfulGetUserRecommendation(recommendation: RecommendationRequest, userId: String?) {
-        var userId = userId
+        val limit = recommendation.limit
+        val offset = recommendation.offset
+        val recommendationType = recommendation.recommendationType
+        val options = recommendation.options
+        val mapper = ObjectMapper().registerModule(KotlinModule())
+        var optionsObj: Map<String, Int>? = null;
+        if (options != null) {
+            try {
+                optionsObj = mapper.readValue(options);
+            } catch (e: JsonProcessingException) {
+                throw RuntimeException(e)
+            }
+        }
+        val builder = StringBuilder()
+        optionsObj?.forEach { (k: String, v: Int) ->
+            builder.append(
+                "$k:$v"
+            ).append("|")
+        }
+            ?: builder.append("|")
+        val expectedOptions = builder.toString()
         try {
             val response = testClient!!.getRecommendations(recommendation)
-            val limit = recommendation.limit
 
-            if (userId == null) {
-                userId = "null"
-                Assert.assertEquals(response.items.size.toLong(), limit.toLong())
-                Assert.assertEquals(response.count.toLong(), limit.toLong())
-
-                return ;
+            // Response Testing
+            val responseItems = response.items
+            for (i in 0 until recommendation.limit) {
+                val expectedItem = (userId ?: "None") + "|" +
+                        recommendationType + "|" +
+                        expectedOptions + String.format("ITEM_ID_%d", i + offset)
+                Assert.assertEquals(expectedItem, responseItems[i])
             }
-
-            var logItem = getRecLog(userId)
-
-            Assert.assertNotNull(logItem);
-            if (logItem != null) {
-                Assert.assertNotEquals(logItem.size.toLong(), 0)
-                Assert.assertEquals(
-                    logItem.get(recLogRecommendations)!!.split(",").size,
-                    response.getItems().size
-                )
-            };
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
             Assert.assertEquals(response.count.toLong(), limit.toLong())
-            Assert.assertTrue(deleteRecLog(userId));
+
+            // Log testing unavailable when userId is null
+            if (userId == null) return
+
+            // Check log
+            val logItem = getRecLog(userId)
+            Assert.assertNotNull(logItem)
+            Assert.assertNotEquals(logItem!!.size.toLong(), 0)
+            Assert.assertEquals(
+                logItem[recLogRecommendations]!!.split(",".toRegex()).dropLastWhile { it.isEmpty() }
+                    .toTypedArray().size.toLong(),
+                response.items.size
+                    .toLong()
+            )
+            Assert.assertTrue(deleteRecLog(userId))
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
@@ -122,7 +149,7 @@ class ZaiClientUserRecommendationKotlinTest {
     fun setup() {
         testClient = ZaiClient.Builder(clientId, clientSecret)
             .connectTimeout(20)
-            .readTimeout(5)
+            .readTimeout(40)
             .build()
         incorrectIdClient = ZaiClient.Builder("." + clientId, clientSecret)
             .connectTimeout(0)
@@ -249,7 +276,7 @@ class ZaiClientUserRecommendationKotlinTest {
 
     @Test
     fun testGetNullUserRecommendation_5() {
-        val userId = null
+        val userId: String? = null
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         val recommendationType = "home_page"
@@ -493,7 +520,8 @@ class ZaiClientUserRecommendationKotlinTest {
     companion object {
         private const val clientId = "test"
         private const val clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for
-                                                                                       // testing purposes only
+
+        // testing purposes only
         private const val recLogTableName = "rec_log_test"
         private const val recLogTablePartitionKey = "user_id"
         private const val recLogTableSortKey = "timestamp"

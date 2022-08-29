@@ -31,6 +31,18 @@ public class RecommendationRequest {
         return "";
     };
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getItemId() {
+        return itemId;
+    }
+
+    public List<String> getItemIds() {
+        return itemIds;
+    }
+
     public int getLimit() {
         return limit;
     }
