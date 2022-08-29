@@ -22,7 +22,7 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
-class ZaiClientUserRecommendationKotlin2Test {
+class ZaiClientUserRecommendationKotlinTest {
     private var testClient: ZaiClient? = null
     private var incorrectIdClient: ZaiClient? = null
     private var incorrectSecretClient: ZaiClient? = null
