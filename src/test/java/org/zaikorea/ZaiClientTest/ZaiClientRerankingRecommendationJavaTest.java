@@ -6,6 +6,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,26 +118,58 @@ public class ZaiClientRerankingRecommendationJavaTest {
     }
 
     private void checkSuccessfulGetRerankingRecommendation(RecommendationRequest recommendation, String userId) {
+        int limit = recommendation.getLimit();
+        int offset = recommendation.getOffset();
+        String recommendationType = recommendation.getRecommendationType();
+        String options = recommendation.getOptions();
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Integer> optionsObj = null;
+        if (options != null) {
+            try {
+                optionsObj = mapper.readValue(options, Map.class);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        if (optionsObj != null) {
+            optionsObj.forEach((k,v) -> builder.append(
+                    k + ":" + v
+            ).append("|"));
+        } else {
+            builder.append("|");
+        }
+        String expectedOptions = builder.toString();
+
         try {
             RecommendationResponse response = testClient.getRecommendations(recommendation);
-            int limit = recommendation.getLimit();
 
-            if (userId == null) {
-                userId = "null";
-                assertEquals(response.getItems().size(), limit);
-                assertEquals(response.getCount(), limit);
-
-                return ;
+            // Response Testing
+            List<String> responseItems = response.getItems();
+            for (int i = 0; i < recommendation.getLimit(); i++) {
+                String expectedItem = (userId != null ? userId : "None") + "|" +
+                        recommendationType + "|" +
+                        expectedOptions +
+                        String.format("ITEM_ID_%d", i+offset);
+                assertEquals(expectedItem, responseItems.get(i));
             }
 
-            Map<String, String> logItem = getRecLog(userId);
-
-            assertNotNull(logItem);
-            assertNotEquals(logItem.size(), 0);
-            assertEquals(logItem.get(recLogRecommendations).split(",").length,
-            response.getItems().size());
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
+
+            // Log testing unavailable when userId is null
+            if (userId == null)
+                return ;
+
+            // Check log
+            Map<String, String> logItem = getRecLog(userId);
+            assertNotNull(logItem);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(
+                            recLogRecommendations).split(",").length,
+                    response.getItems().size()
+            );
             assertTrue(deleteRecLog(userId));
 
         } catch (IOException | ZaiClientException e) {
@@ -172,7 +206,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -191,7 +225,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -208,7 +242,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
 
@@ -223,7 +257,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         String recommendationType = "category_page";
@@ -240,7 +274,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         String recommendationType = "category_page";
 
@@ -255,7 +289,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
 
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
@@ -268,7 +302,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -291,7 +325,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -310,7 +344,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -327,7 +361,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         String recommendationType = "category_page";
@@ -343,7 +377,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
 
@@ -358,7 +392,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         String recommendationType = "category_page";
 
@@ -373,7 +407,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
 
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
@@ -386,7 +420,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -409,7 +443,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -432,7 +466,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -455,7 +489,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = String.join("a", Collections.nCopies(101, "a"));
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -477,7 +511,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = 1_000_001;
         int offset = generateRandomInteger(20, 40);
@@ -500,7 +534,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(20, 40);
         int offset = 1_000_001;
@@ -523,7 +557,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         String recommendationType = String.join("a", Collections.nCopies(101, "a"));
         int limit = generateRandomInteger(1, 10);
@@ -547,7 +581,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = "";
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -569,7 +603,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = 0;
         int offset = generateRandomInteger(20, 40);
@@ -592,7 +626,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = -1;
         int offset = generateRandomInteger(20, 40);
@@ -615,7 +649,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(20, 40);
         int offset = 0;
@@ -632,7 +666,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(20, 40);
         int offset = -1;
@@ -655,7 +689,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         String recommendationType = "";
         int limit = generateRandomInteger(1, 10);
@@ -679,7 +713,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 1_000_001; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         String recommendationType = "";
         int limit = generateRandomInteger(1, 10);
@@ -703,7 +737,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         itemIds.add(String.join("a", Collections.nCopies(101, "a")));
         String recommendationType = "";
@@ -728,7 +762,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(generateUUID());
+            itemIds.add(String.format("ITEM_ID_%d",i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);

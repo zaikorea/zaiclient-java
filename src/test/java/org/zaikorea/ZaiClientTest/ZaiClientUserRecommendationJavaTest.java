@@ -148,15 +148,6 @@ public class ZaiClientUserRecommendationJavaTest {
 
             // Response Testing
             List<String> responseItems = response.getItems();
-
-            // Use java lambda
-                // convert UserId to None if Null
-                // convert Options to empty
-                // for loop 0 to limit
-                // starting number should be offset
-                // emp
-            // should be different for each recommendation type
-
             for (int i = 0; i < recommendation.getLimit(); i++) {
                 String expectedItem = (userId != null ? userId : "None") + "|" +
                         recommendationType + "|" +
@@ -168,6 +159,7 @@ public class ZaiClientUserRecommendationJavaTest {
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
 
+            // Log testing unavailable when userId is null
             if (userId == null)
                 return ;
 

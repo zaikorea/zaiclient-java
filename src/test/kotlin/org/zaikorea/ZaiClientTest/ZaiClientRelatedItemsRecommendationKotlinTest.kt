@@ -1,5 +1,9 @@
 package org.zaikorea.ZaiClientTest
 
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -31,7 +35,7 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
         return ThreadLocalRandom.current().nextInt(min, max + 1)
     }
 
-    private fun getRecLog(partitionValue: String?): Map<String, String>? {
+    private fun getRecLog(partitionValue: String): Map<String, String>? {
         val partitionAlias = "#pk"
         val attrNameAlias = HashMap<String, String>()
         attrNameAlias[partitionAlias] = recLogTablePartitionKey
@@ -85,23 +89,43 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
     }
 
     private fun checkSuccessfulGetRelatedRecommendation(recommendation: RecommendationRequest, itemId: String) {
-        var itemId: String? = itemId
+        val limit = recommendation.limit
+        val offset = recommendation.offset
+        val recommendationType = recommendation.recommendationType
+        val options = recommendation.options
+        val mapper = ObjectMapper().registerModule(KotlinModule())
+        var optionsObj: Map<String, Int>? = null
+        if (options != null) {
+            try {
+                optionsObj = mapper.readValue(options);
+            } catch (e: JsonProcessingException) {
+                throw RuntimeException(e)
+            }
+        }
+        val builder = StringBuilder()
+        optionsObj?.forEach { (k: String, v: Int) ->
+            builder.append(
+                "$k:$v"
+            ).append("|")
+        }
+            ?: builder.append("|")
+        val expectedOptions = builder.toString()
         try {
             val response = testClient!!.getRecommendations(recommendation)
-            val limit = recommendation.limit
-            var logItem = getRecLog(itemId)
-            if (itemId == null) {
-                itemId = "null"
-                logItem = getRecLog("null")
-            }
 
-            // assertNotNull(logItem);
-            // assertNotEquals(logItem.size(), 0);
-            // assertEquals(logItem.get(recLogRecommendations).split(",").length,
-            // response.getItems().size());
+            // Response Testing
+            val responseItems = response.items
+            for (i in 0 until recommendation.limit) {
+                val expectedItem = itemId + "|" +
+                        recommendationType + "|" +
+                        expectedOptions + String.format("ITEM_ID_%d", i + offset)
+                Assert.assertEquals(expectedItem, responseItems[i])
+            }
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
             Assert.assertEquals(response.count.toLong(), limit.toLong())
-            // assertTrue(deleteRecLog(itemId));
+
+            // No log test for related recommendation, DynamoDB partition key is userID
+            // multiple null userIds prevent log testing for related recommendation
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
@@ -141,6 +165,7 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
         val recommendationType = "product_detail_page"
         val recommendation: RecommendationRequest = RelatedItemsRecommendationRequest.Builder(itemId, limit)
             .offset(offset)
+            .recommendationType(recommendationType)
             .build()
         checkSuccessfulGetRelatedRecommendation(recommendation, itemId)
     }
@@ -437,11 +462,11 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
         }
     }
 
-
     companion object {
         private const val clientId = "test"
         private const val clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for
-                                                                                       // testing purposes only
+
+        // testing purposes only
         private const val recLogTableName = "rec_log_test"
         private const val recLogTablePartitionKey = "user_id"
         private const val recLogTableSortKey = "timestamp"
@@ -452,7 +477,8 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
             "Length of recommendation type must be between 1 and 100."
         private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
         private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
-        private const val optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string."
+        private const val optionsExceptionMessage =
+            "Length of options must be less than or equal to 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }
 }

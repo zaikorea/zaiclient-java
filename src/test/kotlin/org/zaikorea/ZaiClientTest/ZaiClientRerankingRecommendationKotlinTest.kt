@@ -1,5 +1,9 @@
 package org.zaikorea.ZaiClientTest
 
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -32,7 +36,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         return ThreadLocalRandom.current().nextInt(min, max + 1)
     }
 
-    private fun getRecLog(partitionValue: String?): Map<String, String>? {
+    private fun getRecLog(partitionValue: String): Map<String, String>? {
         val partitionAlias = "#pk"
         val attrNameAlias = HashMap<String, String>()
         attrNameAlias[partitionAlias] = recLogTablePartitionKey
@@ -86,31 +90,55 @@ class ZaiClientRerankingRecommendationKotlinTest {
     }
 
     private fun checkSuccessfulGetRerankingRecommendation(recommendation: RecommendationRequest, userId: String?) {
-        var userId = userId
+        val limit = recommendation.limit
+        val offset = recommendation.offset
+        val recommendationType = recommendation.recommendationType
+        val options = recommendation.options
+        val mapper = ObjectMapper().registerModule(KotlinModule())
+        var optionsObj: Map<String, Int>? = null
+        if (options != null) {
+            try {
+                optionsObj = mapper.readValue(options);
+            } catch (e: JsonProcessingException) {
+                throw RuntimeException(e)
+            }
+        }
+        val builder = StringBuilder()
+        optionsObj?.forEach { (k: String, v: Int) ->
+            builder.append(
+                "$k:$v"
+            ).append("|")
+        }
+            ?: builder.append("|")
+        val expectedOptions = builder.toString()
         try {
             val response = testClient!!.getRecommendations(recommendation)
-            val limit = recommendation.limit
-            if (userId == null) {
-                userId = "null"
-                Assert.assertEquals(response.items.size.toLong(), limit.toLong())
-                Assert.assertEquals(response.count.toLong(), limit.toLong())
 
-                return ;
+            // Response Testing
+            val responseItems = response.items
+            for (i in 0 until recommendation.limit) {
+                val expectedItem = (userId ?: "None") + "|" +
+                        recommendationType + "|" +
+                        expectedOptions + String.format("ITEM_ID_%d", i + offset)
+                Assert.assertEquals(expectedItem, responseItems[i])
             }
-
-            var logItem = getRecLog(userId)
-
-            Assert.assertNotNull(logItem);
-            if (logItem != null) {
-                Assert.assertNotEquals(logItem.size.toLong(), 0)
-                Assert.assertEquals(
-                    logItem.get(recLogRecommendations)!!.split(",").size,
-                    response.getItems().size
-                )
-            };
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
             Assert.assertEquals(response.count.toLong(), limit.toLong())
-            Assert.assertTrue(deleteRecLog(userId));
+
+            // Log testing unavailable when userId is null
+            if (userId == null) return
+
+            // Check log
+            val logItem = getRecLog(userId)
+            Assert.assertNotNull(logItem)
+            Assert.assertNotEquals(logItem!!.size.toLong(), 0)
+            Assert.assertEquals(
+                logItem[recLogRecommendations]!!.split(",".toRegex()).dropLastWhile { it.isEmpty() }
+                    .toTypedArray().size.toLong(),
+                response.items.size
+                    .toLong()
+            )
+            Assert.assertTrue(deleteRecLog(userId))
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
@@ -147,7 +175,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -155,6 +183,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .limit(limit)
             .offset(offset)
+            .recommendationType(recommendationType)
             .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
@@ -164,7 +193,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -180,7 +209,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
@@ -194,7 +223,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val recommendationType = "category_page"
@@ -210,7 +239,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val recommendationType = "category_page"
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
@@ -224,7 +253,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .build()
@@ -236,7 +265,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -257,7 +286,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -275,7 +304,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -291,13 +320,12 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val recommendationType = "category_page"
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .limit(limit)
-            .recommendationType(recommendationType)
             .build()
         checkSuccessfulGetRerankingRecommendation(recommendation, userId)
     }
@@ -307,7 +335,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
@@ -321,7 +349,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val recommendationType = "category_page"
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
@@ -335,7 +363,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .build()
@@ -347,7 +375,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -368,7 +396,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -390,7 +418,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -412,7 +440,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = java.lang.String.join("a", Collections.nCopies(101, "a"))
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -434,7 +462,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = 1000001
         val offset = generateRandomInteger(20, 40)
@@ -456,7 +484,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(20, 40)
         val offset = 1000001
@@ -478,7 +506,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val recommendationType = java.lang.String.join("a", Collections.nCopies(101, "a"))
         val limit = generateRandomInteger(1, 10)
@@ -502,7 +530,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = ""
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -524,7 +552,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = 0
         val offset = generateRandomInteger(20, 40)
@@ -546,7 +574,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = -1
         val offset = generateRandomInteger(20, 40)
@@ -568,7 +596,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(20, 40)
         val offset = 0
@@ -584,7 +612,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(20, 40)
         val offset = -1
@@ -606,7 +634,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val recommendationType = ""
         val limit = generateRandomInteger(1, 10)
@@ -629,8 +657,8 @@ class ZaiClientRerankingRecommendationKotlinTest {
     fun testGetTooBigItemIdsRecommendation() {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
-        for (i in 0..1000000) {
-            itemIds.add(generateUUID())
+        for (i in 0..1000001 - 1) {
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val recommendationType = ""
         val limit = generateRandomInteger(1, 10)
@@ -654,7 +682,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         itemIds.add(java.lang.String.join("a", Collections.nCopies(101, "a")))
         val recommendationType = ""
@@ -679,7 +707,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val userId = generateUUID()
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
-            itemIds.add(generateUUID())
+            itemIds.add(String.format("ITEM_ID_%d", i))
         }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -703,11 +731,11 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
     }
 
-
     companion object {
         private const val clientId = "test"
         private const val clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k" // this secret key is for
-                                                                                       // testing purposes only
+
+        // testing purposes only
         private const val recLogTableName = "rec_log_test"
         private const val recLogTablePartitionKey = "user_id"
         private const val recLogTableSortKey = "timestamp"
@@ -719,7 +747,8 @@ class ZaiClientRerankingRecommendationKotlinTest {
             "Length of recommendation type must be between 1 and 100."
         private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
         private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
-        private const val optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string."
+        private const val optionsExceptionMessage =
+            "Length of options must be less than or equal to 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }
 }
