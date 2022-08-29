@@ -6,6 +6,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,28 +119,66 @@ public class ZaiClientUserRecommendationJavaTest {
     }
 
     private void checkSuccessfulGetUserRecommendation(RecommendationRequest recommendation, String userId) {
+        int limit = recommendation.getLimit();
+        int offset = recommendation.getOffset();
+        String recommendationType = recommendation.getRecommendationType();
+        String options = recommendation.getOptions();
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Integer> optionsObj = null;
+        if (options != null) {
+            try {
+                optionsObj = mapper.readValue(options, Map.class);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        if (optionsObj != null) {
+            optionsObj.forEach((k, v) -> builder.append(
+                    k + ":" + v
+            ).append("|"));
+        } else {
+            builder.append("|");
+        }
+        String expectedOptions = builder.toString();
+
         try {
             RecommendationResponse response = testClient.getRecommendations(recommendation);
-            int limit = recommendation.getLimit();
 
-            if (userId == null) {
-                userId = "null";
-                assertEquals(response.getItems().size(), limit);
-                assertEquals(response.getCount(), limit);
+            // Response Testing
+            List<String> responseItems = response.getItems();
 
-                return ;
+            // Use java lambda
+                // convert UserId to None if Null
+                // convert Options to empty
+                // for loop 0 to limit
+                // starting number should be offset
+                // emp
+            // should be different for each recommendation type
+
+            for (int i = 0; i < recommendation.getLimit(); i++) {
+                String expectedItem = (userId != null ? userId : "None") + "|" +
+                        recommendationType + "|" +
+                        expectedOptions +
+                        String.format("ITEM_ID_%d", i+offset);
+                assertEquals(expectedItem, responseItems.get(i));
             }
 
-            Map<String, String> logItem = getRecLog(userId);
+            assertEquals(response.getItems().size(), limit);
+            assertEquals(response.getCount(), limit);
 
+            if (userId == null)
+                return ;
+
+            // Check log
+            Map<String, String> logItem = getRecLog(userId);
             assertNotNull(logItem);
             assertNotEquals(logItem.size(), 0);
             assertEquals(logItem.get(
-                recLogRecommendations).split(",").length,
-                response.getItems().size()
+                            recLogRecommendations).split(",").length,
+                    response.getItems().size()
             );
-            assertEquals(response.getItems().size(), limit);
-            assertEquals(response.getCount(), limit);
             assertTrue(deleteRecLog(userId));
 
         } catch (IOException | ZaiClientException e) {
