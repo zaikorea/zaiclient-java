@@ -249,7 +249,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -264,7 +264,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -306,7 +306,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -321,7 +321,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -363,7 +363,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -378,7 +378,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -428,7 +428,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -443,7 +443,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -493,7 +493,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -508,7 +508,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -561,7 +561,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -577,7 +577,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -633,7 +633,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -649,7 +649,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -695,7 +695,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -710,7 +710,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 

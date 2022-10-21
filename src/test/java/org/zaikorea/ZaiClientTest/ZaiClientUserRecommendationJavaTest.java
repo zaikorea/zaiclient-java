@@ -149,10 +149,7 @@ public class ZaiClientUserRecommendationJavaTest {
             // Response Testing
             List<String> responseItems = response.getItems();
             for (int i = 0; i < recommendation.getLimit(); i++) {
-                String expectedItem = (userId != null ? userId : "None") + "|" +
-                        recommendationType + "|" +
-                        expectedOptions +
-                        String.format("ITEM_ID_%d", i+offset);
+                String expectedItem = String.format("ITEM_ID_%d", i+offset);
                 assertEquals(expectedItem, responseItems.get(i));
             }
 
@@ -350,7 +347,7 @@ public class ZaiClientUserRecommendationJavaTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 404);
+            assertEquals(401, e.getHttpStatusCode());
         }
     }
 
@@ -368,7 +365,7 @@ public class ZaiClientUserRecommendationJavaTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 401);
+            assertEquals(401, e.getHttpStatusCode());
         }
     }
 

@@ -1,6 +1,7 @@
 package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -28,6 +29,8 @@ public class ZaiClientJavaTest {
     private static final String eventTableItemIdKey = "item_id";
     private static final String eventTableEventTypeKey = "event_type";
     private static final String eventTableEventValueKey = "event_value";
+
+    private static final String incorrectCustomEndpointMsg = "Only alphanumeric characters are allowed for custom endpoint.";
 
     private ZaiClient testClient;
     private ZaiClient incorrectIdClient;
@@ -251,6 +254,16 @@ public class ZaiClientJavaTest {
     @After
     public void cleanup() {
         ddbClient.close();
+    }
+
+    public void testIncorrectClient() {
+        try {
+           ZaiClient incorrectCustomEndpointClient =  new ZaiClient.Builder(clientId, clientSecret)
+                   .customEndpoint("-@dev")
+                   .build();
+        } catch(InvalidParameterException e) {
+            assertEquals(e.getMessage(), incorrectCustomEndpointMsg);
+        }
     }
 
     @Test

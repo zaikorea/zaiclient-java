@@ -116,9 +116,7 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
             // Response Testing
             val responseItems = response.items
             for (i in 0 until recommendation.limit) {
-                val expectedItem = itemId + "|" +
-                        recommendationType + "|" +
-                        expectedOptions + String.format("ITEM_ID_%d", i + offset)
+                val expectedItem = String.format("ITEM_ID_%d", i + offset)
                 Assert.assertEquals(expectedItem, responseItems[i])
             }
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
@@ -250,7 +248,7 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 404)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -267,7 +265,7 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 

@@ -25,8 +25,7 @@ public class UserRecommendationRequest extends RecommendationRequest {
 
     @Override
     public String getPath(String clientId) {
-        return String.format(Config.mlApiEndPoint +
-                Config.mlApiPathPrefix +
+        return String.format(Config.mlApiPathPrefix +
                 Config.userRecommendationPathPrefix, clientId);
     }
 
