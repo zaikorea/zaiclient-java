@@ -31,6 +31,7 @@ public class ZaiClientJavaTest {
     private static final String eventTableEventValueKey = "event_value";
 
     private static final String incorrectCustomEndpointMsg = "Only alphanumeric characters are allowed for custom endpoint.";
+    private static final String longLengthCustomEndpointMsg = "Custom endpoint should be less than or equal to 10.";
 
     private ZaiClient testClient;
     private ZaiClient incorrectIdClient;
@@ -256,13 +257,27 @@ public class ZaiClientJavaTest {
         ddbClient.close();
     }
 
-    public void testIncorrectClient() {
+    @Test
+    public void testIncorrectCustomEndpointClient_1() {
         try {
            ZaiClient incorrectCustomEndpointClient =  new ZaiClient.Builder(clientId, clientSecret)
                    .customEndpoint("-@dev")
                    .build();
+           fail();
         } catch(InvalidParameterException e) {
             assertEquals(e.getMessage(), incorrectCustomEndpointMsg);
+        }
+    }
+
+    @Test
+    public void testIncorrectCustomEndpointClient_2() {
+        try {
+            ZaiClient incorrectCustomEndpointClient =  new ZaiClient.Builder(clientId, clientSecret)
+                    .customEndpoint("abcdefghijklmnop")
+                    .build();
+            fail();
+        } catch(InvalidParameterException e) {
+            assertEquals(e.getMessage(), longLengthCustomEndpointMsg);
         }
     }
 

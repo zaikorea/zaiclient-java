@@ -1,6 +1,7 @@
 package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -8,6 +9,9 @@ import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +25,64 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class ZaiClientRelatedItemsRecommendationJavaTest {
+
+    class Metadata {
+
+        @SerializedName("user_id")
+        public String userId;
+
+        @SerializedName("item_id")
+        public String itemId;
+
+        @SerializedName("item_ids")
+        public List<String> itemIds;
+
+        @SerializedName("limit")
+        public Integer limit;
+
+        @SerializedName("offset")
+        public Integer offset;
+
+        @SerializedName("options")
+        public Map<String, Integer> options;
+
+        @SerializedName("call_type")
+        public String callType;
+
+        @SerializedName("recommendation_type")
+        public String recommendationType;
+
+        public Metadata() {
+            this.offset = 0;
+            this.options = new HashMap<>();
+            this.callType = "related-items";
+            this.recommendationType = "product_detail_page";
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+
+            try {
+                for (Field field: obj.getClass().getFields()) {
+                    if (field.get(obj) != null && field.get(obj).equals(field.get(this)))
+                        continue;
+                    else {
+                        if (field.get(obj) == null && field.get(this) == null)
+                            continue;
+                        else
+                            return false;
+                    }
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                System.out.println(e.getMessage());
+
+                return false;
+            }
+
+            return true;
+        }
+    }
+
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for
                                                                                               // testing purposes only
@@ -116,30 +178,10 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
         return true;
     }
 
-    private void checkSuccessfulGetRelatedRecommendation(RecommendationRequest recommendation, String itemId) {
+    private void checkSuccessfulGetRelatedRecommendation(RecommendationRequest recommendation, String itemId, Metadata expectedMetadata) {
         int limit = recommendation.getLimit();
         int offset = recommendation.getOffset();
-        String recommendationType = recommendation.getRecommendationType();
-        String options = recommendation.getOptions();
-
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Integer> optionsObj = null;
-        if (options != null) {
-            try {
-                optionsObj = mapper.readValue(options, Map.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        StringBuilder builder = new StringBuilder();
-        if (optionsObj != null) {
-            optionsObj.forEach((k,v) -> builder.append(
-                    k + ":" + v
-            ).append("|"));
-        } else {
-            builder.append("|");
-        }
-        String expectedOptions = builder.toString();
+        Gson gson = new Gson();
 
         try {
             RecommendationResponse response = testClient.getRecommendations(recommendation);
@@ -150,7 +192,9 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
                 String expectedItem = String.format("ITEM_ID_%d", i+offset);
                 assertEquals(expectedItem, responseItems.get(i));
             }
-
+            // Metadata Testing
+            Metadata metadata = gson.fromJson(response.getMetadata(), Metadata.class);
+            assertEquals(expectedMetadata, metadata);
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
 
@@ -188,6 +232,7 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
 
     @Test
     public void testGetRelatedRecommendation_1() {
+        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -197,11 +242,23 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .build();
-        checkSuccessfulGetRelatedRecommendation(recommendation, itemId);
+
+        try {
+            metadata = new Metadata();
+            metadata.itemId = itemId;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            metadata.recommendationType = recommendationType;
+            checkSuccessfulGetRelatedRecommendation(recommendation, itemId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetRelatedRecommendation_2() {
+        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -209,21 +266,40 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
         RecommendationRequest recommendation = new RelatedItemsRecommendationRequest.Builder(itemId, limit)
                 .offset(offset)
                 .build();
-        checkSuccessfulGetRelatedRecommendation(recommendation, itemId);
+
+        try {
+            metadata = new Metadata();
+            metadata.itemId = itemId;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            checkSuccessfulGetRelatedRecommendation(recommendation, itemId, metadata);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
     public void testGetRelatedRecommendation_3() {
+        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
 
         RecommendationRequest recommendation = new RelatedItemsRecommendationRequest.Builder(itemId, limit)
                 .build();
-        checkSuccessfulGetRelatedRecommendation(recommendation, itemId);
+
+        try {
+            metadata = new Metadata();
+            metadata.itemId = itemId;
+            metadata.limit = limit;
+            checkSuccessfulGetRelatedRecommendation(recommendation, itemId, metadata);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
     public void testGetRelatedRecommendation_4() {
+        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         String recommendationType = "product_detail_page";
@@ -231,11 +307,20 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
         RecommendationRequest recommendation = new RelatedItemsRecommendationRequest.Builder(itemId, limit)
                 .recommendationType(recommendationType)
                 .build();
-        checkSuccessfulGetRelatedRecommendation(recommendation, itemId);
+
+        try {
+            metadata = new Metadata();
+            metadata.itemId = itemId;
+            metadata.limit = limit;
+            checkSuccessfulGetRelatedRecommendation(recommendation, itemId, metadata);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
     public void testGetRelatedRecommendation_5() {
+        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -250,7 +335,18 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
                 .recommendationType(recommendationType)
                 .options(map)
                 .build();
-        checkSuccessfulGetRelatedRecommendation(recommendation, itemId);
+
+        try {
+            metadata = new Metadata();
+            metadata.itemId = itemId;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            metadata.options = map;
+            metadata.recommendationType = recommendationType;
+            checkSuccessfulGetRelatedRecommendation(recommendation, itemId, metadata);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
@@ -436,6 +532,7 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
 
     @Test
     public void testGetZeroOffsetRecommendation() {
+        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(20, 40);
         int offset = 0;
@@ -443,7 +540,16 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
         RecommendationRequest recommendation = new RelatedItemsRecommendationRequest.Builder(itemId, limit)
                 .offset(offset)
                 .build();
-        checkSuccessfulGetRelatedRecommendation(recommendation, itemId);
+
+        try {
+            metadata = new Metadata();
+            metadata.itemId = itemId;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            checkSuccessfulGetRelatedRecommendation(recommendation, itemId, metadata);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test

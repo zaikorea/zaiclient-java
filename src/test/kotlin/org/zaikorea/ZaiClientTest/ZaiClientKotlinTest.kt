@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import java.io.IOException
+import java.security.InvalidParameterException
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
@@ -28,6 +29,8 @@ class ZaiClientKotlinTest {
             val utcnow = Instant.now().epochSecond
             return java.lang.Long.toString(utcnow)
         }
+    private val incorrectCustomEndpointMsg = "Only alphanumeric characters are allowed for custom endpoint."
+    private val longLengthCustomEndpointMsg = "Custom endpoint should be less than or equal to 10."
 
     private fun generateUUID(): String {
         return UUID.randomUUID().toString()
@@ -219,6 +222,31 @@ class ZaiClientKotlinTest {
     @After
     fun cleanup() {
         ddbClient!!.close()
+    }
+
+    @Test
+    fun testIncorrectCustomEndpointClient_1() {
+        val incorrectCustomEndpointClient: ZaiClient
+        try {
+            incorrectCustomEndpointClient = ZaiClient.Builder(clientId, clientSecret)
+                .customEndpoint("-@dev")
+                .build();
+            Assert.fail()
+        } catch(e: InvalidParameterException) {
+            Assert.assertEquals(e.message, incorrectCustomEndpointMsg)
+        }
+    }
+
+    fun testIncorrectCustomEndpointClient_2() {
+        val incorrectCustomEndpointClient: ZaiClient
+        try {
+            incorrectCustomEndpointClient = ZaiClient.Builder(clientId, clientSecret)
+                .customEndpoint("abcdefghijklmnop")
+                .build();
+            Assert.fail()
+        } catch(e: InvalidParameterException) {
+            Assert.assertEquals(e.message, longLengthCustomEndpointMsg)
+        }
     }
 
     @Test

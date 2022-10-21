@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -19,10 +21,63 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import java.io.IOException
+import java.security.InvalidParameterException
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import kotlin.reflect.full.memberProperties
 
 class ZaiClientUserRecommendationKotlinTest {
+
+    data class Metadata(
+        @SerializedName("user_id")
+        var userId: String? = null,
+
+        @SerializedName("item_id")
+        var itemId: String? = null,
+
+        @SerializedName("item_ids")
+        var itemIds: List<String>? = null,
+
+        @SerializedName("limit")
+        var limit: Int? = null,
+
+        @SerializedName("offset")
+        var offset: Int? = 0,
+
+        @SerializedName("options")
+        var options: MutableMap<String?, Int?> = HashMap<String?, Int?>(),
+
+        @SerializedName("call_type")
+        var callType: String? = "user-recommendations",
+
+        @SerializedName("recommendation_type")
+        var recommendationType: String? = "homepage"
+    ) {
+
+        override fun equals(other: Any?): Boolean {
+            var otherMetadata: Metadata
+
+            if (other is Metadata)
+                otherMetadata = other
+            else
+                throw InvalidParameterException("Other must be metadata")
+
+            for (props in Metadata::class.memberProperties) {
+                if (props.get(otherMetadata) != null && props.get(otherMetadata) == props.get(this))
+                    continue
+                else {
+                    if (props.get(otherMetadata) == null && props.get(this) == null)
+                        continue
+                    else
+                        return false
+                }
+            }
+
+            return true;
+        }
+
+    }
+
     private var testClient: ZaiClient? = null
     private var incorrectIdClient: ZaiClient? = null
     private var incorrectSecretClient: ZaiClient? = null
@@ -88,28 +143,10 @@ class ZaiClientUserRecommendationKotlinTest {
         return true
     }
 
-    private fun checkSuccessfulGetUserRecommendation(recommendation: RecommendationRequest, userId: String?) {
+    private fun checkSuccessfulGetUserRecommendation(recommendation: RecommendationRequest, userId: String?, expectedMetadata: Metadata) {
         val limit = recommendation.limit
         val offset = recommendation.offset
-        val recommendationType = recommendation.recommendationType
-        val options = recommendation.options
-        val mapper = ObjectMapper().registerModule(KotlinModule())
-        var optionsObj: Map<String, Int>? = null;
-        if (options != null) {
-            try {
-                optionsObj = mapper.readValue(options);
-            } catch (e: JsonProcessingException) {
-                throw RuntimeException(e)
-            }
-        }
-        val builder = StringBuilder()
-        optionsObj?.forEach { (k: String, v: Int) ->
-            builder.append(
-                "$k:$v"
-            ).append("|")
-        }
-            ?: builder.append("|")
-        val expectedOptions = builder.toString()
+
         try {
             val response = testClient!!.getRecommendations(recommendation)
 
@@ -119,6 +156,9 @@ class ZaiClientUserRecommendationKotlinTest {
                 val expectedItem = String.format("ITEM_ID_%d", i + offset)
                 Assert.assertEquals(expectedItem, responseItems[i])
             }
+
+            val metadata = Gson().fromJson(response.metadata, Metadata::class.java)
+            Assert.assertEquals(expectedMetadata, metadata)
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
             Assert.assertEquals(response.count.toLong(), limit.toLong())
 
@@ -177,7 +217,15 @@ class ZaiClientUserRecommendationKotlinTest {
             .offset(offset)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            offset=offset,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -188,7 +236,14 @@ class ZaiClientUserRecommendationKotlinTest {
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
             .offset(offset)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            offset=offset
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -197,7 +252,13 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -208,7 +269,14 @@ class ZaiClientUserRecommendationKotlinTest {
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -225,7 +293,16 @@ class ZaiClientUserRecommendationKotlinTest {
             .recommendationType(recommendationType)
             .options(map)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            offset=offset,
+            options=map,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -238,7 +315,15 @@ class ZaiClientUserRecommendationKotlinTest {
             .offset(offset)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            offset=offset,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -249,7 +334,14 @@ class ZaiClientUserRecommendationKotlinTest {
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
             .offset(offset)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            offset=offset
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -260,7 +352,14 @@ class ZaiClientUserRecommendationKotlinTest {
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -269,7 +368,13 @@ class ZaiClientUserRecommendationKotlinTest {
         val limit = generateRandomInteger(1, 10)
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -286,7 +391,16 @@ class ZaiClientUserRecommendationKotlinTest {
             .recommendationType(recommendationType)
             .options(map)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            offset=offset,
+            options=map,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -452,7 +566,14 @@ class ZaiClientUserRecommendationKotlinTest {
         val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
             .offset(offset)
             .build()
-        checkSuccessfulGetUserRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            limit=limit,
+            offset=offset
+        )
+
+        checkSuccessfulGetUserRecommendation(recommendation, userId, metadata)
     }
 
     @Test
