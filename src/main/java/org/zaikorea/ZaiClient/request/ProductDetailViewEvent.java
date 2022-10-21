@@ -10,11 +10,11 @@ public class ProductDetailViewEvent extends Event {
     }
 
     public ProductDetailViewEvent(String userId, String itemId, double timestamp) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.timestamp = timestamp;
-        this.eventType = defaultEventType;
-        this.eventValue = defaultEventValue;
+        this.setUserId(userId);
+        this.setItemId(itemId);
+        this.setTimestamp(timestamp);
+        this.setEventType(defaultEventType);
+        this.setEventValue(defaultEventValue);
     }
 
 }

@@ -7,10 +7,10 @@ public class CustomEvent extends Event {
     }
 
     public CustomEvent(String userId, String itemId, String eventType, String eventValue, double timestamp) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.timestamp = timestamp;
-        this.eventType = eventType;
-        this.eventValue = eventValue;
+        this.setUserId(userId);
+        this.setItemId(itemId);
+        this.setTimestamp(timestamp);
+        this.setEventType(eventType);
+        this.setEventValue(eventValue);
     }
 }

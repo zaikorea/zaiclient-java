@@ -82,12 +82,12 @@ public class ZaiClientRerankingRecommendationJavaTest {
     private static final String recLogTableSortKey = "timestamp";
     private static final String recLogRecommendations = "recommendations";
 
-    private static final String userIdExceptionMessage = "Length of user id must be between 1 and 100.";
-    private static final String itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1,000,000.";
-    private static final String itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 100.";
-    private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 100.";
-    private static final String limitExceptionMessage = "Limit must be between 1 and 1,000,000.";
-    private static final String offsetExceptionMessage = "Offset must be between 0 and 1,000,000.";
+    private static final String userIdExceptionMessage = "Length of user id must be between 1 and 500.";
+    private static final String itemIdsExceptionMessage = "Length of item_ids must be between 0 and 10,000.";
+    private static final String itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 500.";
+    private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 500.";
+    private static final String limitExceptionMessage = "Limit must be between 0 and 10,000.";
+    private static final String offsetExceptionMessage = "Offset must be between 0 and 10,000.";
     private static final String optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string.";
 
     private ZaiClient testClient;
@@ -686,7 +686,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
 
     @Test
     public void testGetTooLongRerankingRecommendation() {
-        String userId = String.join("a", Collections.nCopies(101, "a"));
+        String userId = String.join("a", Collections.nCopies(501, "a"));
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             itemIds.add(String.format("ITEM_ID_%d",i));
@@ -759,7 +759,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         for (int i = 0; i < 50; i++) {
             itemIds.add(String.format("ITEM_ID_%d",i));
         }
-        String recommendationType = String.join("a", Collections.nCopies(101, "a"));
+        String recommendationType = String.join("a", Collections.nCopies(501, "a"));
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
@@ -793,29 +793,6 @@ public class ZaiClientRerankingRecommendationJavaTest {
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), userIdExceptionMessage);
-        } catch (Error e) {
-            fail();
-        }
-    }
-
-    @Test
-    public void testGetZeroLimitRecommendation() {
-        String userId = generateUUID();
-        List<String> itemIds = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
-        }
-        int limit = 0;
-        int offset = generateRandomInteger(20, 40);
-
-        try {
-            new RerankingRecommendationRequest.Builder(userId, itemIds)
-                    .limit(limit)
-                    .offset(offset)
-                    .build();
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals(e.getMessage(), limitExceptionMessage);
         } catch (Error e) {
             fail();
         }
@@ -951,7 +928,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         for (int i = 0; i < 50; i++) {
             itemIds.add(String.format("ITEM_ID_%d",i));
         }
-        itemIds.add(String.join("a", Collections.nCopies(101, "a")));
+        itemIds.add(String.join("a", Collections.nCopies(501, "a")));
         String recommendationType = "";
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);

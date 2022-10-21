@@ -348,7 +348,7 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
 
     @Test
     fun testGetTooLongRelatedItemRecommendation() {
-        val itemId = java.lang.String.join("a", Collections.nCopies(101, "a"))
+        val itemId = java.lang.String.join("a", Collections.nCopies(501, "a"))
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
@@ -400,7 +400,7 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
     @Test
     fun testGetTooLongTypeRecommendation() {
         val itemId = generateUUID()
-        val recommendationType = java.lang.String.join("a", Collections.nCopies(101, "a"))
+        val recommendationType = java.lang.String.join("a", Collections.nCopies(501, "a"))
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
@@ -428,23 +428,6 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, itemIdExceptionMessage)
-        } catch (e: Error) {
-            Assert.fail()
-        }
-    }
-
-    @Test
-    fun testGetZeroLimitRecommendation() {
-        val itemId = generateUUID()
-        val limit = 0
-        val offset = generateRandomInteger(20, 40)
-        try {
-            RelatedItemsRecommendationRequest.Builder(itemId, limit)
-                .offset(offset)
-                .build()
-            Assert.fail()
-        } catch (e: IllegalArgumentException) {
-            Assert.assertEquals(e.message, limitExceptionMessage)
         } catch (e: Error) {
             Assert.fail()
         }
@@ -553,12 +536,12 @@ class ZaiClientRelatedItemsRecommendationKotlinTest {
         private const val recLogTablePartitionKey = "user_id"
         private const val recLogTableSortKey = "timestamp"
         private const val recLogRecommendations = "recommendations"
-        private const val userIdExceptionMessage = "Length of user id must be between 1 and 100."
-        private const val itemIdExceptionMessage = "Length of item id must be between 1 and 100."
+        private const val userIdExceptionMessage = "Length of user id must be between 1 and 500."
+        private const val itemIdExceptionMessage = "Length of item id must be between 1 and 500."
         private const val recommendationTypeExceptionMessage =
-            "Length of recommendation type must be between 1 and 100."
-        private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
-        private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
+            "Length of recommendation type must be between 1 and 500."
+        private const val limitExceptionMessage = "Limit must be between 0 and 10,000."
+        private const val offsetExceptionMessage = "Offset must be between 0 and 10,000."
         private const val optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }

@@ -44,6 +44,13 @@ class ZaiClientKotlinTest {
         return ThreadLocalRandom.current().nextDouble(min.toDouble(), max.toDouble())
     }
 
+    private fun generateRandomString(n: Int): String {
+        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..n)
+            .map { allowedChars.random() }
+            .joinToString("")
+    }
+
     private fun generatePageType(): String? {
         val products = arrayOf("homepage", "category", "today's pick")
         val randomIndex = Random().nextInt(products.size)
@@ -803,6 +810,116 @@ class ZaiClientKotlinTest {
         val eventValue = "customEventValue"
         val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
         checkSuccessfulEventDelete(event)
+    }
+
+    @Test
+    fun testLongUserId() {
+        val userId: String = generateRandomString(501)
+        val itemId = generateUUID()
+        val eventType = "customEventType"
+        val eventValue = "customEventValue"
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testZeroLengthUserId() {
+        val userId = ""
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testLongItemId() {
+        val userId = generateUUID()
+        val itemId: String = generateRandomString(501)
+        val eventType = generateUUID()
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testZeroLengthItemId() {
+        val userId = generateUUID()
+        val itemId = ""
+        val eventType = "customEventType"
+        val eventValue = "customEventValue"
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testLongEventType() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType: String = generateRandomString(501)
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+
+    @Test
+    fun testZeroLengthEventType() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = ""
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testLongEventValue() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue: String = generateRandomString(505)
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        Assert.assertEquals(500, event.eventValue.length)
+    }
+
+
+    @Test
+    fun testZeroLengthEventValue() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue = ""
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
     }
 
     companion object {

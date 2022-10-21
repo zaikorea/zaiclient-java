@@ -1,6 +1,7 @@
 package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.*;
@@ -72,6 +73,24 @@ public class ZaiClientJavaTest {
 
     private double generateRandomDouble(int min, int max) {
         return ThreadLocalRandom.current().nextDouble(min, max);
+    }
+
+    private String generateRandomString(int n) {
+        int index;
+        char randomChar;
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 0; i < n; i++) {
+
+            index = generateRandomInteger(0, alphabet.length()-1);
+
+            randomChar = alphabet.charAt(index);
+
+            sb.append(randomChar);
+        }
+
+        return sb.toString();
     }
 
     private Map<String, String> getEventLog(String partitionValue) {
@@ -910,5 +929,114 @@ public class ZaiClientJavaTest {
 
         Event event = new CustomEvent(userId, itemId, eventType, eventValue);
         checkSuccessfulEventDelete(event);
+    }
+
+    @Test
+    public void testLongUserId() {
+        String userId = generateRandomString(501);
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
+    }
+
+    @Test
+    public void testZeroLengthUserId() {
+        String userId = "";
+        String itemId = generateUUID();
+        String eventType = generateUUID();
+        String eventValue = generateUUID();
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
+    }
+
+    @Test
+    public void testLongItemId() {
+        String userId = generateUUID();
+        String itemId = generateRandomString(501);
+        String eventType = generateUUID();
+        String eventValue = generateUUID();
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
+    }
+
+    @Test
+    public void testZeroLengthItemId() {
+        String userId = generateUUID();
+        String itemId = "";
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
+    }
+
+    @Test
+    public void testLongEventType() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = generateRandomString(501);
+        String eventValue = generateUUID();
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
+    }
+
+
+    @Test
+    public void testZeroLengthEventType() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "";
+        String eventValue = generateUUID();
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
+    }
+        @Test
+    public void testLongEventValue() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = generateUUID();
+        String eventValue = generateRandomString(501);
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        assertEquals(500, event.getEventValue().length());
+    }
+
+
+    @Test
+    public void testZeroLengthEventValue() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = generateUUID();
+        String eventValue = "";
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
     }
 }

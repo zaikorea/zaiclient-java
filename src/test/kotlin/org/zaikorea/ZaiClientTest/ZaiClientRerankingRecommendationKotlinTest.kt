@@ -591,7 +591,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
 
     @Test
     fun testGetTooLongRerankingRecommendation() {
-        val userId = java.lang.String.join("a", Collections.nCopies(101, "a"))
+        val userId = java.lang.String.join("a", Collections.nCopies(501, "a"))
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
             itemIds.add(String.format("ITEM_ID_%d", i))
@@ -662,7 +662,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         for (i in 0..49) {
             itemIds.add(String.format("ITEM_ID_%d", i))
         }
-        val recommendationType = java.lang.String.join("a", Collections.nCopies(101, "a"))
+        val recommendationType = java.lang.String.join("a", Collections.nCopies(501, "a"))
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
@@ -696,28 +696,6 @@ class ZaiClientRerankingRecommendationKotlinTest {
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, userIdExceptionMessage)
-        } catch (e: Error) {
-            Assert.fail()
-        }
-    }
-
-    @Test
-    fun testGetZeroLimitRecommendation() {
-        val userId = generateUUID()
-        val itemIds: MutableList<String> = ArrayList()
-        for (i in 0..49) {
-            itemIds.add(String.format("ITEM_ID_%d", i))
-        }
-        val limit = 0
-        val offset = generateRandomInteger(20, 40)
-        try {
-            RerankingRecommendationRequest.Builder(userId, itemIds)
-                .limit(limit)
-                .offset(offset)
-                .build()
-            Assert.fail()
-        } catch (e: IllegalArgumentException) {
-            Assert.assertEquals(e.message, limitExceptionMessage)
         } catch (e: Error) {
             Assert.fail()
         }
@@ -846,7 +824,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         for (i in 0..49) {
             itemIds.add(String.format("ITEM_ID_%d", i))
         }
-        itemIds.add(java.lang.String.join("a", Collections.nCopies(101, "a")))
+        itemIds.add(java.lang.String.join("a", Collections.nCopies(501, "a")))
         val recommendationType = ""
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -902,13 +880,13 @@ class ZaiClientRerankingRecommendationKotlinTest {
         private const val recLogTablePartitionKey = "user_id"
         private const val recLogTableSortKey = "timestamp"
         private const val recLogRecommendations = "recommendations"
-        private const val userIdExceptionMessage = "Length of user id must be between 1 and 100."
-        private const val itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1,000,000."
-        private const val itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 100."
+        private const val userIdExceptionMessage = "Length of user id must be between 1 and 500."
+        private const val itemIdsExceptionMessage = "Length of item_ids must be between 0 and 10,000."
+        private const val itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 500."
         private const val recommendationTypeExceptionMessage =
-            "Length of recommendation type must be between 1 and 100."
-        private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
-        private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
+            "Length of recommendation type must be between 1 and 500."
+        private const val limitExceptionMessage = "Limit must be between 0 and 10,000."
+        private const val offsetExceptionMessage = "Offset must be between 0 and 10,000."
         private const val optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }

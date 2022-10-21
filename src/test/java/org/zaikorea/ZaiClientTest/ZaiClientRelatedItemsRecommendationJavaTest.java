@@ -91,11 +91,11 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
     private static final String recLogTableSortKey = "timestamp";
     private static final String recLogRecommendations = "recommendations";
 
-    private static final String userIdExceptionMessage = "Length of user id must be between 1 and 100.";
-    private static final String itemIdExceptionMessage = "Length of item id must be between 1 and 100.";
-    private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 100.";
-    private static final String limitExceptionMessage = "Limit must be between 1 and 1,000,000.";
-    private static final String offsetExceptionMessage = "Offset must be between 0 and 1,000,000.";
+    private static final String userIdExceptionMessage = "Length of user id must be between 1 and 500.";
+    private static final String itemIdExceptionMessage = "Length of item id must be between 1 and 500.";
+    private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 500.";
+    private static final String limitExceptionMessage = "Limit must be between 0 and 10,000.";
+    private static final String offsetExceptionMessage = "Offset must be between 0 and 10,000.";
     private static final String optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string.";
 
     private ZaiClient testClient;
@@ -407,7 +407,7 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
 
     @Test
     public void testGetTooLongRelatedItemRecommendation() {
-        String itemId = String.join("a", Collections.nCopies(101, "a"));
+        String itemId = String.join("a", Collections.nCopies(501, "a"));
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
@@ -461,7 +461,7 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
     @Test
     public void testGetTooLongTypeRecommendation() {
         String itemId = generateUUID();
-        String recommendationType = String.join("a", Collections.nCopies(101, "a"));
+        String recommendationType = String.join("a", Collections.nCopies(501, "a"));
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
@@ -489,24 +489,6 @@ public class ZaiClientRelatedItemsRecommendationJavaTest {
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), itemIdExceptionMessage);
-        } catch (Error e) {
-            fail();
-        }
-    }
-
-    @Test
-    public void testGetZeroLimitRecommendation() {
-        String itemId = generateUUID();
-        int limit = 0;
-        int offset = generateRandomInteger(20, 40);
-
-        try {
-            new RelatedItemsRecommendationRequest.Builder(itemId, limit)
-                    .offset(offset)
-                    .build();
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals(e.getMessage(), limitExceptionMessage);
         } catch (Error e) {
             fail();
         }
