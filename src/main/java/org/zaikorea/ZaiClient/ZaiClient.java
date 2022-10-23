@@ -210,8 +210,8 @@ public class ZaiClient {
                 throw new InvalidParameterException("Custom endpoint should be less than or equal to 10.");
 
             if (Pattern.matches("^[a-zA-Z0-9-]$", endpoint)) {
-                this.eventsApiEndpoint = String.format(Config.eventsApiEndPoint, endpoint);
-                this.mlApiEndpoint = String.format(Config.mlApiEndPoint, endpoint);
+                this.eventsApiEndpoint = String.format(Config.eventsApiEndPoint, "-"+endpoint);
+                this.mlApiEndpoint = String.format(Config.mlApiEndPoint, "-"+endpoint);
             }
             else
                 throw new InvalidParameterException("Only alphanumeric characters are allowed for custom endpoint.");
