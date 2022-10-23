@@ -1,10 +1,10 @@
 package org.zaikorea.ZaiClient.configs;
 
 public class Config {
-    public static final String eventsApiEndPoint = "https://collector-api.zaikorea.org";
+    public static final String eventsApiEndPoint = "https://collector-api%s.zaikorea.org";
     public static final String eventsApiPath = "/events";
 
-    public static final String mlApiEndPoint = "https://ml-api.zaikorea.org";
+    public static final String mlApiEndPoint = "https://ml-api%s.zaikorea.org";
     public static final String mlApiPathPrefix = "/clients/%s/recommenders";
     public static final String userRecommendationPathPrefix = "/user-recommendations";
     public static final String relatedItemsRecommendationPathPrefix = "/related-items";

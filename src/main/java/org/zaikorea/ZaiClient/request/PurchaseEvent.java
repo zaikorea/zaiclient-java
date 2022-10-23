@@ -9,10 +9,10 @@ public class PurchaseEvent extends Event {
     }
 
     public PurchaseEvent(String userId, String itemId, int price, double timestamp) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.timestamp = timestamp;
-        this.eventType = defaultEventType;
-        this.eventValue = Integer.toString(price);
+        this.setUserId(userId);
+        this.setItemId(itemId);
+        this.setTimestamp(timestamp);
+        this.setEventType(defaultEventType);
+        this.setEventValue(Integer.toString(price));
     }
 }

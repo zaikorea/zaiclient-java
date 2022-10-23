@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -20,10 +22,62 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import java.io.IOException
+import java.security.InvalidParameterException
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import kotlin.reflect.full.memberProperties
 
 class ZaiClientRerankingRecommendationKotlinTest {
+    data class Metadata(
+        @SerializedName("user_id")
+        var userId: String? = null,
+
+        @SerializedName("item_id")
+        var itemId: String? = null,
+
+        @SerializedName("item_ids")
+        var itemIds: List<String>? = null,
+
+        @SerializedName("limit")
+        var limit: Int? = null,
+
+        @SerializedName("offset")
+        var offset: Int? = 0,
+
+        @SerializedName("options")
+        var options: MutableMap<String?, Int?> = HashMap<String?, Int?>(),
+
+        @SerializedName("call_type")
+        var callType: String? = "reranking",
+
+        @SerializedName("recommendation_type")
+        var recommendationType: String? = "category_page"
+    ) {
+
+        override fun equals(other: Any?): Boolean {
+            var otherMetadata: Metadata
+
+            if (other is Metadata)
+                otherMetadata = other
+            else
+                throw InvalidParameterException("Other must be metadata")
+
+            for (props in Metadata::class.memberProperties) {
+                if (props.get(otherMetadata) != null && props.get(otherMetadata) == props.get(this))
+                    continue
+                else {
+                    if (props.get(otherMetadata) == null && props.get(this) == null)
+                        continue
+                    else
+                        return false
+                }
+            }
+
+            return true;
+        }
+
+    }
+
     private var testClient: ZaiClient? = null
     private var incorrectIdClient: ZaiClient? = null
     private var incorrectSecretClient: ZaiClient? = null
@@ -89,39 +143,22 @@ class ZaiClientRerankingRecommendationKotlinTest {
         return true
     }
 
-    private fun checkSuccessfulGetRerankingRecommendation(recommendation: RecommendationRequest, userId: String?) {
+    private fun checkSuccessfulGetRerankingRecommendation(recommendation: RecommendationRequest, userId: String?, expectedMetadata: Metadata) {
         val limit = recommendation.limit
         val offset = recommendation.offset
-        val recommendationType = recommendation.recommendationType
-        val options = recommendation.options
-        val mapper = ObjectMapper().registerModule(KotlinModule())
-        var optionsObj: Map<String, Int>? = null
-        if (options != null) {
-            try {
-                optionsObj = mapper.readValue(options);
-            } catch (e: JsonProcessingException) {
-                throw RuntimeException(e)
-            }
-        }
-        val builder = StringBuilder()
-        optionsObj?.forEach { (k: String, v: Int) ->
-            builder.append(
-                "$k:$v"
-            ).append("|")
-        }
-            ?: builder.append("|")
-        val expectedOptions = builder.toString()
+
         try {
             val response = testClient!!.getRecommendations(recommendation)
 
             // Response Testing
             val responseItems = response.items
             for (i in 0 until recommendation.limit) {
-                val expectedItem = (userId ?: "None") + "|" +
-                        recommendationType + "|" +
-                        expectedOptions + String.format("ITEM_ID_%d", i + offset)
+                val expectedItem = String.format("ITEM_ID_%d", i + offset)
                 Assert.assertEquals(expectedItem, responseItems[i])
             }
+
+            val metadata = Gson().fromJson(response.metadata, Metadata::class.java)
+            Assert.assertEquals(expectedMetadata, metadata)
             Assert.assertEquals(response.items.size.toLong(), limit.toLong())
             Assert.assertEquals(response.count.toLong(), limit.toLong())
 
@@ -185,7 +222,16 @@ class ZaiClientRerankingRecommendationKotlinTest {
             .offset(offset)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            offset=offset,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -201,7 +247,15 @@ class ZaiClientRerankingRecommendationKotlinTest {
             .limit(limit)
             .offset(offset)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            offset=offset
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -215,7 +269,14 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .limit(limit)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -231,7 +292,15 @@ class ZaiClientRerankingRecommendationKotlinTest {
             .limit(limit)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -245,7 +314,15 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=itemIds.size,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -257,7 +334,14 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=itemIds.size
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -273,12 +357,23 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val map: MutableMap<String?, Int?> = HashMap()
         map["call_type"] = 1
         map["response_type"] = 2
-        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
             .offset(offset)
             .recommendationType(recommendationType)
             .options(map)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            offset=offset,
+            options=map,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -296,7 +391,16 @@ class ZaiClientRerankingRecommendationKotlinTest {
             .offset(offset)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            offset=offset,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -312,7 +416,15 @@ class ZaiClientRerankingRecommendationKotlinTest {
             .limit(limit)
             .offset(offset)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            offset=offset
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -328,7 +440,15 @@ class ZaiClientRerankingRecommendationKotlinTest {
             .limit(limit)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -342,7 +462,14 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .limit(limit)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -356,7 +483,15 @@ class ZaiClientRerankingRecommendationKotlinTest {
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .recommendationType(recommendationType)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=itemIds.size,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -368,28 +503,46 @@ class ZaiClientRerankingRecommendationKotlinTest {
         }
         val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=itemIds.size
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
     fun testGetNullRerankingRecommendation_7() {
         val userId: String? = null
         val itemIds: MutableList<String> = ArrayList()
-        for (i in 0..49) {
-            itemIds.add(String.format("ITEM_ID_%d", i))
-        }
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
+        for (i in 0..offset+limit) {
+            itemIds.add(String.format("ITEM_ID_%d", i))
+        }
         val recommendationType = "home_page"
         val map: MutableMap<String?, Int?> = HashMap()
         map["call_type"] = 1
         map["response_type"] = 2
-        val recommendation: RecommendationRequest = UserRecommendationRequest.Builder(userId, limit)
+        val recommendation: RecommendationRequest = RerankingRecommendationRequest.Builder(userId, itemIds)
+            .limit(limit)
             .offset(offset)
             .recommendationType(recommendationType)
             .options(map)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            offset=offset,
+            options=map,
+            recommendationType=recommendationType
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -410,7 +563,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 404)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -432,13 +585,13 @@ class ZaiClientRerankingRecommendationKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
     @Test
     fun testGetTooLongRerankingRecommendation() {
-        val userId = java.lang.String.join("a", Collections.nCopies(101, "a"))
+        val userId = java.lang.String.join("a", Collections.nCopies(501, "a"))
         val itemIds: MutableList<String> = ArrayList()
         for (i in 0..49) {
             itemIds.add(String.format("ITEM_ID_%d", i))
@@ -509,7 +662,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         for (i in 0..49) {
             itemIds.add(String.format("ITEM_ID_%d", i))
         }
-        val recommendationType = java.lang.String.join("a", Collections.nCopies(101, "a"))
+        val recommendationType = java.lang.String.join("a", Collections.nCopies(501, "a"))
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
         try {
@@ -543,28 +696,6 @@ class ZaiClientRerankingRecommendationKotlinTest {
             Assert.fail()
         } catch (e: IllegalArgumentException) {
             Assert.assertEquals(e.message, userIdExceptionMessage)
-        } catch (e: Error) {
-            Assert.fail()
-        }
-    }
-
-    @Test
-    fun testGetZeroLimitRecommendation() {
-        val userId = generateUUID()
-        val itemIds: MutableList<String> = ArrayList()
-        for (i in 0..49) {
-            itemIds.add(String.format("ITEM_ID_%d", i))
-        }
-        val limit = 0
-        val offset = generateRandomInteger(20, 40)
-        try {
-            RerankingRecommendationRequest.Builder(userId, itemIds)
-                .limit(limit)
-                .offset(offset)
-                .build()
-            Assert.fail()
-        } catch (e: IllegalArgumentException) {
-            Assert.assertEquals(e.message, limitExceptionMessage)
         } catch (e: Error) {
             Assert.fail()
         }
@@ -605,7 +736,15 @@ class ZaiClientRerankingRecommendationKotlinTest {
             .limit(limit)
             .offset(offset)
             .build()
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId)
+
+        var metadata = Metadata(
+            userId=userId,
+            itemIds=itemIds,
+            limit=limit,
+            offset=offset
+        )
+
+        checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata)
     }
 
     @Test
@@ -685,7 +824,7 @@ class ZaiClientRerankingRecommendationKotlinTest {
         for (i in 0..49) {
             itemIds.add(String.format("ITEM_ID_%d", i))
         }
-        itemIds.add(java.lang.String.join("a", Collections.nCopies(101, "a")))
+        itemIds.add(java.lang.String.join("a", Collections.nCopies(501, "a")))
         val recommendationType = ""
         val limit = generateRandomInteger(1, 10)
         val offset = generateRandomInteger(20, 40)
@@ -741,13 +880,13 @@ class ZaiClientRerankingRecommendationKotlinTest {
         private const val recLogTablePartitionKey = "user_id"
         private const val recLogTableSortKey = "timestamp"
         private const val recLogRecommendations = "recommendations"
-        private const val userIdExceptionMessage = "Length of user id must be between 1 and 100."
-        private const val itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1,000,000."
-        private const val itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 100."
+        private const val userIdExceptionMessage = "Length of user id must be between 1 and 500."
+        private const val itemIdsExceptionMessage = "Length of item_ids must be between 0 and 10,000."
+        private const val itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 500."
         private const val recommendationTypeExceptionMessage =
-            "Length of recommendation type must be between 1 and 100."
-        private const val limitExceptionMessage = "Limit must be between 1 and 1,000,000."
-        private const val offsetExceptionMessage = "Offset must be between 0 and 1,000,000."
+            "Length of recommendation type must be between 1 and 500."
+        private const val limitExceptionMessage = "Limit must be between 0 and 10,000."
+        private const val offsetExceptionMessage = "Offset must be between 0 and 10,000."
         private const val optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string."
         private val region = Region.AP_NORTHEAST_2
     }

@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import java.io.IOException
+import java.security.InvalidParameterException
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
@@ -28,6 +29,8 @@ class ZaiClientKotlinTest {
             val utcnow = Instant.now().epochSecond
             return java.lang.Long.toString(utcnow)
         }
+    private val incorrectCustomEndpointMsg = "Only alphanumeric characters are allowed for custom endpoint."
+    private val longLengthCustomEndpointMsg = "Custom endpoint should be less than or equal to 10."
 
     private fun generateUUID(): String {
         return UUID.randomUUID().toString()
@@ -39,6 +42,13 @@ class ZaiClientKotlinTest {
 
     private fun generateRandomDouble(min: Int, max: Int): Double {
         return ThreadLocalRandom.current().nextDouble(min.toDouble(), max.toDouble())
+    }
+
+    private fun generateRandomString(n: Int): String {
+        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..n)
+            .map { allowedChars.random() }
+            .joinToString("")
     }
 
     private fun generatePageType(): String? {
@@ -222,6 +232,31 @@ class ZaiClientKotlinTest {
     }
 
     @Test
+    fun testIncorrectCustomEndpointClient_1() {
+        val incorrectCustomEndpointClient: ZaiClient
+        try {
+            incorrectCustomEndpointClient = ZaiClient.Builder(clientId, clientSecret)
+                .customEndpoint("-@dev")
+                .build();
+            Assert.fail()
+        } catch(e: InvalidParameterException) {
+            Assert.assertEquals(e.message, incorrectCustomEndpointMsg)
+        }
+    }
+
+    fun testIncorrectCustomEndpointClient_2() {
+        val incorrectCustomEndpointClient: ZaiClient
+        try {
+            incorrectCustomEndpointClient = ZaiClient.Builder(clientId, clientSecret)
+                .customEndpoint("abcdefghijklmnop")
+                .build();
+            Assert.fail()
+        } catch(e: InvalidParameterException) {
+            Assert.assertEquals(e.message, longLengthCustomEndpointMsg)
+        }
+    }
+
+    @Test
     fun testAddViewEvent() {
         val userId = generateUUID()
         val itemId = generateUUID()
@@ -249,7 +284,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -264,7 +299,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -306,7 +341,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -321,7 +356,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -363,7 +398,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -378,7 +413,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -428,7 +463,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -443,7 +478,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -493,7 +528,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -508,7 +543,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -561,7 +596,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -577,7 +612,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -633,7 +668,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -649,7 +684,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -695,7 +730,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -710,7 +745,7 @@ class ZaiClientKotlinTest {
         } catch (e: IOException) {
             Assert.fail()
         } catch (e: ZaiClientException) {
-            Assert.assertEquals(e.httpStatusCode.toLong(), 401)
+            Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
     }
 
@@ -775,6 +810,116 @@ class ZaiClientKotlinTest {
         val eventValue = "customEventValue"
         val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
         checkSuccessfulEventDelete(event)
+    }
+
+    @Test
+    fun testLongUserId() {
+        val userId: String = generateRandomString(501)
+        val itemId = generateUUID()
+        val eventType = "customEventType"
+        val eventValue = "customEventValue"
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testZeroLengthUserId() {
+        val userId = ""
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testLongItemId() {
+        val userId = generateUUID()
+        val itemId: String = generateRandomString(501)
+        val eventType = generateUUID()
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testZeroLengthItemId() {
+        val userId = generateUUID()
+        val itemId = ""
+        val eventType = "customEventType"
+        val eventValue = "customEventValue"
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testLongEventType() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType: String = generateRandomString(501)
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+
+    @Test
+    fun testZeroLengthEventType() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = ""
+        val eventValue = generateUUID()
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
+    }
+
+    @Test
+    fun testLongEventValue() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue: String = generateRandomString(505)
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        Assert.assertEquals(500, event.eventValue.length)
+    }
+
+
+    @Test
+    fun testZeroLengthEventValue() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue = ""
+        try {
+            val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        } catch (e: InvalidParameterException) {
+            return
+        }
+        Assert.fail()
     }
 
     companion object {

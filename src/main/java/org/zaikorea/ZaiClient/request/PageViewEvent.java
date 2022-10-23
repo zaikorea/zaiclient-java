@@ -10,11 +10,11 @@ public class PageViewEvent extends Event {
     }
 
     public PageViewEvent(String userId, String pageType, double timestamp) {
-        this.userId = userId;
-        this.itemId = defaultItemId;
-        this.timestamp = timestamp;
-        this.eventType = defaultEventType;
-        this.eventValue = pageType;
+        this.setUserId(userId);
+        this.setItemId(defaultItemId);
+        this.setTimestamp(timestamp);
+        this.setEventType(defaultEventType);
+        this.setEventValue(pageType);
     }
 
 }

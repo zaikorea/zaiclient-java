@@ -1,6 +1,7 @@
 package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -8,6 +9,8 @@ import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +24,56 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class ZaiClientRerankingRecommendationJavaTest {
+    class Metadata {
+
+        @SerializedName("user_id")
+        public String userId;
+        @SerializedName("item_id")
+        public String itemId;
+        @SerializedName("item_ids")
+        public List<String> itemIds;
+        @SerializedName("limit")
+        public Integer limit;
+        @SerializedName("offset")
+        public Integer offset;
+        @SerializedName("options")
+        public Map<String, Integer> options;
+        @SerializedName("call_type")
+        public String callType;
+        @SerializedName("recommendation_type")
+        public String recommendationType;
+
+        public Metadata() {
+            this.offset = 0;
+            this.options = new HashMap<>();
+            this.callType = "reranking";
+            this.recommendationType = "category_page";
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+
+            try {
+                for (Field field: obj.getClass().getFields()) {
+                    if (field.get(obj) != null && field.get(obj).equals(field.get(this)))
+                        continue;
+                    else {
+                        if (field.get(obj) == null && field.get(this) == null)
+                            continue;
+                        else
+                            return false;
+                    }
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                System.out.println(e.getMessage());
+
+                return false;
+            }
+
+            return true;
+        }
+    }
+
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for
                                                                                               // testing purposes only
@@ -29,12 +82,12 @@ public class ZaiClientRerankingRecommendationJavaTest {
     private static final String recLogTableSortKey = "timestamp";
     private static final String recLogRecommendations = "recommendations";
 
-    private static final String userIdExceptionMessage = "Length of user id must be between 1 and 100.";
-    private static final String itemIdsExceptionMessage = "Length of item_ids must be between 1 and 1,000,000.";
-    private static final String itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 100.";
-    private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 100.";
-    private static final String limitExceptionMessage = "Limit must be between 1 and 1,000,000.";
-    private static final String offsetExceptionMessage = "Offset must be between 0 and 1,000,000.";
+    private static final String userIdExceptionMessage = "Length of user id must be between 1 and 500.";
+    private static final String itemIdsExceptionMessage = "Length of item_ids must be between 0 and 10,000.";
+    private static final String itemIdInListExceptionMessage = "Length of item id in item id list must be between 1 and 500.";
+    private static final String recommendationTypeExceptionMessage = "Length of recommendation type must be between 1 and 500.";
+    private static final String limitExceptionMessage = "Limit must be between 0 and 10,000.";
+    private static final String offsetExceptionMessage = "Offset must be between 0 and 10,000.";
     private static final String optionsExceptionMessage = "Length of options must be less than or equal to 1000 when converted to string.";
 
     private ZaiClient testClient;
@@ -117,30 +170,10 @@ public class ZaiClientRerankingRecommendationJavaTest {
         return true;
     }
 
-    private void checkSuccessfulGetRerankingRecommendation(RecommendationRequest recommendation, String userId) {
+    private void checkSuccessfulGetRerankingRecommendation(RecommendationRequest recommendation, String userId, Metadata expectedMetadata) {
         int limit = recommendation.getLimit();
         int offset = recommendation.getOffset();
-        String recommendationType = recommendation.getRecommendationType();
-        String options = recommendation.getOptions();
-
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Integer> optionsObj = null;
-        if (options != null) {
-            try {
-                optionsObj = mapper.readValue(options, Map.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        StringBuilder builder = new StringBuilder();
-        if (optionsObj != null) {
-            optionsObj.forEach((k,v) -> builder.append(
-                    k + ":" + v
-            ).append("|"));
-        } else {
-            builder.append("|");
-        }
-        String expectedOptions = builder.toString();
+        Gson gson = new Gson();
 
         try {
             RecommendationResponse response = testClient.getRecommendations(recommendation);
@@ -148,13 +181,13 @@ public class ZaiClientRerankingRecommendationJavaTest {
             // Response Testing
             List<String> responseItems = response.getItems();
             for (int i = 0; i < recommendation.getLimit(); i++) {
-                String expectedItem = (userId != null ? userId : "None") + "|" +
-                        recommendationType + "|" +
-                        expectedOptions +
-                        String.format("ITEM_ID_%d", i+offset);
+                String expectedItem = String.format("ITEM_ID_%d", i+offset);
                 assertEquals(expectedItem, responseItems.get(i));
             }
 
+            // Metadata Testing
+            Metadata metadata = gson.fromJson(response.getMetadata(), Metadata.class);
+            assertEquals(expectedMetadata, metadata);
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
 
@@ -203,6 +236,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
 
     @Test
     public void testGetRerankingRecommendation_1() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -217,11 +251,24 @@ public class ZaiClientRerankingRecommendationJavaTest {
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            metadata.recommendationType = recommendationType;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetRerankingRecommendation_2() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -234,11 +281,23 @@ public class ZaiClientRerankingRecommendationJavaTest {
                 .limit(limit)
                 .offset(offset)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetRerankingRecommendation_3() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -249,11 +308,22 @@ public class ZaiClientRerankingRecommendationJavaTest {
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .limit(limit)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetRerankingRecommendation_4() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -266,11 +336,21 @@ public class ZaiClientRerankingRecommendationJavaTest {
                 .limit(limit)
                 .recommendationType(recommendationType)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetRerankingRecommendation_5() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -281,11 +361,22 @@ public class ZaiClientRerankingRecommendationJavaTest {
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .recommendationType(recommendationType)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = itemIds.size();
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetRerankingRecommendation_6() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -294,34 +385,60 @@ public class ZaiClientRerankingRecommendationJavaTest {
 
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = itemIds.size();
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetRerankingRecommendation_7() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
-        }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
+
+        for (int i = 0; i < offset+limit; i++) {
+            itemIds.add(String.format("ITEM_ID_%d",i));
+        }
         String recommendationType = "home_page";
 
         Map<String, Integer> map = new HashMap<>();
         map.put("call_type", 1);
         map.put("response_type", 2);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .offset(offset)
+                .limit(limit)
                 .recommendationType(recommendationType)
                 .options(map)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            metadata.options = map;
+            metadata.recommendationType = recommendationType;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetNullRerankingRecommendation_1() {
+        Metadata metadata;
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -336,11 +453,23 @@ public class ZaiClientRerankingRecommendationJavaTest {
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetNullRerankingRecommendation_2() {
+        Metadata metadata;
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -353,11 +482,23 @@ public class ZaiClientRerankingRecommendationJavaTest {
                 .limit(limit)
                 .offset(offset)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetNullRerankingRecommendation_3() {
+        Metadata metadata;
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -369,11 +510,22 @@ public class ZaiClientRerankingRecommendationJavaTest {
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .limit(limit)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetNullRerankingRecommendation_4() {
+        Metadata metadata;
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -384,11 +536,22 @@ public class ZaiClientRerankingRecommendationJavaTest {
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .limit(limit)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetNullRerankingRecommendation_5() {
+        Metadata metadata;
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -399,11 +562,22 @@ public class ZaiClientRerankingRecommendationJavaTest {
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .recommendationType(recommendationType)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = itemIds.size();
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetNullRerankingRecommendation_6() {
+        Metadata metadata;
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -412,30 +586,56 @@ public class ZaiClientRerankingRecommendationJavaTest {
 
         RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = itemIds.size();
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
     public void testGetNullRerankingRecommendation_7() {
+        Metadata metadata;
         String userId = null;
         List<String> itemIds = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
-        }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
+
+        for (int i = 0; i < offset+limit; i++) {
+            itemIds.add(String.format("ITEM_ID_%d",i));
+        }
         String recommendationType = "home_page";
 
         Map<String, Integer> map = new HashMap<>();
         map.put("call_type", 1);
         map.put("response_type", 2);
 
-        RecommendationRequest recommendation = new UserRecommendationRequest.Builder(userId, limit)
+        RecommendationRequest recommendation = new RerankingRecommendationRequest.Builder(userId, itemIds)
+                .limit(limit)
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .options(map)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.offset = offset;
+            metadata.limit = limit;
+            metadata.options = map;
+            metadata.recommendationType = recommendationType;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
@@ -457,7 +657,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 404);
+            assertEquals(401, e.getHttpStatusCode());
         }
     }
 
@@ -480,13 +680,13 @@ public class ZaiClientRerankingRecommendationJavaTest {
         } catch (IOException e) {
             fail();
         } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 401);
+            assertEquals(401, e.getHttpStatusCode());
         }
     }
 
     @Test
     public void testGetTooLongRerankingRecommendation() {
-        String userId = String.join("a", Collections.nCopies(101, "a"));
+        String userId = String.join("a", Collections.nCopies(501, "a"));
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             itemIds.add(String.format("ITEM_ID_%d",i));
@@ -559,7 +759,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         for (int i = 0; i < 50; i++) {
             itemIds.add(String.format("ITEM_ID_%d",i));
         }
-        String recommendationType = String.join("a", Collections.nCopies(101, "a"));
+        String recommendationType = String.join("a", Collections.nCopies(501, "a"));
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         try {
@@ -599,29 +799,6 @@ public class ZaiClientRerankingRecommendationJavaTest {
     }
 
     @Test
-    public void testGetZeroLimitRecommendation() {
-        String userId = generateUUID();
-        List<String> itemIds = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
-        }
-        int limit = 0;
-        int offset = generateRandomInteger(20, 40);
-
-        try {
-            new RerankingRecommendationRequest.Builder(userId, itemIds)
-                    .limit(limit)
-                    .offset(offset)
-                    .build();
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals(e.getMessage(), limitExceptionMessage);
-        } catch (Error e) {
-            fail();
-        }
-    }
-
-    @Test
     public void testGetTooSmallLimitRecommendation() {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
@@ -646,6 +823,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
 
     @Test
     public void testGetZeroOffsetRecommendation() {
+        Metadata metadata;
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
@@ -658,7 +836,18 @@ public class ZaiClientRerankingRecommendationJavaTest {
                 .limit(limit)
                 .offset(offset)
                 .build();
-        checkSuccessfulGetRerankingRecommendation(recommendation, userId);
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.itemIds = itemIds;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            checkSuccessfulGetRerankingRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
     }
 
     @Test
@@ -739,7 +928,7 @@ public class ZaiClientRerankingRecommendationJavaTest {
         for (int i = 0; i < 50; i++) {
             itemIds.add(String.format("ITEM_ID_%d",i));
         }
-        itemIds.add(String.join("a", Collections.nCopies(101, "a")));
+        itemIds.add(String.join("a", Collections.nCopies(501, "a")));
         String recommendationType = "";
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);

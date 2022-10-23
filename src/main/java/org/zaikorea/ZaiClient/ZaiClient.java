@@ -2,10 +2,12 @@ package org.zaikorea.ZaiClient;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -36,12 +38,16 @@ public class ZaiClient {
     private static final int defaultReadTimeout = 30;
     private int connectTimeout;
     private int readTimeout;
+    private String eventsApiEndpoint;
+    private String mlApiEndpoint;
 
     public ZaiClient(Builder builder) {
         this.zaiClientId = builder.zaiClientId;
         this.zaiSecret = builder.zaiSecret;
         this.connectTimeout = builder.connectTimeout;
         this.readTimeout = builder.readTimeout;
+        this.eventsApiEndpoint = builder.eventsApiEndpoint;
+        this.mlApiEndpoint = builder.mlApiEndpoint;
         this.zaiAPI = this.instantiateZaiAPI();
     }
 
@@ -107,7 +113,9 @@ public class ZaiClient {
     }
 
     public RecommendationResponse getRecommendations(RecommendationRequest recommendation) throws IOException, ZaiClientException {
-        Call<RecommendationResponse> call = zaiAPI.getRecommendations(recommendation.getPath(this.zaiClientId), recommendation);
+        Call<RecommendationResponse> call = zaiAPI.getRecommendations(
+                mlApiEndpoint + recommendation.getPath(this.zaiClientId), recommendation
+        );
         Response<RecommendationResponse> response = call.execute();
 
         if (!response.isSuccessful())
@@ -140,7 +148,7 @@ public class ZaiClient {
             .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Config.eventsApiEndPoint)
+                .baseUrl(eventsApiEndpoint)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
@@ -171,12 +179,16 @@ public class ZaiClient {
         private final String zaiSecret;
         private int connectTimeout;
         private int readTimeout;
+        private String eventsApiEndpoint;
+        private String mlApiEndpoint;
 
         public Builder(String zaiClientId, String zaiSecret) {
             this.zaiClientId = zaiClientId;
             this.zaiSecret = zaiSecret;
             this.connectTimeout = defaultConnectTimeout;
             this.readTimeout = defaultReadTimeout;
+            this.eventsApiEndpoint = String.format(Config.eventsApiEndPoint, "");
+            this.mlApiEndpoint = String.format(Config.mlApiEndPoint, "");
         }
 
         public Builder connectTimeout(int seconds) {
@@ -190,6 +202,20 @@ public class ZaiClient {
             if (seconds > 0) {
                 this.readTimeout = seconds;
             }
+            return this;
+        }
+
+        public Builder customEndpoint(String endpoint) throws InvalidParameterException {
+            if (endpoint.length() > 10)
+                throw new InvalidParameterException("Custom endpoint should be less than or equal to 10.");
+
+            if (Pattern.matches("^[a-zA-Z0-9-]$", endpoint)) {
+                this.eventsApiEndpoint = String.format(Config.eventsApiEndPoint, "-"+endpoint);
+                this.mlApiEndpoint = String.format(Config.mlApiEndPoint, "-"+endpoint);
+            }
+            else
+                throw new InvalidParameterException("Only alphanumeric characters are allowed for custom endpoint.");
+
             return this;
         }
 

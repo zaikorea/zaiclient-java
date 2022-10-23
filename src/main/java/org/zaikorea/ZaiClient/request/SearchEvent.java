@@ -10,10 +10,10 @@ public class SearchEvent extends Event {
     }
 
     public SearchEvent(String userId, String searchQuery, double timestamp) {
-        this.userId = userId;
-        this.itemId = defaultItemId;
-        this.timestamp = timestamp;
-        this.eventType = defaultEventType;
-        this.eventValue = searchQuery;
+        this.setUserId(userId);
+        this.setItemId(defaultItemId);
+        this.setTimestamp(timestamp);
+        this.setEventType(defaultEventType);
+        this.setEventValue(searchQuery);
     }
 }

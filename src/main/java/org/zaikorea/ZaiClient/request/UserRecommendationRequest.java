@@ -25,8 +25,7 @@ public class UserRecommendationRequest extends RecommendationRequest {
 
     @Override
     public String getPath(String clientId) {
-        return String.format(Config.mlApiEndPoint +
-                Config.mlApiPathPrefix +
+        return String.format(Config.mlApiPathPrefix +
                 Config.userRecommendationPathPrefix, clientId);
     }
 
@@ -38,19 +37,19 @@ public class UserRecommendationRequest extends RecommendationRequest {
         private String options = defaultOptions;
 
         public Builder(String userId, int limit) {
-            if (!(userId == null || (0 < userId.length() && userId.length() <= 100))) {
-                throw new IllegalArgumentException("Length of user id must be between 1 and 100.");
+            if (!(userId == null || (0 < userId.length() && userId.length() <= 500))) {
+                throw new IllegalArgumentException("Length of user id must be between 1 and 500.");
             }
-            if (!(0 < limit && limit <= 1_000_000)) {
-                throw new IllegalArgumentException("Limit must be between 1 and 1,000,000.");
+            if (!(0 <= limit && limit <= 10_000)) {
+                throw new IllegalArgumentException("Limit must be between 0 and 10,000.");
             }
             this.userId = userId;
             this.limit = limit;
         }
 
         public Builder offset(int offset) {
-            if (!(0 <= offset && offset <= 1_000_000)) {
-                throw new IllegalArgumentException("Offset must be between 0 and 1,000,000.");
+            if (!(0 <= offset && offset <= 10_000)) {
+                throw new IllegalArgumentException("Offset must be between 0 and 10,000.");
             }
             this.offset = offset;
 
@@ -58,8 +57,8 @@ public class UserRecommendationRequest extends RecommendationRequest {
         }
 
         public Builder recommendationType(String recommendationType) {
-            if (recommendationType == null || !(0 < recommendationType.length() && recommendationType.length() <= 100)) {
-                throw new IllegalArgumentException("Length of recommendation type must be between 1 and 100.");
+            if (recommendationType == null || !(0 < recommendationType.length() && recommendationType.length() <= 500)) {
+                throw new IllegalArgumentException("Length of recommendation type must be between 1 and 500.");
             }
             this.recommendationType = recommendationType;
 
