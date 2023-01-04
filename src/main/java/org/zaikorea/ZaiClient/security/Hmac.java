@@ -20,7 +20,7 @@ public class Hmac {
         Mac mac = Mac.getInstance(algorithm);
         mac.init(secretKey);
         byte[] hash = mac.doFinal(message.getBytes());
-        return Hex.encodeHexString(hash);
+        return new String(Hex.encodeHex(hash));
     }
 
     public static String generateZaiToken(
