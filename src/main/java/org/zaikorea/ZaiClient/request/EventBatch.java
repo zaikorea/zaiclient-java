@@ -49,8 +49,15 @@ public class EventBatch {
     }
 
     public static double getCurrentUnixTimestamp() {
-        Instant now = Instant.now();
-        return now.getEpochSecond() + now.getNano() / 1000000000.d;
+        // Have to track nanosecond because client sometimes calls api multiple times in a millisecond
+        // Use nanoTime because jdk 1.8 doesn't support Instant.getNano() function.
+        String time = Long.toString(System.nanoTime());
+        time = time.substring(time.length()-7);
+
+        long longTime = Long.parseLong(time);
+        long currentTime = System.currentTimeMillis();
+
+        return currentTime / 1000.d + longTime / 1e10;
     }
 
     public List<Event> getEventList() {
