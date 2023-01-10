@@ -2,7 +2,9 @@ package org.zaikorea.ZaiClient.request;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.time.Instant;
 import java.security.InvalidParameterException;
+
 
 public class Event {
 
@@ -23,7 +25,8 @@ public class Event {
     protected String eventValue;
 
     public static double getCurrentUnixTimestamp() {
-        return System.currentTimeMillis() / 1000.d;
+        Instant now = Instant.now();
+        return now.getEpochSecond() + now.getNano() / 1000000000.d;
     }
 
     public String getUserId() {
