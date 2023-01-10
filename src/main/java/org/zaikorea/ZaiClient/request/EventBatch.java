@@ -3,6 +3,7 @@ package org.zaikorea.ZaiClient.request;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
+import java.time.Instant;
 
 import org.zaikorea.ZaiClient.configs.Config;
 import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
@@ -48,7 +49,8 @@ public class EventBatch {
     }
 
     public static double getCurrentUnixTimestamp() {
-        return System.currentTimeMillis() / 1000.d;
+        Instant now = Instant.now();
+        return now.getEpochSecond() + now.getNano() / 1000000000.d;
     }
 
     public List<Event> getEventList() {
