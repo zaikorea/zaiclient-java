@@ -4,14 +4,13 @@ import org.zaikorea.ZaiClient.configs.Config;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ZaiHeaders {
 
     public static String getUnixTimestamp() {
-        long utcnow = Instant.now().getEpochSecond();
+        long utcnow = System.currentTimeMillis() / 1000;
         return Long.toString(utcnow);
     }
 
