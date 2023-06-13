@@ -78,40 +78,6 @@ public class ZaiClient {
         return response.body();
     }
 
-    public EventLoggerResponse updateEventLog(Event event) throws IOException, ZaiClientException {
-        Call<EventLoggerResponse> call = zaiAPI.updateEventLog(event);
-        Response<EventLoggerResponse> response = call.execute();
-
-        if (!response.isSuccessful())
-            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
-
-        return response.body();
-    }
-
-    public EventLoggerResponse deleteEventLog(Event event) throws IOException, ZaiClientException {
-        Call<EventLoggerResponse> call = zaiAPI.deleteEventLog(event);
-        Response<EventLoggerResponse> response = call.execute();
-
-        if (!response.isSuccessful())
-            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
-
-        return response.body();
-    }
-
-    public EventLoggerResponse deleteEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
-        List<Event> events = eventBatch.getEventList();
-
-        if (events.size() == 0) throw new EmptyBatchException();
-
-        Call<EventLoggerResponse> call = zaiAPI.deleteEventLog(events);
-        Response<EventLoggerResponse> response = call.execute();
-
-        if (!response.isSuccessful())
-            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
-
-        return response.body();
-    }
-
     public RecommendationResponse getRecommendations(RecommendationRequest recommendation) throws IOException, ZaiClientException {
         Call<RecommendationResponse> call = zaiAPI.getRecommendations(
                 mlApiEndpoint + recommendation.getPath(this.zaiClientId), recommendation

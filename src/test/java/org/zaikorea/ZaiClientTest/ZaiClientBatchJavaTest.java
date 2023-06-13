@@ -134,45 +134,6 @@ public class ZaiClientBatchJavaTest {
         }
     }
 
-    private void checkSuccessfulEventBatchDelete(EventBatch eventBatch) {
-        try {
-            testClient.addEventLog(eventBatch);
-
-            List<Event> events = eventBatch.getEventList();
-
-            for (Event event : events) {
-
-                String userId = event.getUserId();
-                double timestamp = event.getTimestamp();
-                String itemId = event.getItemId();
-                String eventType = event.getEventType();
-                String eventValue = event.getEventValue();
-
-                Map<String, String> logItem = getEventLogWithTimestamp(userId, timestamp);
-                assertNotNull(logItem);
-                assertNotEquals(logItem.size(), 0);
-                assertEquals(logItem.get(eventTablePartitionKey), userId);
-                assertEquals(logItem.get(eventTableItemIdKey), itemId);
-                assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
-                assertEquals(logItem.get(eventTableEventTypeKey), eventType);
-                assertEquals(logItem.get(eventTableEventValueKey), eventValue);
-            }
-
-            testClient.deleteEventLog(eventBatch);
-
-            for (Event event : events) {
-                String userId = event.getUserId();
-                double timestamp = event.getTimestamp();
-
-                Map<String, String> newLogItem = getEventLogWithTimestamp(userId, timestamp);
-                assertNotNull(newLogItem);
-                assertEquals(newLogItem.size(), 0);
-            }
-        } catch (IOException | ZaiClientException | EmptyBatchException e) {
-            fail();
-        }
-    }
-
     public static String getUnixTimestamp() {
         long utcnow = Instant.now().getEpochSecond();
         return Long.toString(utcnow);
@@ -296,27 +257,6 @@ public class ZaiClientBatchJavaTest {
     }
 
     @Test
-    public void testDeletePurchaseEventBatch() {
-        String userId = generateUUID();
-
-        try {
-            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
-
-            final int NUM = 10;
-
-            for (int i = 0; i < NUM ; i++) {
-                String itemId = generateUUID();
-                int price = generateRandomInteger(10000, 100000);
-
-                eventBatch.addEventItem(itemId, price);
-            }
-            checkSuccessfulEventBatchDelete(eventBatch);
-        } catch (Exception e) {
-            fail();
-        }
-    }
-
-    @Test
     public void testAddPurchaseEventBatchExceedMaxLimit() {
         String userId = generateUUID();
 
@@ -431,28 +371,6 @@ public class ZaiClientBatchJavaTest {
             eventBatch.deleteEventItem(itemId, eventValue);
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (Exception e) {
-            fail();
-        }
-    }
-
-    @Test
-    public void testDeleteCustomEventBatch() {
-        String userId = generateUUID();
-        String eventType = "customEventType";
-
-        try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
-
-            final int NUM = 10;
-
-            for (int i = 0; i < NUM ; i++) {
-                String itemId = generateUUID();
-                double rate = generateRandomDouble(0, 5);
-
-                eventBatch.addEventItem(itemId, Double.toString(rate));
-            }
-            checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
             fail();
         }
