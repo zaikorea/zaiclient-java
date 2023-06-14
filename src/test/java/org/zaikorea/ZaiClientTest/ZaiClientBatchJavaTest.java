@@ -31,6 +31,9 @@ public class ZaiClientBatchJavaTest {
     private static final String eventTableItemIdKey = "item_id";
     private static final String eventTableEventTypeKey = "event_type";
     private static final String eventTableEventValueKey = "event_value";
+    private static final String eventTableExpirationTimeKey = "expiration_time";
+
+    private static final int defaultDataExpirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
     private ZaiClient testClient;
     private ZaiClient incorrectIdClient;
@@ -134,6 +137,42 @@ public class ZaiClientBatchJavaTest {
         }
     }
 
+    private void checkSuccessfulEventBatchAdd(EventBatch eventBatch, boolean isTest) {
+        try {
+            testClient.addEventLog(eventBatch, isTest);
+
+            List<Event> events = eventBatch.getEventList();
+
+            for (Event event : events) {
+
+                String userId = event.getUserId();
+                double timestamp = event.getTimestamp();
+                String itemId = event.getItemId();
+                String eventType = event.getEventType();
+                String eventValue = event.getEventValue();
+
+                Map<String, String> logItem = getEventLogWithTimestamp(userId, timestamp);
+                assertNotNull(logItem);
+                assertNotEquals(logItem.size(), 0);
+                assertEquals(logItem.get(eventTablePartitionKey), userId);
+                assertEquals(logItem.get(eventTableItemIdKey), itemId);
+                assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
+                assertEquals(logItem.get(eventTableEventTypeKey), eventType);
+                assertEquals(logItem.get(eventTableEventValueKey), eventValue);
+                if (isTest) {
+                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + Config.testEventTimeToLive), 1);
+                }
+                else {
+                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + defaultDataExpirationSeconds), 1);
+                }
+                assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
+            }
+        } catch (IOException | ZaiClientException | EmptyBatchException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
     public static String getUnixTimestamp() {
         long utcnow = Instant.now().getEpochSecond();
         return Long.toString(utcnow);
@@ -179,6 +218,49 @@ public class ZaiClientBatchJavaTest {
                 eventBatch.addEventItem(itemId, price);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddTrueTestPurchaseEventBatch() {
+        String userId = generateUUID();
+
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                int price = generateRandomInteger(10000, 100000);
+
+                eventBatch.addEventItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, true);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddFalseTestPurchaseEventBatch() {
+        String userId = generateUUID();
+
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                int price = generateRandomInteger(10000, 100000);
+
+                eventBatch.addEventItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, false);
         } catch (Exception e) {
             fail();
         }
@@ -294,6 +376,51 @@ public class ZaiClientBatchJavaTest {
                 eventBatch.addEventItem(itemId, Double.toString(rate));
             }
             checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddTrueTestCustomEventBatch() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addEventItem(itemId, Double.toString(rate));
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, true);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddFalseTestCustomEventBatch() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addEventItem(itemId, Double.toString(rate));
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, false);
         } catch (Exception e) {
             fail();
         }

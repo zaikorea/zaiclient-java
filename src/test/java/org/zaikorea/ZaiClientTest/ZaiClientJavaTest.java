@@ -30,9 +30,12 @@ public class ZaiClientJavaTest {
     private static final String eventTableItemIdKey = "item_id";
     private static final String eventTableEventTypeKey = "event_type";
     private static final String eventTableEventValueKey = "event_value";
+    private static final String eventTableExpirationTimeKey = "expiration_time";
 
     private static final String incorrectCustomEndpointMsg = "Only alphanumeric characters are allowed for custom endpoint.";
     private static final String longLengthCustomEndpointMsg = "Custom endpoint should be less than or equal to 10.";
+
+    private static final int defaultDataExpirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
     private ZaiClient testClient;
     private ZaiClient incorrectIdClient;
@@ -181,6 +184,36 @@ public class ZaiClientJavaTest {
         }
     }
 
+    private void checkSuccessfulEventAdd(Event event, boolean isTest) {
+        try {
+            testClient.addEventLog(event, isTest);
+            String userId = event.getUserId();
+            double timestamp = event.getTimestamp();
+            String itemId = event.getItemId();
+            String eventType = event.getEventType();
+            String eventValue = event.getEventValue();
+            Integer timeToLive = event.getTimeToLive();
+
+            Map<String, String> logItem = getEventLog(userId);
+            assertNotNull(logItem);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(eventTablePartitionKey), userId);
+            assertEquals(logItem.get(eventTableItemIdKey), itemId);
+            assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
+            assertEquals(logItem.get(eventTableEventTypeKey), eventType);
+            assertEquals(logItem.get(eventTableEventValueKey), eventValue);
+            if (isTest) {
+                assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + timeToLive), 1);
+            }
+            else {
+                assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + defaultDataExpirationSeconds), 1);
+            }
+            assertTrue(deleteEventLog(userId));
+        } catch (IOException | ZaiClientException e) {
+            fail();
+        }
+    }
+
     @Before
     public void setup() {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
@@ -239,6 +272,24 @@ public class ZaiClientJavaTest {
     }
 
     @Test
+    public void testAddTrueTestViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, false);
+    }
+
+    @Test
     public void testAddViewEventManualTime() {
         String userId = generateUUID();
         String itemId = generateUUID();
@@ -287,6 +338,24 @@ public class ZaiClientJavaTest {
 
         Event event = new ProductDetailViewEvent(userId, itemId);
         checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddTrueTestProductDetailViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ProductDetailViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestProductDetailViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ProductDetailViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, false);
     }
 
     @Test
@@ -341,6 +410,24 @@ public class ZaiClientJavaTest {
     }
 
     @Test
+    public void testAddTrueTestLikeEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new LikeEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestLikeEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new LikeEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, false);
+    }
+
+    @Test
     public void testAddLikeEventManualTime() {
         String userId = generateUUID();
         String itemId = generateUUID();
@@ -389,6 +476,24 @@ public class ZaiClientJavaTest {
 
         Event event = new PageViewEvent(userId, pageType);
         checkSuccessfulEventAdd(event);
+    }
+    
+    @Test
+    public void testAddTrueTestPageViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new PageViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestPageViewEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new PageViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, false);
     }
 
     @Test
@@ -443,6 +548,24 @@ public class ZaiClientJavaTest {
     }
 
     @Test
+    public void testAddTrueTestSearchEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new SearchEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestSearchEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new SearchEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, false);
+    }
+
+    @Test
     public void testAddSearchEventManualTime() {
         String userId = generateUUID();
         String searchQuery = generateSearchQuery();
@@ -491,6 +614,24 @@ public class ZaiClientJavaTest {
 
         Event event = new CartaddEvent(userId, itemId);
         checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddTrueTestCartaddEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new CartaddEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestCartaddEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new CartaddEvent(userId, itemId);
+        checkSuccessfulEventAdd(event, false);
     }
 
     @Test
@@ -543,6 +684,26 @@ public class ZaiClientJavaTest {
 
         Event event = new RateEvent(userId, itemId, rating);
         checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddTrueTestRateEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        double rating = generateRandomDouble(0, 5);
+
+        Event event = new RateEvent(userId, itemId, rating);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestRateEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        double rating = generateRandomDouble(0, 5);
+
+        Event event = new RateEvent(userId, itemId, rating);
+        checkSuccessfulEventAdd(event, false);
     }
 
     @Test
@@ -601,6 +762,26 @@ public class ZaiClientJavaTest {
     }
 
     @Test
+    public void testAddTrueTestPurchaseEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        int price = generateRandomInteger(10000, 100000);
+
+        Event event = new PurchaseEvent(userId, itemId, price);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseTestPurchaseEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        int price = generateRandomInteger(10000, 100000);
+
+        Event event = new PurchaseEvent(userId, itemId, price);
+        checkSuccessfulEventAdd(event, false);
+    }
+
+    @Test
     public void testAddPurchaseEventManualTime() {
         String userId = generateUUID();
         String itemId = generateUUID();
@@ -654,6 +835,28 @@ public class ZaiClientJavaTest {
 
         Event event = new CustomEvent(userId, itemId, eventType, eventValue);
         checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddTrueTestCustomEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        checkSuccessfulEventAdd(event, true);
+    }
+
+    @Test
+    public void testAddFalseCustomEvent() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        checkSuccessfulEventAdd(event, false);
     }
 
     @Test
@@ -771,6 +974,21 @@ public class ZaiClientJavaTest {
         String eventValue = "";
         try {
             Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        } catch(InvalidParameterException e) {
+            return ;
+        }
+        fail();
+    }
+
+    @Test
+    public void testNegativeTimeToLive() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = generateUUID();
+        String eventValue = "";
+        try {
+            Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+            event.setTimeToLive(-defaultDataExpirationSeconds);
         } catch(InvalidParameterException e) {
             return ;
         }
