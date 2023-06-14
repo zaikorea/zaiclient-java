@@ -62,10 +62,47 @@ public class ZaiClient {
         return response.body();
     }
 
+    public EventLoggerResponse addEventLog(Event event, boolean isTest) throws IOException, ZaiClientException {
+        if (isTest) {
+            event.setTimeToLive(Config.testEventTimeToLive);
+        }
+        
+        Call<EventLoggerResponse> call = zaiAPI.addEventLog(event);
+
+        Response<EventLoggerResponse> response = call.execute();
+
+        if (!response.isSuccessful())
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+
+        return response.body();
+    }
+
     public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
         List<Event> events = eventBatch.getEventList();
 
         if (events.size() == 0) throw new EmptyBatchException();
+
+        Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
+        Response<EventLoggerResponse> response = call.execute();
+
+        if (!response.isSuccessful())
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+
+        eventBatch.setLogFlag();
+
+        return response.body();
+    }
+
+    public EventLoggerResponse addEventLog(EventBatch eventBatch, boolean isTest) throws IOException, ZaiClientException, EmptyBatchException {
+        List<Event> events = eventBatch.getEventList();
+
+        if (events.size() == 0) throw new EmptyBatchException();
+
+        if (isTest) {
+            for (Event event : events) {
+                event.setTimeToLive(Config.testEventTimeToLive);
+            }
+        }
 
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
         Response<EventLoggerResponse> response = call.execute();
