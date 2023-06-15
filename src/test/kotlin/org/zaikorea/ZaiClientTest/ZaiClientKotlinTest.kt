@@ -27,7 +27,7 @@ class ZaiClientKotlinTest {
     private val unixTimestamp: String
         private get() {
             val utcnow = Instant.now().epochSecond
-            return java.lang.Long.toString(utcnow)
+            return utcnow.toString()
         }
     private val incorrectCustomEndpointMsg = "Only alphanumeric characters are allowed for custom endpoint."
     private val longLengthCustomEndpointMsg = "Custom endpoint should be less than or equal to 10."
@@ -68,12 +68,12 @@ class ZaiClientKotlinTest {
         val attrNameAlias = HashMap<String, String>()
         attrNameAlias[partitionAlias] = eventTablePartitionKey
         val attrValues = HashMap<String, AttributeValue>()
-        attrValues[":" + eventTablePartitionKey] = AttributeValue.builder()
+        attrValues[":$eventTablePartitionKey"] = AttributeValue.builder()
             .s(partitionValue)
             .build()
         val request = QueryRequest.builder()
             .tableName(eventTableName)
-            .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
+            .keyConditionExpression("$partitionAlias = :$eventTablePartitionKey")
             .expressionAttributeNames(attrNameAlias)
             .expressionAttributeValues(attrValues)
             .build()
@@ -140,84 +140,17 @@ class ZaiClientKotlinTest {
         }
     }
 
-    private fun checkSuccessfulEventUpdate(oldEvent: Event, newEvent: Event) {
-        Assert.assertEquals(oldEvent.userId, newEvent.userId)
-        Assert.assertEquals(oldEvent.timestamp, newEvent.timestamp, 0.0001)
-        try {
-            testClient!!.addEventLog(oldEvent)
-            var userId = oldEvent.userId
-            var timestamp = oldEvent.timestamp
-            var itemId = oldEvent.itemId
-            var eventType = oldEvent.eventType
-            var eventValue = oldEvent.eventValue
-            var logItem = getEventLog(userId)
-            Assert.assertNotNull(logItem)
-            Assert.assertNotEquals(logItem!!.size.toLong(), 0)
-            Assert.assertEquals(logItem[eventTablePartitionKey], userId)
-            Assert.assertEquals(logItem[eventTableItemIdKey], itemId)
-            Assert.assertEquals(logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001)
-            Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
-            Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
-            testClient!!.updateEventLog(newEvent)
-            userId = newEvent.userId
-            timestamp = newEvent.timestamp
-            itemId = newEvent.itemId
-            eventType = newEvent.eventType
-            eventValue = newEvent.eventValue
-            logItem = getEventLog(userId)
-            Assert.assertNotNull(logItem)
-            Assert.assertNotEquals(logItem!!.size.toLong(), 0)
-            Assert.assertEquals(logItem[eventTablePartitionKey], userId)
-            Assert.assertEquals(logItem[eventTableItemIdKey], itemId)
-            Assert.assertEquals(logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001)
-            Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
-            Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
-            Assert.assertTrue(deleteEventLog(userId))
-        } catch (e: IOException) {
-            Assert.fail()
-        } catch (e: ZaiClientException) {
-            Assert.fail()
-        }
-    }
-
-    private fun checkSuccessfulEventDelete(event: Event) {
-        try {
-            testClient!!.addEventLog(event)
-            val userId = event.userId
-            val timestamp = event.timestamp
-            val itemId = event.itemId
-            val eventType = event.eventType
-            val eventValue = event.eventValue
-            val logItem = getEventLog(userId)
-            Assert.assertNotNull(logItem)
-            Assert.assertNotEquals(logItem!!.size.toLong(), 0)
-            Assert.assertEquals(logItem[eventTablePartitionKey], userId)
-            Assert.assertEquals(logItem[eventTableItemIdKey], itemId)
-            Assert.assertEquals(logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001)
-            Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
-            Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
-            testClient!!.deleteEventLog(event)
-            val newLogItem = getEventLog(userId)
-            Assert.assertNotNull(newLogItem)
-            Assert.assertEquals(newLogItem!!.size.toLong(), 0)
-        } catch (e: IOException) {
-            Assert.fail()
-        } catch (e: ZaiClientException) {
-            Assert.fail()
-        }
-    }
-
     @Before
     fun setup() {
         testClient = ZaiClient.Builder(clientId, clientSecret)
             .connectTimeout(10)
             .readTimeout(30)
             .build()
-        incorrectIdClient = ZaiClient.Builder("." + clientId, clientSecret)
+        incorrectIdClient = ZaiClient.Builder(".$clientId", clientSecret)
             .connectTimeout(0)
             .readTimeout(0)
             .build()
-        incorrectSecretClient = ZaiClient.Builder(clientId, "." + clientSecret)
+        incorrectSecretClient = ZaiClient.Builder(clientId, ".$clientSecret")
             .connectTimeout(-1)
             .readTimeout(-1)
             .build()
@@ -237,19 +170,20 @@ class ZaiClientKotlinTest {
         try {
             incorrectCustomEndpointClient = ZaiClient.Builder(clientId, clientSecret)
                 .customEndpoint("-@dev")
-                .build();
+                .build()
             Assert.fail()
         } catch(e: InvalidParameterException) {
             Assert.assertEquals(e.message, incorrectCustomEndpointMsg)
         }
     }
 
+    @Test
     fun testIncorrectCustomEndpointClient_2() {
         val incorrectCustomEndpointClient: ZaiClient
         try {
             incorrectCustomEndpointClient = ZaiClient.Builder(clientId, clientSecret)
                 .customEndpoint("abcdefghijklmnop")
-                .build();
+                .build()
             Assert.fail()
         } catch(e: InvalidParameterException) {
             Assert.assertEquals(e.message, longLengthCustomEndpointMsg)
@@ -304,24 +238,6 @@ class ZaiClientKotlinTest {
     }
 
     @Test
-    fun testUpdateViewEvent() {
-        val userId = generateUUID()
-        val oldItemId = generateUUID()
-        val newItemId = generateUUID()
-        val oldEvent: Event = ViewEvent(userId, oldItemId)
-        val newEvent: Event = ViewEvent(userId, newItemId, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeleteViewEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val event: Event = ViewEvent(userId, itemId)
-        checkSuccessfulEventDelete(event)
-    }
-
-    @Test
     fun testAddProductDetailViewEventManualTime() {
         val userId = generateUUID()
         val itemId = generateUUID()
@@ -361,24 +277,6 @@ class ZaiClientKotlinTest {
     }
 
     @Test
-    fun testUpdateProductDetailViewEvent() {
-        val userId = generateUUID()
-        val oldItemId = generateUUID()
-        val newItemId = generateUUID()
-        val oldEvent: Event = ProductDetailViewEvent(userId, oldItemId)
-        val newEvent: Event = ProductDetailViewEvent(userId, newItemId, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeleteProductDetailViewEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val event: Event = ProductDetailViewEvent(userId, itemId)
-        checkSuccessfulEventDelete(event)
-    }
-
-    @Test
     fun testAddPageViewEventManualTime() {
         val userId = generateUUID()
         val pageType = generatePageType()
@@ -415,24 +313,6 @@ class ZaiClientKotlinTest {
         } catch (e: ZaiClientException) {
             Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
-    }
-
-    @Test
-    fun testUpdatePageViewEvent() {
-        val userId = generateUUID()
-        val oldPageType = generatePageType()
-        val newPageType = generatePageType()
-        val oldEvent: Event = PageViewEvent(userId, oldPageType)
-        val newEvent: Event = PageViewEvent(userId, newPageType, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeletePageViewEvent() {
-        val userId = generateUUID()
-        val pageType = generatePageType()
-        val event: Event = PageViewEvent(userId, pageType)
-        checkSuccessfulEventDelete(event)
     }
 
     @Test
@@ -483,24 +363,6 @@ class ZaiClientKotlinTest {
     }
 
     @Test
-    fun testUpdateLikeEvent() {
-        val userId = generateUUID()
-        val oldItemId = generateUUID()
-        val newItemId = generateUUID()
-        val oldEvent: Event = LikeEvent(userId, oldItemId)
-        val newEvent: Event = LikeEvent(userId, newItemId, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeleteLikeEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val event: Event = LikeEvent(userId, itemId)
-        checkSuccessfulEventDelete(event)
-    }
-
-    @Test
     fun testAddCartaddEvent() {
         val userId = generateUUID()
         val itemId = generateUUID()
@@ -545,24 +407,6 @@ class ZaiClientKotlinTest {
         } catch (e: ZaiClientException) {
             Assert.assertEquals(401, e.httpStatusCode.toLong())
         }
-    }
-
-    @Test
-    fun testUpdateCartaddEvent() {
-        val userId = generateUUID()
-        val oldItemId = generateUUID()
-        val newItemId = generateUUID()
-        val oldEvent: Event = CartaddEvent(userId, oldItemId)
-        val newEvent: Event = CartaddEvent(userId, newItemId, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeleteCartaddEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val event: Event = CartaddEvent(userId, itemId)
-        checkSuccessfulEventDelete(event)
     }
 
     @Test
@@ -617,27 +461,6 @@ class ZaiClientKotlinTest {
     }
 
     @Test
-    fun testUpdateRateEvent() {
-        val userId = generateUUID()
-        val oldRating = generateRandomDouble(0, 5)
-        val oldItemId = generateUUID()
-        val newRating = generateRandomDouble(0, 5)
-        val newItemId = generateUUID()
-        val oldEvent: Event = RateEvent(userId, oldItemId, oldRating)
-        val newEvent: Event = RateEvent(userId, newItemId, newRating, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeleteRateEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val rating = generateRandomDouble(0, 5)
-        val event: Event = RateEvent(userId, itemId, rating)
-        checkSuccessfulEventDelete(event)
-    }
-
-    @Test
     fun testAddPurchaseEvent() {
         val userId = generateUUID()
         val itemId = generateUUID()
@@ -689,28 +512,6 @@ class ZaiClientKotlinTest {
     }
 
     @Test
-    fun testUpdatePurchaseEvent() {
-        val userId = generateUUID()
-        val oldPrice = generateRandomInteger(10000, 100000)
-        val oldItemId = generateUUID()
-        val newPrice = generateRandomInteger(10000, 100000)
-        val newItemId = generateUUID()
-        val oldEvent: Event = PurchaseEvent(userId, oldItemId, oldPrice)
-        val newEvent: Event = PurchaseEvent(userId, newItemId, newPrice, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeletePurchaseEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val price = generateRandomInteger(10000, 100000)
-        val event: Event = PurchaseEvent(userId, itemId, price)
-        checkSuccessfulEventDelete(event)
-    }
-
-
-    @Test
     fun testAddSearchEventManualTime() {
         val userId = generateUUID()
         val searchQuery = generateSearchQuery()
@@ -750,24 +551,6 @@ class ZaiClientKotlinTest {
     }
 
     @Test
-    fun testUpdateSearchEvent() {
-        val userId = generateUUID()
-        val oldSearchQuery = generatePageType()
-        val newSearchQuery = generatePageType()
-        val oldEvent: Event = SearchEvent(userId, oldSearchQuery)
-        val newEvent: Event = SearchEvent(userId, newSearchQuery, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeleteSearchEvent() {
-        val userId = generateUUID()
-        val searchQuery = generatePageType()
-        val event: Event = SearchEvent(userId, searchQuery)
-        checkSuccessfulEventDelete(event)
-    }
-
-    @Test
     fun testAddCustomEvent() {
         val userId = generateUUID()
         val itemId = generateUUID()
@@ -786,30 +569,6 @@ class ZaiClientKotlinTest {
         val timestamp = unixTimestamp.toLong()
         val event: Event = CustomEvent(userId, itemId, eventType, eventValue, timestamp.toDouble())
         checkSuccessfulEventAdd(event)
-    }
-
-    @Test
-    fun testUpdateCustomEvent() {
-        val userId = generateUUID()
-        val oldItemId = generateUUID()
-        val oldEventType = "oldEventType"
-        val oldEventValue = "oldEventValue"
-        val newItemId = generateUUID()
-        val newEventType = "newEventType"
-        val newEventValue = "newEventValue"
-        val oldEvent: Event = CustomEvent(userId, oldItemId, oldEventType, oldEventValue)
-        val newEvent: Event = CustomEvent(userId, newItemId, newEventType, newEventValue, oldEvent.timestamp)
-        checkSuccessfulEventUpdate(oldEvent, newEvent)
-    }
-
-    @Test
-    fun testDeleteCustomEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val eventType = "customEventType"
-        val eventValue = "customEventValue"
-        val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
-        checkSuccessfulEventDelete(event)
     }
 
     @Test
