@@ -202,6 +202,9 @@ public class ZaiClientBatchJavaTest {
         ddbClient.close();
     }
 
+    /**********************************
+    *        PurchaseEventBatch       *
+    ***********************************/
     @Test
     public void testAddPurchaseEventBatch() {
         String userId = generateUUID();
@@ -359,6 +362,9 @@ public class ZaiClientBatchJavaTest {
         }
     }
 
+    /**********************************
+    *         CustomEventBatch        *
+    ***********************************/
     @Test
     public void testAddCustomEventBatch() {
         String userId = generateUUID();

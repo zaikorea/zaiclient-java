@@ -1,7 +1,6 @@
 package org.zaikorea.ZaiClientTest;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.*;
@@ -262,6 +261,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *             ViewEvent           *
+    ***********************************/
     @Test
     public void testAddViewEvent() {
         String userId = generateUUID();
@@ -331,6 +333,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *      ProductDetailViewEvent     *
+    ***********************************/
     @Test
     public void testAddProductDetailViewEvent() {
         String userId = generateUUID();
@@ -400,6 +405,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *            LikeEvent            *
+    ***********************************/
     @Test
     public void testAddLikeEvent() {
         String userId = generateUUID();
@@ -469,6 +477,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *          PageViewEvent          *
+    ***********************************/
     @Test
     public void testAddPageViewEvent() {
         String userId = generateUUID();
@@ -538,6 +549,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *           SearchEvent           *
+    ***********************************/
     @Test
     public void testAddSearchEvent() {
         String userId = generateUUID();
@@ -607,6 +621,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *           CartaddEvent          *
+    ***********************************/
     @Test
     public void testAddCartaddEvent() {
         String userId = generateUUID();
@@ -676,6 +693,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *            RateEvent            *
+    ***********************************/
     @Test
     public void testAddRateEvent() {
         String userId = generateUUID();
@@ -751,6 +771,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *          PurchaseEvent          *
+    ***********************************/
     @Test
     public void testAddPurchaseEvent() {
         String userId = generateUUID();
@@ -826,6 +849,9 @@ public class ZaiClientJavaTest {
         }
     }
 
+    /**********************************
+    *           CustomEvent           *
+    ***********************************/
     @Test
     public void testAddCustomEvent() {
         String userId = generateUUID();
