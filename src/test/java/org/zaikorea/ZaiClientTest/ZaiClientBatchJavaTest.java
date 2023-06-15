@@ -243,7 +243,6 @@ public class ZaiClientBatchJavaTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch, true);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             fail();
         }
     }
@@ -275,7 +274,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId, timestamp);
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId).setTimestamp(timestamp);
 
             final int NUM = 10;
 
@@ -405,7 +404,6 @@ public class ZaiClientBatchJavaTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch, true);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             fail();
         }
     }
@@ -439,7 +437,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType, timestamp);
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType).setTimestamp(timestamp);
 
             final int NUM = 10;
 
@@ -464,7 +462,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType, timestamp);
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType).setTimestamp(timestamp);
 
             final int NUM = 10;
 
@@ -491,7 +489,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType, timestamp);
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType).setTimestamp(timestamp);
 
             final int NUM = 10;
 

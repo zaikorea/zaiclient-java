@@ -246,7 +246,7 @@ class ZaiClientBatchKotlinTest {
         val userId = generateUUID()
         val timestamp = unixTimestamp.toLong()
         try {
-            val eventBatch = PurchaseEventBatch(userId, timestamp.toDouble())
+            val eventBatch = PurchaseEventBatch(userId).setTimestamp(timestamp.toDouble())
             val NUM = 10
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
@@ -379,7 +379,7 @@ class ZaiClientBatchKotlinTest {
         val eventType = "customEventType"
         val timestamp = unixTimestamp.toLong()
         try {
-            val eventBatch = CustomEventBatch(userId, eventType, timestamp.toDouble())
+            val eventBatch = CustomEventBatch(userId, eventType).setTimestamp(timestamp.toDouble())
             val NUM = 10
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
@@ -400,7 +400,7 @@ class ZaiClientBatchKotlinTest {
         var eventValue: String? = ""
         val timestamp = unixTimestamp.toLong()
         try {
-            val eventBatch = CustomEventBatch(userId, eventType, timestamp.toDouble())
+            val eventBatch = CustomEventBatch(userId, eventType).setTimestamp(timestamp.toDouble())
             val NUM = 10
             for (i in 0 until NUM) {
                 itemId = generateUUID()
@@ -422,7 +422,7 @@ class ZaiClientBatchKotlinTest {
         var eventValue: String? = ""
         val timestamp = unixTimestamp.toLong()
         try {
-            val eventBatch = CustomEventBatch(userId, eventType, timestamp.toDouble())
+            val eventBatch = CustomEventBatch(userId, eventType).setTimestamp(timestamp.toDouble())
             val NUM = 10
             for (i in 0 until NUM) {
                 itemId = generateUUID()
