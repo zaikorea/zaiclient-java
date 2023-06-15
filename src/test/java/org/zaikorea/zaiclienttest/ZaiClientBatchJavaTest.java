@@ -17,6 +17,7 @@ import org.zaikorea.zaiclient.exceptions.BatchSizeLimitExceededException;
 import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
 import org.zaikorea.zaiclient.request.*;
+import org.zaikorea.zaiclient.response.EventLoggerResponse;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -32,6 +33,8 @@ public class ZaiClientBatchJavaTest {
     private static final String eventTableEventTypeKey = "event_type";
     private static final String eventTableEventValueKey = "event_value";
     private static final String eventTableExpirationTimeKey = "expiration_time";
+    private static final String eventTableIsZaiRecommendationKey = "is_zai_recommendation";
+    private static final String eventTableFromKey = "from";
 
     private static final int defaultDataExpirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
@@ -72,7 +75,7 @@ public class ZaiClientBatchJavaTest {
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
                     String val = returnedItem.get(key).toString();
-                    item.put(key, val.substring(17, val.length() - 1));
+                    item.put(key, val.substring(val.indexOf("=") + 1, val.length() - 1));
                 }
                 return item;
             }
@@ -120,6 +123,8 @@ public class ZaiClientBatchJavaTest {
                 String itemId = event.getItemId();
                 String eventType = event.getEventType();
                 String eventValue = event.getEventValue();
+                boolean isZaiRecommendation = event.getIsZaiRecommendation();
+                String from = event.getFrom();
 
                 Map<String, String> logItem = getEventLogWithTimestamp(userId, timestamp);
                 assertNotNull(logItem);
@@ -129,6 +134,8 @@ public class ZaiClientBatchJavaTest {
                 assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
                 assertEquals(logItem.get(eventTableEventTypeKey), eventType);
                 assertEquals(logItem.get(eventTableEventValueKey), eventValue);
+                assertEquals(Boolean.parseBoolean(logItem.get(eventTableIsZaiRecommendationKey)), isZaiRecommendation);
+                assertEquals(logItem.get(eventTableFromKey), from);
                 assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
             }
         } catch (IOException | ZaiClientException | EmptyBatchException e) {
@@ -139,7 +146,7 @@ public class ZaiClientBatchJavaTest {
 
     private void checkSuccessfulEventBatchAdd(EventBatch eventBatch, boolean isTest) {
         try {
-            testClient.addEventLog(eventBatch, isTest);
+            EventLoggerResponse response = testClient.addEventLog(eventBatch, isTest);
 
             List<Event> events = eventBatch.getEventList();
 
@@ -150,6 +157,9 @@ public class ZaiClientBatchJavaTest {
                 String itemId = event.getItemId();
                 String eventType = event.getEventType();
                 String eventValue = event.getEventValue();
+                double serverTimestamp = response.getTimestamp();
+                boolean isZaiRecommendation = event.getIsZaiRecommendation();
+                String from = event.getFrom();
 
                 Map<String, String> logItem = getEventLogWithTimestamp(userId, timestamp);
                 assertNotNull(logItem);
@@ -160,11 +170,15 @@ public class ZaiClientBatchJavaTest {
                 assertEquals(logItem.get(eventTableEventTypeKey), eventType);
                 assertEquals(logItem.get(eventTableEventValueKey), eventValue);
                 if (isTest) {
-                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + Config.testEventTimeToLive), 1);
+                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)),
+                            (int) (serverTimestamp + Config.testEventTimeToLive));
                 }
                 else {
-                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + defaultDataExpirationSeconds), 1);
+                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)),
+                            (int) (serverTimestamp + defaultDataExpirationSeconds));
                 }
+                assertEquals(Boolean.parseBoolean(logItem.get(eventTableIsZaiRecommendationKey)), isZaiRecommendation);
+                assertEquals(logItem.get(eventTableFromKey), from);
                 assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
             }
         } catch (IOException | ZaiClientException | EmptyBatchException e) {
@@ -183,6 +197,7 @@ public class ZaiClientBatchJavaTest {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
                 .connectTimeout(30)
                 .readTimeout(10)
+                .customEndpoint("dev")
                 .build();
         incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
                 .connectTimeout(0)
@@ -203,8 +218,8 @@ public class ZaiClientBatchJavaTest {
     }
 
     /**********************************
-    *        PurchaseEventBatch       *
-    ***********************************/
+     *       PurchaseEventBatch       *
+     **********************************/
     @Test
     public void testAddPurchaseEventBatch() {
         String userId = generateUUID();
@@ -219,6 +234,28 @@ public class ZaiClientBatchJavaTest {
                 int price = generateRandomInteger(10000, 100000);
 
                 eventBatch.addEventItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddPurchaseEventBatchWithIsZaiRec() {
+        String userId = generateUUID();
+
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                boolean isZaiRec = true;
+                int price = generateRandomInteger(10000, 100000);
+
+                eventBatch.addEventItem(itemId, price, isZaiRec);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -243,7 +280,6 @@ public class ZaiClientBatchJavaTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch, true);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             fail();
         }
     }
@@ -275,7 +311,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId, timestamp);
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId).setTimestamp(timestamp);
 
             final int NUM = 10;
 
@@ -363,8 +399,8 @@ public class ZaiClientBatchJavaTest {
     }
 
     /**********************************
-    *         CustomEventBatch        *
-    ***********************************/
+     *        CustomEventBatch        *
+     **********************************/
     @Test
     public void testAddCustomEventBatch() {
         String userId = generateUUID();
@@ -380,6 +416,76 @@ public class ZaiClientBatchJavaTest {
                 double rate = generateRandomDouble(0, 5);
 
                 eventBatch.addEventItem(itemId, Double.toString(rate));
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddCustomEventBatchWithIsZaiRec() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                boolean isZaiRec = true;
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addEventItem(itemId, Double.toString(rate), isZaiRec);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddCustomEventBatchWithFrom() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
+                String from = "home";
+
+                eventBatch.addEventItem(itemId, Double.toString(rate), from);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddCustomEventBatchWithAllFields() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                boolean isZaiRec = true;
+                String from = "home";
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addEventItem(itemId, Double.toString(rate), isZaiRec, from);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
         } catch (Exception e) {
@@ -405,7 +511,6 @@ public class ZaiClientBatchJavaTest {
             }
             checkSuccessfulEventBatchAdd(eventBatch, true);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             fail();
         }
     }
@@ -439,7 +544,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType, timestamp);
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType).setTimestamp(timestamp);
 
             final int NUM = 10;
 
@@ -464,7 +569,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType, timestamp);
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType).setTimestamp(timestamp);
 
             final int NUM = 10;
 
@@ -491,7 +596,7 @@ public class ZaiClientBatchJavaTest {
         long timestamp = Long.parseLong(getUnixTimestamp());
 
         try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType, timestamp);
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType).setTimestamp(timestamp);
 
             final int NUM = 10;
 

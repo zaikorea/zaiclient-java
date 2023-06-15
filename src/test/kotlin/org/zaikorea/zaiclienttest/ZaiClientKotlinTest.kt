@@ -86,7 +86,7 @@ class ZaiClientKotlinTest {
             if (returnedItem != null) {
                 for (key in returnedItem.keys) {
                     val `val` = returnedItem[key].toString()
-                    item[key] = `val`.substring(17, `val`.length - 1)
+                    item[key] = `val`.substring(`val`.indexOf('=') + 1, `val`.lastIndex)
                 }
                 return item
             }
@@ -124,6 +124,8 @@ class ZaiClientKotlinTest {
             val itemId = event.itemId
             val eventType = event.eventType
             val eventValue = event.eventValue
+            val isZaiRecommendation = event.isZaiRecommendation
+            val from = event.from
             val logItem = getEventLog(userId)
             Assert.assertNotNull(logItem)
             Assert.assertNotEquals(logItem!!.size.toLong(), 0)
@@ -132,6 +134,8 @@ class ZaiClientKotlinTest {
             Assert.assertEquals(logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001)
             Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
             Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
+            Assert.assertEquals(logItem[eventTableIsZaiRecommendationKey].toBoolean(), isZaiRecommendation)
+            Assert.assertEquals(logItem[eventTableFromKey], from)
             Assert.assertTrue(deleteEventLog(userId))
         } catch (e: IOException) {
             Assert.fail()
@@ -142,12 +146,15 @@ class ZaiClientKotlinTest {
 
     private fun checkSuccessfulEventAdd(event: Event, isTest: Boolean) {
         try {
-            testClient!!.addEventLog(event, isTest)
+            val response = testClient!!.addEventLog(event, isTest)
             val userId = event.userId
             val timestamp = event.timestamp
             val itemId = event.itemId
             val eventType = event.eventType
             val eventValue = event.eventValue
+            val serverTimestamp = response.timestamp
+            val isZaiRecommendation = event.isZaiRecommendation
+            val from = event.from
             val timeToLive: Int? = event.timeToLive
             val logItem = getEventLog(userId)
 
@@ -159,13 +166,15 @@ class ZaiClientKotlinTest {
             Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
             Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
             if (isTest) {
-                Assert.assertEquals(logItem[eventTableExpirationTimeKey]!!.toDouble(),
-                        (timestamp + timeToLive!!).toInt().toDouble(), 1.0)
+                Assert.assertEquals(logItem[eventTableExpirationTimeKey]!!.toInt(),
+                        (serverTimestamp + timeToLive!!).toInt())
             }
             else {
-                Assert.assertEquals(logItem[eventTableExpirationTimeKey]!!.toDouble(),
-                        (timestamp + defaultDataExpirationSeconds).toInt().toDouble(), 1.0)
+                Assert.assertEquals(logItem[eventTableExpirationTimeKey]!!.toInt(),
+                        (serverTimestamp + defaultDataExpirationSeconds).toInt())
             }
+            Assert.assertEquals(logItem[eventTableIsZaiRecommendationKey].toBoolean(), isZaiRecommendation)
+            Assert.assertEquals(logItem[eventTableFromKey], from)
             Assert.assertTrue(deleteEventLog(userId))
         } catch (e: IOException) {
             Assert.fail()
@@ -179,6 +188,7 @@ class ZaiClientKotlinTest {
         testClient = ZaiClient.Builder(clientId, clientSecret)
             .connectTimeout(10)
             .readTimeout(30)
+            .customEndpoint("dev")
             .build()
         incorrectIdClient = ZaiClient.Builder(".$clientId", clientSecret)
             .connectTimeout(0)
@@ -225,72 +235,6 @@ class ZaiClientKotlinTest {
     }
 
     /**********************************
-     *            ViewEvent           *
-     **********************************/
-    @Test
-    fun testAddViewEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val event: Event = ViewEvent(userId, itemId)
-        checkSuccessfulEventAdd(event)
-    }
-
-    @Test
-    fun testTrueTestAddViewEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val event: Event = ViewEvent(userId, itemId)
-        checkSuccessfulEventAdd(event, true)
-    }
-
-    @Test
-    fun testFalseTestAddViewEvent() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val event: Event = ViewEvent(userId, itemId)
-        checkSuccessfulEventAdd(event, false)
-    }
-
-    @Test
-    fun testAddViewEventManualTime() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val timestamp = unixTimestamp.toLong()
-        val event: Event = ViewEvent(userId, itemId, timestamp.toDouble())
-        checkSuccessfulEventAdd(event)
-    }
-
-    @Test
-    fun testAddViewEventWrongClientId() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val timestamp = unixTimestamp.toLong()
-        val event: Event = ViewEvent(userId, itemId, timestamp.toDouble())
-        try {
-            incorrectIdClient!!.addEventLog(event)
-        } catch (e: IOException) {
-            Assert.fail()
-        } catch (e: ZaiClientException) {
-            Assert.assertEquals(401, e.httpStatusCode.toLong())
-        }
-    }
-
-    @Test
-    fun testAddViewEventWrongSecret() {
-        val userId = generateUUID()
-        val itemId = generateUUID()
-        val timestamp = unixTimestamp.toLong()
-        val event: Event = ViewEvent(userId, itemId, timestamp.toDouble())
-        try {
-            incorrectSecretClient!!.addEventLog(event)
-        } catch (e: IOException) {
-            Assert.fail()
-        } catch (e: ZaiClientException) {
-            Assert.assertEquals(401, e.httpStatusCode.toLong())
-        }
-    }
-
-    /**********************************
      *     ProductDetailViewEvent     *
      **********************************/
     @Test
@@ -298,7 +242,23 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = ProductDetailViewEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = ProductDetailViewEvent(userId, itemId).setTimestamp(timestamp.toDouble())
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddProductDetailViewEventWithIsZaiRec() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val event: Event = ProductDetailViewEvent(userId, itemId).setIsZaiRec(true)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddProductDetailViewEventWithFrom() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val event: Event = ProductDetailViewEvent(userId, itemId).setFrom("home")
         checkSuccessfulEventAdd(event)
     }
 
@@ -323,7 +283,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = ProductDetailViewEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = ProductDetailViewEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         try {
             incorrectIdClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -338,7 +298,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = ProductDetailViewEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = ProductDetailViewEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         try {
             incorrectSecretClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -351,6 +311,14 @@ class ZaiClientKotlinTest {
     /**********************************
      *          PageViewEvent         *
      **********************************/
+    @Test
+    fun testAddPageViewEventWithContainsZaiRec() {
+        val userId = generateUUID()
+        val pageType = generatePageType()
+        val event: Event = PageViewEvent(userId, pageType).setContainsZaiRec(true)
+        checkSuccessfulEventAdd(event)
+    }
+
     @Test
     fun testAddTrueTestPageViewEvent() {
         val userId = generateUUID()
@@ -372,7 +340,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val pageType = generatePageType()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = PageViewEvent(userId, pageType, timestamp.toDouble())
+        val event: Event = PageViewEvent(userId, pageType).setTimestamp(timestamp.toDouble())
         checkSuccessfulEventAdd(event)
     }
 
@@ -381,7 +349,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val pageType = generatePageType()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = PageViewEvent(userId, pageType, timestamp.toDouble())
+        val event: Event = PageViewEvent(userId, pageType).setTimestamp(timestamp.toDouble())
         try {
             incorrectIdClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -396,7 +364,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val pageType = generatePageType()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = PageViewEvent(userId, pageType, timestamp.toDouble())
+        val event: Event = PageViewEvent(userId, pageType).setTimestamp(timestamp.toDouble())
         try {
             incorrectSecretClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -414,6 +382,22 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val event: Event = LikeEvent(userId, itemId)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddLikeEventWithIsZaiRec() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val event: Event = LikeEvent(userId, itemId).setIsZaiRec(true)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddLikeEventWithFro() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val event: Event = LikeEvent(userId, itemId).setFrom("home")
         checkSuccessfulEventAdd(event)
     }
 
@@ -438,7 +422,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = LikeEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = LikeEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         checkSuccessfulEventAdd(event)
     }
 
@@ -447,7 +431,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = LikeEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = LikeEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         try {
             incorrectIdClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -462,7 +446,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = LikeEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = LikeEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         try {
             incorrectSecretClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -480,6 +464,22 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val event: Event = CartaddEvent(userId, itemId)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddCartaddEventWithIsZaiRec() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val event: Event = CartaddEvent(userId, itemId).setIsZaiRec(true)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddCartaddEventWithFrom() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val event: Event = CartaddEvent(userId, itemId).setFrom("home")
         checkSuccessfulEventAdd(event)
     }
 
@@ -504,7 +504,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = CartaddEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = CartaddEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         checkSuccessfulEventAdd(event)
     }
 
@@ -513,7 +513,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = CartaddEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = CartaddEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         try {
             incorrectIdClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -528,7 +528,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val itemId = generateUUID()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = CartaddEvent(userId, itemId, timestamp.toDouble())
+        val event: Event = CartaddEvent(userId, itemId).setTimestamp(timestamp.toDouble())
         try {
             incorrectSecretClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -547,6 +547,15 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val rating = generateRandomDouble(0, 5)
         val event: Event = RateEvent(userId, itemId, rating)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddRateEventWithIsZaiRec() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val rating = generateRandomDouble(0, 5)
+        val event: Event = RateEvent(userId, itemId, rating).setIsZaiRec(true)
         checkSuccessfulEventAdd(event)
     }
 
@@ -574,7 +583,7 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val rating = generateRandomDouble(0, 5)
         val timestamp = unixTimestamp.toLong()
-        val event: Event = RateEvent(userId, itemId, rating, timestamp.toDouble())
+        val event: Event = RateEvent(userId, itemId, rating).setTimestamp(timestamp.toDouble())
         checkSuccessfulEventAdd(event)
     }
 
@@ -584,7 +593,7 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val rating = generateRandomDouble(0, 5)
         val timestamp = unixTimestamp.toLong()
-        val event: Event = RateEvent(userId, itemId, rating, timestamp.toDouble())
+        val event: Event = RateEvent(userId, itemId, rating).setTimestamp(timestamp.toDouble())
         try {
             incorrectIdClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -600,7 +609,7 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val rating = generateRandomDouble(0, 5)
         val timestamp = unixTimestamp.toLong()
-        val event: Event = RateEvent(userId, itemId, rating, timestamp.toDouble())
+        val event: Event = RateEvent(userId, itemId, rating).setTimestamp(timestamp.toDouble())
         try {
             incorrectSecretClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -619,6 +628,15 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val price = generateRandomInteger(10000, 100000)
         val event: Event = PurchaseEvent(userId, itemId, price)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddPurchaseEventWithIsZaiRec() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val price = generateRandomInteger(10000, 100000)
+        val event: Event = PurchaseEvent(userId, itemId, price).setIsZaiRec(true)
         checkSuccessfulEventAdd(event)
     }
 
@@ -646,7 +664,7 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val price = generateRandomInteger(10000, 100000)
         val timestamp = unixTimestamp.toLong()
-        val event: Event = PurchaseEvent(userId, itemId, price, timestamp.toDouble())
+        val event: Event = PurchaseEvent(userId, itemId, price).setTimestamp(timestamp.toDouble())
         checkSuccessfulEventAdd(event)
     }
 
@@ -656,7 +674,7 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val price = generateRandomInteger(10000, 100000)
         val timestamp = unixTimestamp.toLong()
-        val event: Event = PurchaseEvent(userId, itemId, price, timestamp.toDouble())
+        val event: Event = PurchaseEvent(userId, itemId, price).setTimestamp(timestamp.toDouble())
         try {
             incorrectIdClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -672,7 +690,7 @@ class ZaiClientKotlinTest {
         val itemId = generateUUID()
         val price = generateRandomInteger(10000, 100000)
         val timestamp = unixTimestamp.toLong()
-        val event: Event = PurchaseEvent(userId, itemId, price, timestamp.toDouble())
+        val event: Event = PurchaseEvent(userId, itemId, price).setTimestamp(timestamp.toDouble())
         try {
             incorrectSecretClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -685,6 +703,14 @@ class ZaiClientKotlinTest {
     /**********************************
      *           SearchEvent          *
      **********************************/
+    @Test
+    fun testAddSearchEventWithIsZaiRec() {
+        val userId = generateUUID()
+        val searchQuery = generateSearchQuery()
+        val event: Event = SearchEvent(userId, searchQuery).setIsZaiRec(true)
+        checkSuccessfulEventAdd(event, true)
+    }
+
     @Test
     fun testAddTrueTestSearchEvent() {
         val userId = generateUUID()
@@ -706,7 +732,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val searchQuery = generateSearchQuery()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = SearchEvent(userId, searchQuery, timestamp.toDouble())
+        val event: Event = SearchEvent(userId, searchQuery).setTimestamp(timestamp.toDouble())
         checkSuccessfulEventAdd(event)
     }
 
@@ -715,7 +741,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val searchQuery = generatePageType()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = SearchEvent(userId, searchQuery, timestamp.toDouble())
+        val event: Event = SearchEvent(userId, searchQuery).setTimestamp(timestamp.toDouble())
         try {
             incorrectIdClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -730,7 +756,7 @@ class ZaiClientKotlinTest {
         val userId = generateUUID()
         val searchQuery = generatePageType()
         val timestamp = unixTimestamp.toLong()
-        val event: Event = SearchEvent(userId, searchQuery, timestamp.toDouble())
+        val event: Event = SearchEvent(userId, searchQuery).setTimestamp(timestamp.toDouble())
         try {
             incorrectSecretClient!!.addEventLog(event)
         } catch (e: IOException) {
@@ -750,6 +776,26 @@ class ZaiClientKotlinTest {
         val eventType = "customEventType"
         val eventValue = "customEventValue"
         val event: Event = CustomEvent(userId, itemId, eventType, eventValue)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddCustomEventWithIsZaiRec() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = "customEventType"
+        val eventValue = "customEventValue"
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setIsZaiRec(true)
+        checkSuccessfulEventAdd(event)
+    }
+
+    @Test
+    fun testAddCustomEventWithFrom() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = "customEventType"
+        val eventValue = "customEventValue"
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setFrom("home")
         checkSuccessfulEventAdd(event)
     }
 
@@ -780,7 +826,7 @@ class ZaiClientKotlinTest {
         val eventType = "customEventType"
         val eventValue = "customEventValue"
         val timestamp = unixTimestamp.toLong()
-        val event: Event = CustomEvent(userId, itemId, eventType, eventValue, timestamp.toDouble())
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setTimestamp(timestamp.toDouble())
         checkSuccessfulEventAdd(event)
     }
 
@@ -909,6 +955,28 @@ class ZaiClientKotlinTest {
         Assert.fail()
     }
 
+    @Test
+    fun testLongFromValue() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue = generateUUID()
+        val from = generateRandomString(501)
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setFrom(from)
+        Assert.assertEquals(500, event.from.length.toLong())
+    }
+
+    @Test
+    fun testZeroLengthFromValue() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue = generateUUID()
+        val from = ""
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setFrom(from)
+        Assert.assertNull(event.from)
+    }
+
     companion object {
         private const val clientId = "test"
         private const val clientSecret =
@@ -920,6 +988,8 @@ class ZaiClientKotlinTest {
         private const val eventTableEventTypeKey = "event_type"
         private const val eventTableEventValueKey = "event_value"
         private const val eventTableExpirationTimeKey = "expiration_time"
+        private const val eventTableIsZaiRecommendationKey = "is_zai_recommendation"
+        private const val eventTableFromKey = "from"
         private const val defaultDataExpirationSeconds = 60 * 60 * 24 * 365
         private val region = Region.AP_NORTHEAST_2
     }

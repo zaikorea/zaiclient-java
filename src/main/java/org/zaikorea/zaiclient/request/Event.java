@@ -26,6 +26,12 @@ public class Event {
     @SerializedName("time_to_live")
     protected Integer timeToLive = null;
 
+    @SerializedName("is_zai_recommendation")
+    protected Boolean isZaiRecommendation = false;
+
+    @SerializedName("from")
+    protected String from = null;
+
     public static double getCurrentUnixTimestamp() {
         // Have to track nanosecond because client sometimes calls api multiple times in a millisecond
         // Use nanoTime because jdk 1.8 doesn't support Instant.getNano() function.
@@ -62,6 +68,14 @@ public class Event {
         return timeToLive;
     }
 
+    public boolean getIsZaiRecommendation() {
+        return isZaiRecommendation;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
     public void setUserId(String userId) {
         if (!(userId.length() > 0 && userId.length() <= 500))
             throw new InvalidParameterException("Length of user id must be between 1 and 500.");
@@ -76,7 +90,7 @@ public class Event {
         this.itemId = itemId;
     }
 
-    public void setTimestamp(double timestamp) {
+    protected void setTimeStamp(double timestamp) {
         if (!(timestamp >= 1_648_871_097 || timestamp <= 2_147_483_647))
             throw new InvalidParameterException("Invalid timestamp.");
 

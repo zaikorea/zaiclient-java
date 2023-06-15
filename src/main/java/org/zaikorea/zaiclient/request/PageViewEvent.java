@@ -6,15 +6,20 @@ public class PageViewEvent extends Event {
     private static final String defaultItemId = "null";
 
     public PageViewEvent(String userId, String pageType) {
-        this(userId, pageType, Event.getCurrentUnixTimestamp());
-    }
-
-    public PageViewEvent(String userId, String pageType, double timestamp) {
         this.setUserId(userId);
         this.setItemId(defaultItemId);
-        this.setTimestamp(timestamp);
+        this.setTimestamp(getCurrentUnixTimestamp());
         this.setEventType(defaultEventType);
         this.setEventValue(pageType);
     }
 
+    public PageViewEvent setContainsZaiRec(boolean containsZaiRec) {
+        this.isZaiRecommendation = containsZaiRec;
+        return this;
+    }
+
+    public PageViewEvent setTimestamp(double timestamp) {
+        super.setTimeStamp(timestamp);
+        return this;
+    }
 }

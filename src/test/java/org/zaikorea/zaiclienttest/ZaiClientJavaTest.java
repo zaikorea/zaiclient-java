@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.zaikorea.zaiclient.ZaiClient;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
 import org.zaikorea.zaiclient.request.*;
+import org.zaikorea.zaiclient.response.EventLoggerResponse;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -30,6 +31,8 @@ public class ZaiClientJavaTest {
     private static final String eventTableEventTypeKey = "event_type";
     private static final String eventTableEventValueKey = "event_value";
     private static final String eventTableExpirationTimeKey = "expiration_time";
+    private static final String eventTableIsZaiRecommendationKey = "is_zai_recommendation";
+    private static final String eventTableFromKey = "from";
 
     private static final String incorrectCustomEndpointMsg = "Only alphanumeric characters are allowed for custom endpoint.";
     private static final String longLengthCustomEndpointMsg = "Custom endpoint should be less than or equal to 10.";
@@ -124,7 +127,7 @@ public class ZaiClientJavaTest {
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
                     String val = returnedItem.get(key).toString();
-                    item.put(key, val.substring(17, val.length() - 1));
+                    item.put(key, val.substring(val.indexOf("=") + 1, val.length() - 1));
                 }
                 return item;
             }
@@ -168,6 +171,8 @@ public class ZaiClientJavaTest {
             String itemId = event.getItemId();
             String eventType = event.getEventType();
             String eventValue = event.getEventValue();
+            boolean isZaiRecommendation = event.getIsZaiRecommendation();
+            String from = event.getFrom();
 
             Map<String, String> logItem = getEventLog(userId);
             assertNotNull(logItem);
@@ -177,6 +182,8 @@ public class ZaiClientJavaTest {
             assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
             assertEquals(logItem.get(eventTableEventTypeKey), eventType);
             assertEquals(logItem.get(eventTableEventValueKey), eventValue);
+            assertEquals(Boolean.parseBoolean(logItem.get(eventTableIsZaiRecommendationKey)), isZaiRecommendation);
+            assertEquals(logItem.get(eventTableFromKey), from);
             assertTrue(deleteEventLog(userId));
         } catch (IOException | ZaiClientException e) {
             fail();
@@ -185,13 +192,16 @@ public class ZaiClientJavaTest {
 
     private void checkSuccessfulEventAdd(Event event, boolean isTest) {
         try {
-            testClient.addEventLog(event, isTest);
+            EventLoggerResponse response = testClient.addEventLog(event, isTest);
             String userId = event.getUserId();
             double timestamp = event.getTimestamp();
             String itemId = event.getItemId();
             String eventType = event.getEventType();
             String eventValue = event.getEventValue();
+            double serverTimestamp = response.getTimestamp();
             Integer timeToLive = event.getTimeToLive();
+            boolean isZaiRecommendation = event.getIsZaiRecommendation();
+            String from = event.getFrom();
 
             Map<String, String> logItem = getEventLog(userId);
             assertNotNull(logItem);
@@ -202,11 +212,15 @@ public class ZaiClientJavaTest {
             assertEquals(logItem.get(eventTableEventTypeKey), eventType);
             assertEquals(logItem.get(eventTableEventValueKey), eventValue);
             if (isTest) {
-                assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + timeToLive), 1);
+                assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)),
+                        (int) (serverTimestamp + timeToLive));
             }
             else {
-                assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + defaultDataExpirationSeconds), 1);
+                assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)),
+                        (int) (serverTimestamp + defaultDataExpirationSeconds));
             }
+            assertEquals(Boolean.parseBoolean(logItem.get(eventTableIsZaiRecommendationKey)), isZaiRecommendation);
+            assertEquals(logItem.get(eventTableFromKey), from);
             assertTrue(deleteEventLog(userId));
         } catch (IOException | ZaiClientException e) {
             fail();
@@ -218,6 +232,7 @@ public class ZaiClientJavaTest {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
                 .connectTimeout(10)
                 .readTimeout(30)
+                .customEndpoint("dev")
                 .build();
         incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
                 .connectTimeout(0)
@@ -261,87 +276,34 @@ public class ZaiClientJavaTest {
         }
     }
 
-    /**********************************
-    *             ViewEvent           *
-    ***********************************/
-    @Test
-    public void testAddViewEvent() {
-        String userId = generateUUID();
-        String itemId = generateUUID();
-
-        Event event = new ViewEvent(userId, itemId);
-        checkSuccessfulEventAdd(event);
-    }
-
-    @Test
-    public void testAddTrueTestViewEvent() {
-        String userId = generateUUID();
-        String itemId = generateUUID();
-
-        Event event = new ViewEvent(userId, itemId);
-        checkSuccessfulEventAdd(event, true);
-    }
-
-    @Test
-    public void testAddFalseTestViewEvent() {
-        String userId = generateUUID();
-        String itemId = generateUUID();
-
-        Event event = new ViewEvent(userId, itemId);
-        checkSuccessfulEventAdd(event, false);
-    }
-
-    @Test
-    public void testAddViewEventManualTime() {
-        String userId = generateUUID();
-        String itemId = generateUUID();
-        long timestamp = Long.parseLong(getUnixTimestamp());
-
-        Event event = new ViewEvent(userId, itemId, timestamp);
-        checkSuccessfulEventAdd(event);
-    }
-
-    @Test
-    public void testAddViewEventWrongClientId() {
-        String userId = generateUUID();
-        String itemId = generateUUID();
-        long timestamp = Long.parseLong(getUnixTimestamp());
-
-        Event event = new ViewEvent(userId, itemId, timestamp);
-        try {
-            incorrectIdClient.addEventLog(event);
-        } catch (IOException e) {
-            fail();
-        } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 401);
-        }
-    }
-
-    @Test
-    public void testAddViewEventWrongSecret() {
-        String userId = generateUUID();
-        String itemId = generateUUID();
-        long timestamp = Long.parseLong(getUnixTimestamp());
-
-        Event event = new ViewEvent(userId, itemId, timestamp);
-        try {
-            incorrectSecretClient.addEventLog(event);
-        } catch (IOException e) {
-            fail();
-        } catch (ZaiClientException e) {
-            assertEquals(e.getHttpStatusCode(), 401);
-        }
-    }
 
     /**********************************
-    *      ProductDetailViewEvent     *
-    ***********************************/
+     *     ProductDetailViewEvent     *
+     **********************************/
     @Test
     public void testAddProductDetailViewEvent() {
         String userId = generateUUID();
         String itemId = generateUUID();
 
         Event event = new ProductDetailViewEvent(userId, itemId);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddProductDetailViewEventWithIsZaiRec() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ProductDetailViewEvent(userId, itemId).setIsZaiRec(true);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddProductDetailViewEventWithFrom() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new ProductDetailViewEvent(userId, itemId).setFrom("home");
         checkSuccessfulEventAdd(event);
     }
 
@@ -369,7 +331,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new ProductDetailViewEvent(userId, itemId, timestamp);
+        Event event = new ProductDetailViewEvent(userId, itemId).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -379,7 +341,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new ProductDetailViewEvent(userId, itemId, timestamp);
+        Event event = new ProductDetailViewEvent(userId, itemId).setTimestamp(timestamp);
         try {
             incorrectIdClient.addEventLog(event);
         } catch (IOException e) {
@@ -395,7 +357,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new ProductDetailViewEvent(userId, itemId, timestamp);
+        Event event = new ProductDetailViewEvent(userId, itemId).setTimestamp(timestamp);
         try {
             incorrectSecretClient.addEventLog(event);
         } catch (IOException e) {
@@ -406,14 +368,32 @@ public class ZaiClientJavaTest {
     }
 
     /**********************************
-    *            LikeEvent            *
-    ***********************************/
+     *           LikeEvent            *
+     **********************************/
     @Test
     public void testAddLikeEvent() {
         String userId = generateUUID();
         String itemId = generateUUID();
 
         Event event = new LikeEvent(userId, itemId);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddLikeEventWithIsZaiRec() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new LikeEvent(userId, itemId).setIsZaiRec(true);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddLikeEventWithFrom() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new LikeEvent(userId, itemId).setFrom("home");
         checkSuccessfulEventAdd(event);
     }
 
@@ -441,7 +421,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new LikeEvent(userId, itemId, timestamp);
+        Event event = new LikeEvent(userId, itemId).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -451,7 +431,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new LikeEvent(userId, itemId, timestamp);
+        Event event = new LikeEvent(userId, itemId).setTimestamp(timestamp);
         try {
             incorrectIdClient.addEventLog(event);
         } catch (IOException e) {
@@ -467,7 +447,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new LikeEvent(userId, itemId, timestamp);
+        Event event = new LikeEvent(userId, itemId).setTimestamp(timestamp);
         try {
             incorrectSecretClient.addEventLog(event);
         } catch (IOException e) {
@@ -478,14 +458,23 @@ public class ZaiClientJavaTest {
     }
 
     /**********************************
-    *          PageViewEvent          *
-    ***********************************/
+     *         PageViewEvent          *
+     **********************************/
     @Test
     public void testAddPageViewEvent() {
         String userId = generateUUID();
         String pageType = generatePageType();
 
         Event event = new PageViewEvent(userId, pageType);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddPageViewEventWithContainsZaiRec() {
+        String userId = generateUUID();
+        String pageType = generatePageType();
+
+        Event event = new PageViewEvent(userId, pageType).setContainsZaiRec(true);
         checkSuccessfulEventAdd(event);
     }
     
@@ -513,7 +502,7 @@ public class ZaiClientJavaTest {
         String pageType = generatePageType();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new PageViewEvent(userId, pageType, timestamp);
+        Event event = new PageViewEvent(userId, pageType).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -523,7 +512,7 @@ public class ZaiClientJavaTest {
         String pageType = generatePageType();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new PageViewEvent(userId, pageType, timestamp);
+        Event event = new PageViewEvent(userId, pageType).setTimestamp(timestamp);
         try {
             incorrectIdClient.addEventLog(event);
         } catch (IOException e) {
@@ -539,7 +528,7 @@ public class ZaiClientJavaTest {
         String pageType = generatePageType();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new PageViewEvent(userId, pageType, timestamp);
+        Event event = new PageViewEvent(userId, pageType).setTimestamp(timestamp);
         try {
             incorrectSecretClient.addEventLog(event);
         } catch (IOException e) {
@@ -550,14 +539,23 @@ public class ZaiClientJavaTest {
     }
 
     /**********************************
-    *           SearchEvent           *
-    ***********************************/
+     *          SearchEvent           *
+     **********************************/
     @Test
     public void testAddSearchEvent() {
         String userId = generateUUID();
         String searchQuery = generateSearchQuery();
 
         Event event = new SearchEvent(userId, searchQuery);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddSearchEventWithIsZaiRec() {
+        String userId = generateUUID();
+        String searchQuery = generateSearchQuery();
+
+        Event event = new SearchEvent(userId, searchQuery).setIsZaiRec(true);
         checkSuccessfulEventAdd(event);
     }
 
@@ -585,7 +583,7 @@ public class ZaiClientJavaTest {
         String searchQuery = generateSearchQuery();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new SearchEvent(userId, searchQuery, timestamp);
+        Event event = new SearchEvent(userId, searchQuery).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -595,7 +593,7 @@ public class ZaiClientJavaTest {
         String searchQuery = generateSearchQuery();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new SearchEvent(userId, searchQuery, timestamp);
+        Event event = new SearchEvent(userId, searchQuery).setTimestamp(timestamp);
         try {
             incorrectIdClient.addEventLog(event);
         } catch (IOException e) {
@@ -611,7 +609,7 @@ public class ZaiClientJavaTest {
         String searchQuery = generateSearchQuery();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new SearchEvent(userId, searchQuery, timestamp);
+        Event event = new SearchEvent(userId, searchQuery).setTimestamp(timestamp);
         try {
             incorrectSecretClient.addEventLog(event);
         } catch (IOException e) {
@@ -622,14 +620,32 @@ public class ZaiClientJavaTest {
     }
 
     /**********************************
-    *           CartaddEvent          *
-    ***********************************/
+     *          CartaddEvent          *
+     **********************************/
     @Test
     public void testAddCartaddEvent() {
         String userId = generateUUID();
         String itemId = generateUUID();
 
         Event event = new CartaddEvent(userId, itemId);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddCartaddEventWithIsZaiRec() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new CartaddEvent(userId, itemId).setIsZaiRec(true);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddCartaddEventWithFrom() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+
+        Event event = new CartaddEvent(userId, itemId).setFrom("home");
         checkSuccessfulEventAdd(event);
     }
 
@@ -657,7 +673,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new CartaddEvent(userId, itemId, timestamp);
+        Event event = new CartaddEvent(userId, itemId).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -667,7 +683,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new CartaddEvent(userId, itemId, timestamp);
+        Event event = new CartaddEvent(userId, itemId).setTimestamp(timestamp);
         try {
             incorrectIdClient.addEventLog(event);
         } catch (IOException e) {
@@ -683,7 +699,7 @@ public class ZaiClientJavaTest {
         String itemId = generateUUID();
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new CartaddEvent(userId, itemId, timestamp);
+        Event event = new CartaddEvent(userId, itemId).setTimestamp(timestamp);
         try {
             incorrectSecretClient.addEventLog(event);
         } catch (IOException e) {
@@ -694,8 +710,8 @@ public class ZaiClientJavaTest {
     }
 
     /**********************************
-    *            RateEvent            *
-    ***********************************/
+     *           RateEvent            *
+     **********************************/
     @Test
     public void testAddRateEvent() {
         String userId = generateUUID();
@@ -703,6 +719,16 @@ public class ZaiClientJavaTest {
         double rating = generateRandomDouble(0, 5);
 
         Event event = new RateEvent(userId, itemId, rating);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddRateEventWithIsZaiRec() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        double rating = generateRandomDouble(0, 5);
+
+        Event event = new RateEvent(userId, itemId, rating).setIsZaiRec(true);
         checkSuccessfulEventAdd(event);
     }
 
@@ -733,7 +759,7 @@ public class ZaiClientJavaTest {
         double rating = generateRandomDouble(0, 5);
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new RateEvent(userId, itemId, rating, timestamp);
+        Event event = new RateEvent(userId, itemId, rating).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -744,7 +770,7 @@ public class ZaiClientJavaTest {
         double rating = generateRandomDouble(0, 5);
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new RateEvent(userId, itemId, rating, timestamp);
+        Event event = new RateEvent(userId, itemId, rating).setTimestamp(timestamp);
         try {
             incorrectIdClient.addEventLog(event);
         } catch (IOException e) {
@@ -761,7 +787,7 @@ public class ZaiClientJavaTest {
         double rating = generateRandomDouble(0, 5);
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new RateEvent(userId, itemId, rating, timestamp);
+        Event event = new RateEvent(userId, itemId, rating).setTimestamp(timestamp);
         try {
             incorrectSecretClient.addEventLog(event);
         } catch (IOException e) {
@@ -772,8 +798,8 @@ public class ZaiClientJavaTest {
     }
 
     /**********************************
-    *          PurchaseEvent          *
-    ***********************************/
+     *         PurchaseEvent          *
+     **********************************/
     @Test
     public void testAddPurchaseEvent() {
         String userId = generateUUID();
@@ -781,6 +807,16 @@ public class ZaiClientJavaTest {
         int price = generateRandomInteger(10000, 100000);
 
         Event event = new PurchaseEvent(userId, itemId, price);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddPurchaseEventWithIsZaiRec() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        int price = generateRandomInteger(10000, 100000);
+
+        Event event = new PurchaseEvent(userId, itemId, price).setIsZaiRec(true);
         checkSuccessfulEventAdd(event);
     }
 
@@ -811,7 +847,7 @@ public class ZaiClientJavaTest {
         int price = generateRandomInteger(10000, 100000);
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new PurchaseEvent(userId, itemId, price, timestamp);
+        Event event = new PurchaseEvent(userId, itemId, price).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -822,7 +858,7 @@ public class ZaiClientJavaTest {
         int price = generateRandomInteger(10000, 100000);
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new PurchaseEvent(userId, itemId, price, timestamp);
+        Event event = new PurchaseEvent(userId, itemId, price).setTimestamp(timestamp);
         try {
             incorrectIdClient.addEventLog(event);
         } catch (IOException e) {
@@ -839,7 +875,7 @@ public class ZaiClientJavaTest {
         int price = generateRandomInteger(10000, 100000);
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new PurchaseEvent(userId, itemId, price, timestamp);
+        Event event = new PurchaseEvent(userId, itemId, price).setTimestamp(timestamp);
         try {
             incorrectSecretClient.addEventLog(event);
         } catch (IOException e) {
@@ -850,8 +886,8 @@ public class ZaiClientJavaTest {
     }
 
     /**********************************
-    *           CustomEvent           *
-    ***********************************/
+     *           CustomEvent          *
+     **********************************/
     @Test
     public void testAddCustomEvent() {
         String userId = generateUUID();
@@ -860,6 +896,28 @@ public class ZaiClientJavaTest {
         String eventValue = "customEventValue";
 
         Event event = new CustomEvent(userId, itemId, eventType, eventValue);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddCustomEventWithIsZaiRec() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue).setIsZaiRec(true);
+        checkSuccessfulEventAdd(event);
+    }
+
+    @Test
+    public void testAddCustomEventWithFrom() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = "customEventType";
+        String eventValue = "customEventValue";
+
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue).setFrom("home");
         checkSuccessfulEventAdd(event);
     }
 
@@ -893,7 +951,7 @@ public class ZaiClientJavaTest {
         String eventValue = "customEventValue";
         long timestamp = Long.parseLong(getUnixTimestamp());
 
-        Event event = new CustomEvent(userId, itemId, eventType, eventValue, timestamp);
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue).setTimestamp(timestamp);
         checkSuccessfulEventAdd(event);
     }
 
@@ -967,7 +1025,6 @@ public class ZaiClientJavaTest {
         fail();
     }
 
-
     @Test
     public void testZeroLengthEventType() {
         String userId = generateUUID();
@@ -990,7 +1047,6 @@ public class ZaiClientJavaTest {
         Event event = new CustomEvent(userId, itemId, eventType, eventValue);
         assertEquals(500, event.getEventValue().length());
     }
-
 
     @Test
     public void testZeroLengthEventValue() {
@@ -1019,5 +1075,27 @@ public class ZaiClientJavaTest {
             return ;
         }
         fail();
+    }
+
+    @Test
+    public void testLongFromValue() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = generateUUID();
+        String eventValue = generateUUID();
+        String from = generateRandomString(501);
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue).setFrom(from);
+        assertEquals(500, event.getFrom().length());
+    }
+
+    @Test
+    public void testZeroLengthFromValue() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = generateUUID();
+        String eventValue = generateUUID();
+        String from = "";
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue).setFrom(from);
+        assertNull(event.getFrom());
     }
 }
