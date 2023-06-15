@@ -23,6 +23,9 @@ public class Event {
     @SerializedName("event_value")
     protected String eventValue;
 
+    @SerializedName("time_to_live")
+    protected Integer timeToLive = null;
+
     public static double getCurrentUnixTimestamp() {
         // Have to track nanosecond because client sometimes calls api multiple times in a millisecond
         // Use nanoTime because jdk 1.8 doesn't support Instant.getNano() function.
@@ -53,6 +56,10 @@ public class Event {
 
     public String getEventValue() {
         return eventValue;
+    }
+
+    public Integer getTimeToLive() {
+        return timeToLive;
     }
 
     public void setUserId(String userId) {
@@ -91,5 +98,12 @@ public class Event {
             this.eventValue = eventValue.substring(0, 500);
         else
             this.eventValue = eventValue;
+    }
+
+    public void setTimeToLive(int timeToLive) {
+        if (timeToLive < 0)
+            throw new InvalidParameterException("Time value can not be negative.");
+        
+        this.timeToLive = timeToLive;
     }
 }

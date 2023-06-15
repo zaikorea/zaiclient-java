@@ -20,4 +20,5 @@ public class Config {
     
     public static final int batchRequestCap = 50;
     public static final double epsilon = 1e-4;
+    public static final int testEventTimeToLive = 60 * 60 * 24; // 1 day
 }

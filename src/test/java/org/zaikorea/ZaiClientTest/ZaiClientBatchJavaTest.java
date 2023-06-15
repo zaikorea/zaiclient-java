@@ -31,6 +31,9 @@ public class ZaiClientBatchJavaTest {
     private static final String eventTableItemIdKey = "item_id";
     private static final String eventTableEventTypeKey = "event_type";
     private static final String eventTableEventValueKey = "event_value";
+    private static final String eventTableExpirationTimeKey = "expiration_time";
+
+    private static final int defaultDataExpirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
     private ZaiClient testClient;
     private ZaiClient incorrectIdClient;
@@ -134,9 +137,9 @@ public class ZaiClientBatchJavaTest {
         }
     }
 
-    private void checkSuccessfulEventBatchDelete(EventBatch eventBatch) {
+    private void checkSuccessfulEventBatchAdd(EventBatch eventBatch, boolean isTest) {
         try {
-            testClient.addEventLog(eventBatch);
+            testClient.addEventLog(eventBatch, isTest);
 
             List<Event> events = eventBatch.getEventList();
 
@@ -156,19 +159,16 @@ public class ZaiClientBatchJavaTest {
                 assertEquals(Double.parseDouble(logItem.get(eventTableSortKey)), timestamp, 0.0001);
                 assertEquals(logItem.get(eventTableEventTypeKey), eventType);
                 assertEquals(logItem.get(eventTableEventValueKey), eventValue);
-            }
-
-            testClient.deleteEventLog(eventBatch);
-
-            for (Event event : events) {
-                String userId = event.getUserId();
-                double timestamp = event.getTimestamp();
-
-                Map<String, String> newLogItem = getEventLogWithTimestamp(userId, timestamp);
-                assertNotNull(newLogItem);
-                assertEquals(newLogItem.size(), 0);
+                if (isTest) {
+                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + Config.testEventTimeToLive), 1);
+                }
+                else {
+                    assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)), (int) (timestamp + defaultDataExpirationSeconds), 1);
+                }
+                assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
             }
         } catch (IOException | ZaiClientException | EmptyBatchException e) {
+            e.printStackTrace();
             fail();
         }
     }
@@ -202,6 +202,9 @@ public class ZaiClientBatchJavaTest {
         ddbClient.close();
     }
 
+    /**********************************
+    *        PurchaseEventBatch       *
+    ***********************************/
     @Test
     public void testAddPurchaseEventBatch() {
         String userId = generateUUID();
@@ -218,6 +221,49 @@ public class ZaiClientBatchJavaTest {
                 eventBatch.addEventItem(itemId, price);
             }
             checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddTrueTestPurchaseEventBatch() {
+        String userId = generateUUID();
+
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                int price = generateRandomInteger(10000, 100000);
+
+                eventBatch.addEventItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, true);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddFalseTestPurchaseEventBatch() {
+        String userId = generateUUID();
+
+        try {
+            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                int price = generateRandomInteger(10000, 100000);
+
+                eventBatch.addEventItem(itemId, price);
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, false);
         } catch (Exception e) {
             fail();
         }
@@ -296,27 +342,6 @@ public class ZaiClientBatchJavaTest {
     }
 
     @Test
-    public void testDeletePurchaseEventBatch() {
-        String userId = generateUUID();
-
-        try {
-            PurchaseEventBatch eventBatch = new PurchaseEventBatch(userId);
-
-            final int NUM = 10;
-
-            for (int i = 0; i < NUM ; i++) {
-                String itemId = generateUUID();
-                int price = generateRandomInteger(10000, 100000);
-
-                eventBatch.addEventItem(itemId, price);
-            }
-            checkSuccessfulEventBatchDelete(eventBatch);
-        } catch (Exception e) {
-            fail();
-        }
-    }
-
-    @Test
     public void testAddPurchaseEventBatchExceedMaxLimit() {
         String userId = generateUUID();
 
@@ -337,6 +362,9 @@ public class ZaiClientBatchJavaTest {
         }
     }
 
+    /**********************************
+    *         CustomEventBatch        *
+    ***********************************/
     @Test
     public void testAddCustomEventBatch() {
         String userId = generateUUID();
@@ -354,6 +382,51 @@ public class ZaiClientBatchJavaTest {
                 eventBatch.addEventItem(itemId, Double.toString(rate));
             }
             checkSuccessfulEventBatchAdd(eventBatch);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddTrueTestCustomEventBatch() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addEventItem(itemId, Double.toString(rate));
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, true);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddFalseTestCustomEventBatch() {
+        String userId = generateUUID();
+        String eventType = "customEventType";
+
+        try {
+            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
+
+            final int NUM = 10;
+
+            for (int i = 0; i < NUM ; i++) {
+                String itemId = generateUUID();
+                double rate = generateRandomDouble(0, 5);
+
+                eventBatch.addEventItem(itemId, Double.toString(rate));
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, false);
         } catch (Exception e) {
             fail();
         }
@@ -431,28 +504,6 @@ public class ZaiClientBatchJavaTest {
             eventBatch.deleteEventItem(itemId, eventValue);
 
             checkSuccessfulEventBatchAdd(eventBatch);
-        } catch (Exception e) {
-            fail();
-        }
-    }
-
-    @Test
-    public void testDeleteCustomEventBatch() {
-        String userId = generateUUID();
-        String eventType = "customEventType";
-
-        try {
-            CustomEventBatch eventBatch = new CustomEventBatch(userId, eventType);
-
-            final int NUM = 10;
-
-            for (int i = 0; i < NUM ; i++) {
-                String itemId = generateUUID();
-                double rate = generateRandomDouble(0, 5);
-
-                eventBatch.addEventItem(itemId, Double.toString(rate));
-            }
-            checkSuccessfulEventBatchDelete(eventBatch);
         } catch (Exception e) {
             fail();
         }

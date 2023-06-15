@@ -121,9 +121,9 @@ class ZaiClientBatchKotlinTest {
         }
     }
 
-    private fun checkSuccessfulEventBatchDelete(eventBatch: EventBatch) {
+    private fun checkSuccessfulEventBatchAdd(eventBatch: EventBatch, isTest: Boolean) {
         try {
-            testClient!!.addEventLog(eventBatch)
+            testClient!!.addEventLog(eventBatch, isTest)
             val events = eventBatch.eventList
             for (event in events) {
                 val userId = event.userId
@@ -137,24 +137,28 @@ class ZaiClientBatchKotlinTest {
                 Assert.assertEquals(logItem[eventTablePartitionKey], userId)
                 Assert.assertEquals(logItem[eventTableItemIdKey], itemId)
                 Assert.assertEquals(
-                    logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001
+                        logItem[eventTableSortKey]!!.toDouble(), timestamp, 0.0001
                 )
                 Assert.assertEquals(logItem[eventTableEventTypeKey], eventType)
                 Assert.assertEquals(logItem[eventTableEventValueKey], eventValue)
-            }
-            testClient!!.deleteEventLog(eventBatch)
-            for (event in events) {
-                val userId = event.userId
-                val timestamp = event.timestamp
-                val newLogItem = getEventLogWithTimestamp(userId, timestamp)
-                Assert.assertNotNull(newLogItem)
-                Assert.assertEquals(newLogItem!!.size.toLong(), 0)
+                if (isTest) {
+                    Assert.assertEquals(logItem[eventTableExpirationTimeKey]!!.toDouble(),
+                            (timestamp + Config.testEventTimeToLive).toInt().toDouble(), 1.0)
+                }
+                else {
+                    Assert.assertEquals(logItem[eventTableExpirationTimeKey]!!.toDouble(),
+                            (timestamp + defaultDataExpirationSeconds).toInt().toDouble(), 1.0)
+                }
+                Assert.assertTrue(deleteEventLogWithTimestamp(userId, timestamp))
             }
         } catch (e: IOException) {
+            e.printStackTrace()
             Assert.fail()
         } catch (e: ZaiClientException) {
+            e.printStackTrace()
             Assert.fail()
         } catch (e: EmptyBatchException) {
+            e.printStackTrace()
             Assert.fail()
         }
     }
@@ -165,11 +169,11 @@ class ZaiClientBatchKotlinTest {
             .connectTimeout(30)
             .readTimeout(10)
             .build()
-        incorrectIdClient = ZaiClient.Builder("." + clientId, clientSecret)
+        incorrectIdClient = ZaiClient.Builder(".$clientId", clientSecret)
             .connectTimeout(0)
             .readTimeout(0)
             .build()
-        incorrectSecretClient = ZaiClient.Builder(clientId, "." + clientSecret)
+        incorrectSecretClient = ZaiClient.Builder(clientId, ".$clientSecret")
             .connectTimeout(-1)
             .readTimeout(-1)
             .build()
@@ -183,6 +187,9 @@ class ZaiClientBatchKotlinTest {
         ddbClient!!.close()
     }
 
+    /***********************************
+     *        PurchaseEventBatch       *
+     ***********************************/
     @Test
     fun testAddPurchaseEventBatch() {
         val userId = generateUUID()
@@ -195,6 +202,40 @@ class ZaiClientBatchKotlinTest {
                 eventBatch.addEventItem(itemId, price)
             }
             checkSuccessfulEventBatchAdd(eventBatch)
+        } catch (e: Exception) {
+            Assert.fail()
+        }
+    }
+
+    @Test
+    fun testAddTrueTestPurchaseEventBatch() {
+        val userId = generateUUID()
+        try {
+            val eventBatch = PurchaseEventBatch(userId)
+            val NUM = 10
+            for (i in 0 until NUM) {
+                val itemId = generateUUID()
+                val price = generateRandomInteger(10000, 100000)
+                eventBatch.addEventItem(itemId, price)
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, true)
+        } catch (e: Exception) {
+            Assert.fail()
+        }
+    }
+
+    @Test
+    fun testAddFalseTestPurchaseEventBatch() {
+        val userId = generateUUID()
+        try {
+            val eventBatch = PurchaseEventBatch(userId)
+            val NUM = 10
+            for (i in 0 until NUM) {
+                val itemId = generateUUID()
+                val price = generateRandomInteger(10000, 100000)
+                eventBatch.addEventItem(itemId, price)
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, false)
         } catch (e: Exception) {
             Assert.fail()
         }
@@ -259,23 +300,6 @@ class ZaiClientBatchKotlinTest {
     }
 
     @Test
-    fun testDeletePurchaseEventBatch() {
-        val userId = generateUUID()
-        try {
-            val eventBatch = PurchaseEventBatch(userId)
-            val NUM = 10
-            for (i in 0 until NUM) {
-                val itemId = generateUUID()
-                val price = generateRandomInteger(10000, 100000)
-                eventBatch.addEventItem(itemId, price)
-            }
-            checkSuccessfulEventBatchDelete(eventBatch)
-        } catch (e: Exception) {
-            Assert.fail()
-        }
-    }
-
-    @Test
     fun testAddPurchaseEventBatchExceedMaxLimit() {
         val userId = generateUUID()
         try {
@@ -292,6 +316,9 @@ class ZaiClientBatchKotlinTest {
         }
     }
 
+    /***********************************
+     *         CustomEventBatch        *
+     ***********************************/
     @Test
     fun testAddCustomEventBatch() {
         val userId = generateUUID()
@@ -302,9 +329,45 @@ class ZaiClientBatchKotlinTest {
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
                 val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
+                eventBatch.addEventItem(itemId, rate.toString())
             }
             checkSuccessfulEventBatchAdd(eventBatch)
+        } catch (e: Exception) {
+            Assert.fail()
+        }
+    }
+
+    @Test
+    fun testAddTrueTestCustomEventBatch() {
+        val userId = generateUUID()
+        val eventType = "customEventType"
+        try {
+            val eventBatch = CustomEventBatch(userId, eventType)
+            val NUM = 10
+            for (i in 0 until NUM) {
+                val itemId = generateUUID()
+                val rate = generateRandomDouble(0, 5)
+                eventBatch.addEventItem(itemId, rate.toString())
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, true)
+        } catch (e: Exception) {
+            Assert.fail()
+        }
+    }
+
+    @Test
+    fun testAddFalseTestCustomEventBatch() {
+        val userId = generateUUID()
+        val eventType = "customEventType"
+        try {
+            val eventBatch = CustomEventBatch(userId, eventType)
+            val NUM = 10
+            for (i in 0 until NUM) {
+                val itemId = generateUUID()
+                val rate = generateRandomDouble(0, 5)
+                eventBatch.addEventItem(itemId, rate.toString())
+            }
+            checkSuccessfulEventBatchAdd(eventBatch, false)
         } catch (e: Exception) {
             Assert.fail()
         }
@@ -321,7 +384,7 @@ class ZaiClientBatchKotlinTest {
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
                 val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
+                eventBatch.addEventItem(itemId, rate.toString())
             }
             checkSuccessfulEventBatchAdd(eventBatch)
         } catch (e: Exception) {
@@ -341,7 +404,7 @@ class ZaiClientBatchKotlinTest {
             val NUM = 10
             for (i in 0 until NUM) {
                 itemId = generateUUID()
-                eventValue = java.lang.Double.toString(generateRandomDouble(0, 5))
+                eventValue = generateRandomDouble(0, 5).toString()
                 eventBatch.addEventItem(itemId, eventValue)
             }
             eventBatch.deleteEventItem(itemId)
@@ -363,29 +426,11 @@ class ZaiClientBatchKotlinTest {
             val NUM = 10
             for (i in 0 until NUM) {
                 itemId = generateUUID()
-                eventValue = java.lang.Double.toString(generateRandomDouble(0, 5))
+                eventValue = generateRandomDouble(0, 5).toString()
                 eventBatch.addEventItem(itemId, eventValue)
             }
             eventBatch.deleteEventItem(itemId, eventValue)
             checkSuccessfulEventBatchAdd(eventBatch)
-        } catch (e: Exception) {
-            Assert.fail()
-        }
-    }
-
-    @Test
-    fun testDeleteCustomEventBatch() {
-        val userId = generateUUID()
-        val eventType = "customEventType"
-        try {
-            val eventBatch = CustomEventBatch(userId, eventType)
-            val NUM = 10
-            for (i in 0 until NUM) {
-                val itemId = generateUUID()
-                val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
-            }
-            checkSuccessfulEventBatchDelete(eventBatch)
         } catch (e: Exception) {
             Assert.fail()
         }
@@ -401,7 +446,7 @@ class ZaiClientBatchKotlinTest {
             for (i in 0 until NUM) {
                 val itemId = generateUUID()
                 val rate = generateRandomDouble(0, 5)
-                eventBatch.addEventItem(itemId, java.lang.Double.toString(rate))
+                eventBatch.addEventItem(itemId, rate.toString())
             }
             checkSuccessfulEventBatchAdd(eventBatch)
         } catch (e: Exception) {
@@ -419,12 +464,14 @@ class ZaiClientBatchKotlinTest {
         private const val eventTableItemIdKey = "item_id"
         private const val eventTableEventTypeKey = "event_type"
         private const val eventTableEventValueKey = "event_value"
+        private const val eventTableExpirationTimeKey = "expiration_time"
+        private const val defaultDataExpirationSeconds = 60 * 60 * 24 * 365
         private val region = Region.AP_NORTHEAST_2
         @JvmStatic
         val unixTimestamp: String
             get() {
                 val utcnow = Instant.now().epochSecond
-                return java.lang.Long.toString(utcnow)
+                return utcnow.toString()
             }
     }
 }

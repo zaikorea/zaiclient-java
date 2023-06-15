@@ -23,21 +23,6 @@ public interface ZaiAPI {
         @Body List<Event> event
     );
 
-    @PUT(Config.eventsApiPath)
-    Call<EventLoggerResponse> updateEventLog(
-        @Body Event event
-    );
-
-    @HTTP(method="DELETE", path=Config.eventsApiPath, hasBody=true)
-    Call<EventLoggerResponse> deleteEventLog(
-        @Body Event event
-    );
-
-    @HTTP(method="DELETE", path=Config.eventsApiPath, hasBody=true)
-    Call<EventLoggerResponse> deleteEventLog(
-        @Body List<Event> event
-    );
-
     @POST
     Call<RecommendationResponse> getRecommendations(
         @Url String url,
