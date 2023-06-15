@@ -21,6 +21,10 @@ public class EventBatch {
 
     protected double timestamp;
 
+    protected List<Boolean> isZaiRecommendation;
+
+    protected List<String> from;
+
     private boolean logFlag = false;
 
     public String getUserId() {
@@ -47,6 +51,10 @@ public class EventBatch {
         this.logFlag = true;
     }
 
+    protected void setTimeStamp(double timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public static double getCurrentUnixTimestamp() {
         // Have to track nanosecond because client sometimes calls api multiple times in a millisecond
         // Use nanoTime because jdk 1.8 doesn't support Instant.getNano() function.
@@ -63,7 +71,7 @@ public class EventBatch {
         return new ArrayList<>();
     }
 
-    void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, BatchSizeLimitExceededException {
+    protected void addEventItem(String itemId, String eventValue) throws LoggedEventBatchException, BatchSizeLimitExceededException {
         if (this.logFlag) throw new LoggedEventBatchException();
 
         if (this.itemIds.size() >= Config.batchRequestCap) {
@@ -72,9 +80,30 @@ public class EventBatch {
 
         this.itemIds.add(itemId);
         this.eventValues.add(eventValue);
+        this.isZaiRecommendation.add(false);
+        this.from.add(null);
     }
 
-    void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
+    protected void addEventItem(String itemId, String eventValue, Boolean isZaiRec) {
+        this.addEventItem(itemId, eventValue);
+        int idx = this.isZaiRecommendation.size()-1;
+        this.isZaiRecommendation.set(idx, isZaiRec);
+    }
+
+    protected void addEventItem(String itemId, String eventValue, String from) {
+        this.addEventItem(itemId, eventValue);
+        int idx = this.from.size()-1;
+        this.from.set(idx, from);
+    }
+
+    protected void addEventItem(String itemId, String eventValue, Boolean isZaiRec, String from) {
+        this.addEventItem(itemId, eventValue);
+        int idx = this.from.size()-1;
+        this.isZaiRecommendation.set(idx, isZaiRec);
+        this.from.set(idx, from);
+    }
+
+    protected void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
         if (logFlag) throw new LoggedEventBatchException();
 
         if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
@@ -82,9 +111,11 @@ public class EventBatch {
         int idx = this.itemIds.indexOf(itemId);
         this.itemIds.remove(idx);
         this.eventValues.remove(idx);
+        this.isZaiRecommendation.remove(idx);
+        this.from.remove(idx);
     }
 
-    void deleteEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
+    protected void deleteEventItem(String itemId, String eventValue) throws LoggedEventBatchException, ItemNotFoundException {
         if (logFlag) throw new LoggedEventBatchException();
 
         if (!this.itemIds.contains(itemId)) throw new ItemNotFoundException();
@@ -99,6 +130,8 @@ public class EventBatch {
             if (eventValue.equals(eventValues.get(idx))) {
                 this.itemIds.remove(idx);
                 this.eventValues.remove(idx);
+                this.isZaiRecommendation.remove(idx);
+                this.from.remove(idx);
                 deleted = true;
                 break;
             }

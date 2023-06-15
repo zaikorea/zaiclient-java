@@ -1,20 +1,35 @@
 package org.zaikorea.ZaiClient.request;
 
+import java.security.InvalidParameterException;
+
 public class ProductDetailViewEvent extends Event {
 
     private static final String defaultEventType = "product_detail_view";
     private static final String defaultEventValue = "null";
 
     public ProductDetailViewEvent(String userId, String itemId) {
-        this(userId, itemId, Event.getCurrentUnixTimestamp());
-    }
-
-    public ProductDetailViewEvent(String userId, String itemId, double timestamp) {
         this.setUserId(userId);
         this.setItemId(itemId);
-        this.setTimestamp(timestamp);
+        this.setTimestamp(getCurrentUnixTimestamp());
         this.setEventType(defaultEventType);
         this.setEventValue(defaultEventValue);
     }
 
+    public ProductDetailViewEvent setIsZaiRec(boolean isZaiRec) {
+        this.isZaiRecommendation = isZaiRec;
+        return this;
+    }
+
+    public ProductDetailViewEvent setFrom(String from) {
+        if (from.length() > 500)
+            throw new InvalidParameterException("Length of from value must be between 1 and 500.");
+
+        this.from = from;
+        return this;
+    }
+
+    public ProductDetailViewEvent setTimestamp(double timestamp) {
+        super.setTimeStamp(timestamp);
+        return this;
+    }
 }
