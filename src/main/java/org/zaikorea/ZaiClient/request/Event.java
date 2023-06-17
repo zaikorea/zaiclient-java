@@ -68,6 +68,14 @@ public class Event {
         return timeToLive;
     }
 
+    public boolean getIsZaiRecommendation() {
+        return isZaiRecommendation;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
     public void setUserId(String userId) {
         if (!(userId.length() > 0 && userId.length() <= 500))
             throw new InvalidParameterException("Length of user id must be between 1 and 500.");
@@ -82,7 +90,7 @@ public class Event {
         this.itemId = itemId;
     }
 
-    public void setTimeStamp(double timestamp) {
+    protected void setTimeStamp(double timestamp) {
         if (!(timestamp >= 1_648_871_097 || timestamp <= 2_147_483_647))
             throw new InvalidParameterException("Invalid timestamp.");
 
