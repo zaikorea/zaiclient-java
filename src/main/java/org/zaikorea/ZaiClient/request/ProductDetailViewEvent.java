@@ -1,7 +1,5 @@
 package org.zaikorea.ZaiClient.request;
 
-import java.security.InvalidParameterException;
-
 public class ProductDetailViewEvent extends Event {
 
     private static final String defaultEventType = "product_detail_view";
@@ -21,10 +19,13 @@ public class ProductDetailViewEvent extends Event {
     }
 
     public ProductDetailViewEvent setFrom(String from) {
-        if (from.length() > 500)
-            throw new InvalidParameterException("Length of from value must be between 1 and 500.");
+        if (from.length() == 0)
+            this.from = null;
+        else if (from.length() > 500)
+            this.from = from.substring(0, 500);
+        else
+            this.from = from;
 
-        this.from = from;
         return this;
     }
 

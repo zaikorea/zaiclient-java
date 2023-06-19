@@ -93,14 +93,25 @@ public class EventBatch {
     protected void addEventItem(String itemId, String eventValue, String from) {
         this.addEventItem(itemId, eventValue);
         int idx = this.from.size()-1;
-        this.from.set(idx, from);
+
+        if (from.length() == 0)
+            this.from.set(idx, null);
+        else if (from.length() > 500)
+            this.from.set(idx, from.substring(0, 500));
+        else
+            this.from.set(idx, from);
     }
 
     protected void addEventItem(String itemId, String eventValue, Boolean isZaiRec, String from) {
         this.addEventItem(itemId, eventValue);
         int idx = this.from.size()-1;
         this.isZaiRecommendation.set(idx, isZaiRec);
-        this.from.set(idx, from);
+        if (from.length() == 0)
+            this.from.set(idx, null);
+        else if (from.length() > 500)
+            this.from.set(idx, from.substring(0, 500));
+        else
+            this.from.set(idx, from);
     }
 
     protected void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {

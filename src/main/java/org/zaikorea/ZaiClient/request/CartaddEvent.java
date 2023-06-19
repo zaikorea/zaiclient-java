@@ -1,7 +1,5 @@
 package org.zaikorea.ZaiClient.request;
 
-import java.security.InvalidParameterException;
-
 public class CartaddEvent extends Event {
 
     private static final String defaultEventType = "cartadd";
@@ -21,10 +19,13 @@ public class CartaddEvent extends Event {
     }
 
     public CartaddEvent setFrom(String from) {
-        if (from.length() > 500)
-            throw new InvalidParameterException("Length of from value must be between 1 and 500.");
-
-        this.from = from;
+        if (from.length() == 0)
+            this.from = null;
+        else if (from.length() > 500)
+            this.from = from.substring(0, 500);
+        else
+            this.from = from;
+        
         return this;
     }
 
