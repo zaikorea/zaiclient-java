@@ -955,18 +955,26 @@ class ZaiClientKotlinTest {
         Assert.fail()
     }
 
+    @Test
     fun testLongFromValue() {
         val userId = generateUUID()
         val itemId = generateUUID()
         val eventType = generateUUID()
         val eventValue = generateUUID()
         val from = generateRandomString(501)
-        try {
-            val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setFrom(from)
-        } catch (e: InvalidParameterException) {
-            return
-        }
-        Assert.fail()
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setFrom(from)
+        Assert.assertEquals(500, event.from.length.toLong())
+    }
+
+    @Test
+    fun testZeroLengthFromValue() {
+        val userId = generateUUID()
+        val itemId = generateUUID()
+        val eventType = generateUUID()
+        val eventValue = generateUUID()
+        val from = ""
+        val event: Event = CustomEvent(userId, itemId, eventType, eventValue).setFrom(from)
+        Assert.assertNull(event.from)
     }
 
     companion object {

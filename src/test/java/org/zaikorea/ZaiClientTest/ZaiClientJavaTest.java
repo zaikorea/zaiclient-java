@@ -1084,11 +1084,18 @@ public class ZaiClientJavaTest {
         String eventType = generateUUID();
         String eventValue = generateUUID();
         String from = generateRandomString(501);
-        try {
-            Event event = new CustomEvent(userId, itemId, eventType, eventValue).setFrom(from);
-        } catch(InvalidParameterException e) {
-            return ;
-        }
-        fail();
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue).setFrom(from);
+        assertEquals(500, event.getFrom().length());
+    }
+
+    @Test
+    public void testZeroLengthFromValue() {
+        String userId = generateUUID();
+        String itemId = generateUUID();
+        String eventType = generateUUID();
+        String eventValue = generateUUID();
+        String from = "";
+        Event event = new CustomEvent(userId, itemId, eventType, eventValue).setFrom(from);
+        assertNull(event.getFrom());
     }
 }
