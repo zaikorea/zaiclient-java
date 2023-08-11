@@ -1,12 +1,12 @@
-package org.zaikorea.ZaiClient;
+package org.zaikorea.zaiclient;
 
 import java.util.List;
 
-import org.zaikorea.ZaiClient.configs.Config;
-import org.zaikorea.ZaiClient.request.Event;
-import org.zaikorea.ZaiClient.request.RecommendationRequest;
-import org.zaikorea.ZaiClient.response.EventLoggerResponse;
-import org.zaikorea.ZaiClient.response.RecommendationResponse;
+import org.zaikorea.zaiclient.configs.Config;
+import org.zaikorea.zaiclient.request.Event;
+import org.zaikorea.zaiclient.request.RecommendationRequest;
+import org.zaikorea.zaiclient.response.EventLoggerResponse;
+import org.zaikorea.zaiclient.response.RecommendationResponse;
 
 import retrofit2.Call;
 import retrofit2.http.*;

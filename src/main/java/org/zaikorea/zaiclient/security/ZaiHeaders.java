@@ -1,6 +1,6 @@
 package org.zaikorea.zaiclient.security;
 
-import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.zaiclient.configs.Config;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

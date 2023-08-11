@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClientTest;
+package org.zaikorea.zaiclienttest;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -11,12 +11,12 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.zaikorea.ZaiClient.ZaiClient;
-import org.zaikorea.ZaiClient.configs.Config;
-import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
-import org.zaikorea.ZaiClient.exceptions.EmptyBatchException;
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException;
-import org.zaikorea.ZaiClient.request.*;
+import org.zaikorea.zaiclient.ZaiClient;
+import org.zaikorea.zaiclient.configs.Config;
+import org.zaikorea.zaiclient.exceptions.BatchSizeLimitExceededException;
+import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
+import org.zaikorea.zaiclient.exceptions.ZaiClientException;
+import org.zaikorea.zaiclient.request.*;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;

@@ -1,6 +1,6 @@
 package org.zaikorea.zaiclient.request;
 
-import org.zaikorea.ZaiClient.configs.Config;
+import org.zaikorea.zaiclient.configs.Config;
 
 import java.util.HashMap;
 import java.util.Map;

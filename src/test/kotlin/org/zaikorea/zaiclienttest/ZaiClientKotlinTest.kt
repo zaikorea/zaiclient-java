@@ -1,12 +1,12 @@
-package org.zaikorea.ZaiClientTest
+package org.zaikorea.zaiclienttest
 
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.zaikorea.ZaiClient.ZaiClient
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException
-import org.zaikorea.ZaiClient.request.*
+import org.zaikorea.zaiclient.ZaiClient
+import org.zaikorea.zaiclient.exceptions.ZaiClientException
+import org.zaikorea.zaiclient.request.*
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue

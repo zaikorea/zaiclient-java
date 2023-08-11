@@ -3,10 +3,10 @@ package org.zaikorea.zaiclient.request;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zaikorea.ZaiClient.configs.Config;
-import org.zaikorea.ZaiClient.exceptions.BatchSizeLimitExceededException;
-import org.zaikorea.ZaiClient.exceptions.ItemNotFoundException;
-import org.zaikorea.ZaiClient.exceptions.LoggedEventBatchException;
+import org.zaikorea.zaiclient.configs.Config;
+import org.zaikorea.zaiclient.exceptions.BatchSizeLimitExceededException;
+import org.zaikorea.zaiclient.exceptions.ItemNotFoundException;
+import org.zaikorea.zaiclient.exceptions.LoggedEventBatchException;
 
 public class PurchaseEventBatch extends EventBatch {
 

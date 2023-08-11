@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClientTest
+package org.zaikorea.zaiclienttest
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -10,10 +10,10 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.zaikorea.ZaiClient.ZaiClient
-import org.zaikorea.ZaiClient.exceptions.ZaiClientException
-import org.zaikorea.ZaiClient.request.RecommendationRequest
-import org.zaikorea.ZaiClient.request.UserRecommendationRequest
+import org.zaikorea.zaiclient.ZaiClient
+import org.zaikorea.zaiclient.exceptions.ZaiClientException
+import org.zaikorea.zaiclient.request.RecommendationRequest
+import org.zaikorea.zaiclient.request.UserRecommendationRequest
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
