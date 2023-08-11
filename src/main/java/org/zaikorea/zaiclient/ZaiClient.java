@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient;
+package org.zaikorea.zaiclient;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;

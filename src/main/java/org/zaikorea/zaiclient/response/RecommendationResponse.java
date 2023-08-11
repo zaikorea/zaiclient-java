@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.response;
+package org.zaikorea.zaiclient.response;
 
 import java.util.List;
 import java.util.Map;

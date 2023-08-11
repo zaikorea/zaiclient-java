@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.exceptions;
+package org.zaikorea.zaiclient.exceptions;
 
 public class BatchSizeLimitExceededException extends RuntimeException {
 

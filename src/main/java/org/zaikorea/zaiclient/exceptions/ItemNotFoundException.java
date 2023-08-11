@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.exceptions;
+package org.zaikorea.zaiclient.exceptions;
 
 public class ItemNotFoundException extends RuntimeException {
 

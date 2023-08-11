@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.request;
+package org.zaikorea.zaiclient.request;
 
 import org.zaikorea.ZaiClient.configs.Config;
 

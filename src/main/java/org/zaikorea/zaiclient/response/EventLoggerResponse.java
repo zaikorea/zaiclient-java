@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.response;
+package org.zaikorea.zaiclient.response;
 
 import com.google.gson.annotations.SerializedName;
 

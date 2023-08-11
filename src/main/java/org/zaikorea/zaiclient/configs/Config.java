@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.configs;
+package org.zaikorea.zaiclient.configs;
 
 public class Config {
     public static final String eventsApiEndPoint = "https://collector-api%s.zaikorea.org";

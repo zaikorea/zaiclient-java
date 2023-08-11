@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.security;
+package org.zaikorea.zaiclient.security;
 
 import org.zaikorea.ZaiClient.configs.Config;
 

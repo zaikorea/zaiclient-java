@@ -1,4 +1,4 @@
-package org.zaikorea.ZaiClient.request;
+package org.zaikorea.zaiclient.request;
 
 public class SearchEvent extends Event {
 
