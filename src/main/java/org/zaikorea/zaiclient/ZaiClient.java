@@ -13,6 +13,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 import org.zaikorea.zaiclient.configs.Config;
 import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
@@ -20,7 +21,11 @@ import org.zaikorea.zaiclient.exceptions.ZaiClientException;
 import org.zaikorea.zaiclient.request.Event;
 import org.zaikorea.zaiclient.request.EventBatch;
 import org.zaikorea.zaiclient.request.RecommendationRequest;
+import org.zaikorea.zaiclient.request.items.AddItem;
+import org.zaikorea.zaiclient.request.items.DeleteItem;
+import org.zaikorea.zaiclient.request.items.UpdateItem;
 import org.zaikorea.zaiclient.response.EventLoggerResponse;
+import org.zaikorea.zaiclient.response.ItemResponse;
 import org.zaikorea.zaiclient.response.RecommendationResponse;
 import org.zaikorea.zaiclient.security.ZaiHeaders;
 import retrofit2.Call;
@@ -34,8 +39,8 @@ public class ZaiClient {
     private final String zaiClientId;
     private final String zaiSecret;
     private final ZaiAPI zaiAPI;
-    private static final int defaultConnectTimeout = 10;
-    private static final int defaultReadTimeout = 30;
+    private static final int DEFAULT_CONNECT_TIMEOUT = 10;
+    private static final int DEFAULT_READ_TIMEOUT = 30;
     private int connectTimeout;
     private int readTimeout;
     private String eventsApiEndpoint;
@@ -49,6 +54,47 @@ public class ZaiClient {
         this.eventsApiEndpoint = builder.eventsApiEndpoint;
         this.mlApiEndpoint = builder.mlApiEndpoint;
         this.zaiAPI = this.instantiateZaiAPI();
+    }
+
+    public ItemResponse sendRequest(AddItem request) throws IOException, ZaiClientException{
+        Call<ItemResponse> call = zaiAPI.addItem(request.getPayload());
+        request.getPayload().stream().forEach(
+            item -> {
+                System.out.println(item.getItemId());
+            }
+        );
+
+        Response<ItemResponse> response = call.execute();
+
+        if (!response.isSuccessful()) {
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+        }
+
+        return response.body();
+    }
+
+    public ItemResponse sendRequest(UpdateItem request) throws IOException, ZaiClientException{
+        Call<ItemResponse> call = zaiAPI.updateItem(request.getPayload());
+
+        Response<ItemResponse> response = call.execute();
+
+        if (!response.isSuccessful()) {
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+        }
+
+        return response.body();
+    }
+
+    public ItemResponse sendRequest(DeleteItem request) throws IOException, ZaiClientException{
+        Call<ItemResponse> call = zaiAPI.deleteItem(request.getPayload());
+
+        Response<ItemResponse> response = call.execute();
+
+        if (!response.isSuccessful()) {
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+        }
+
+        return response.body();
     }
 
     public EventLoggerResponse addEventLog(Event event) throws IOException, ZaiClientException {
@@ -66,7 +112,7 @@ public class ZaiClient {
         if (isTest) {
             event.setTimeToLive(Config.testEventTimeToLive);
         }
-        
+
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(event);
 
         Response<EventLoggerResponse> response = call.execute();
@@ -131,6 +177,10 @@ public class ZaiClient {
         String zaiClientId = this.zaiClientId;
         String zaiSecret = this.zaiSecret;
 
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+
         OkHttpClient client = new OkHttpClient.Builder()
             .readTimeout(this.readTimeout, TimeUnit.SECONDS)
             .connectTimeout(this.connectTimeout, TimeUnit.SECONDS)
@@ -148,6 +198,7 @@ public class ZaiClient {
                     builder = builder.addHeader(zaiHeader.getKey(), zaiHeader.getValue());
                 return chain.proceed(builder.build());
             })
+            .addInterceptor(logging)
             .build();
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -188,8 +239,8 @@ public class ZaiClient {
         public Builder(String zaiClientId, String zaiSecret) {
             this.zaiClientId = zaiClientId;
             this.zaiSecret = zaiSecret;
-            this.connectTimeout = defaultConnectTimeout;
-            this.readTimeout = defaultReadTimeout;
+            this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+            this.readTimeout = DEFAULT_READ_TIMEOUT;
             this.eventsApiEndpoint = String.format(Config.eventsApiEndPoint, "");
             this.mlApiEndpoint = String.format(Config.mlApiEndPoint, "");
         }
