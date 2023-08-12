@@ -3,10 +3,10 @@ package org.zaikorea.zaiclient;
 import java.util.List;
 
 import org.zaikorea.zaiclient.configs.Config;
-import org.zaikorea.zaiclient.request.Event;
+// import org.zaikorea.zaiclient.request.Event;
+import org.zaikorea.zaiclient.request.events.Event;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 // import org.zaikorea.zaiclient.request.RecommendationRequest;
-import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.request.items.Item;
 import org.zaikorea.zaiclient.response.EventLoggerResponse;
 import org.zaikorea.zaiclient.response.ItemResponse;

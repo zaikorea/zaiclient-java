@@ -49,7 +49,7 @@ public class PurchaseEventBatch extends EventBatch {
             throws LoggedEventBatchException, BatchSizeLimitExceededException {
         super.addEventItem(itemId, Integer.toString(price), isZaiRec);
     }
-    
+
     public void deleteEventItem(String itemId) throws LoggedEventBatchException, ItemNotFoundException {
         super.deleteEventItem(itemId);
     }

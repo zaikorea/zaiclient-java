@@ -18,8 +18,10 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import org.zaikorea.zaiclient.configs.Config;
 import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
-import org.zaikorea.zaiclient.request.Event;
+// import org.zaikorea.zaiclient.request.Event;
+import org.zaikorea.zaiclient.request.events.Event;
 import org.zaikorea.zaiclient.request.EventBatch;
+import org.zaikorea.zaiclient.request.events.EventRequest;
 // import org.zaikorea.zaiclient.request.RecommendationRequest;
 // import org.zaikorea.zaiclient.request.recommendations.GetUserRecommendation;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
@@ -113,6 +115,41 @@ public class ZaiClient {
         return response.body();
     }
 
+    public EventLoggerResponse sendRequest(EventRequest eventRequest) throws IOException, ZaiClientException {
+        List<Event> events = eventRequest.getPayload();
+
+        Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
+
+        Response<EventLoggerResponse> response = call.execute();
+
+        if (!response.isSuccessful()) {
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+        }
+
+        return response.body();
+    }
+
+    public EventLoggerResponse sendRequest(EventRequest eventRequest, boolean isTest) throws IOException, ZaiClientException {
+        List<Event> events = eventRequest.getPayload();
+
+        if (isTest) {
+            for (Event event : events) {
+                event.setTimeToLive(Config.testEventTimeToLive);
+            }
+        }
+
+        Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
+
+        Response<EventLoggerResponse> response = call.execute();
+
+        if (!response.isSuccessful()) {
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+        }
+
+        return response.body();
+
+    }
+
     public EventLoggerResponse addEventLog(Event event) throws IOException, ZaiClientException {
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(event);
 
@@ -139,55 +176,55 @@ public class ZaiClient {
         return response.body();
     }
 
-    public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
-        List<Event> events = eventBatch.getEventList();
+    // public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
+    //     List<Event> events = eventBatch.getEventList();
 
-        if (events.size() == 0) throw new EmptyBatchException();
+    //     if (events.size() == 0) throw new EmptyBatchException();
 
-        Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
-        Response<EventLoggerResponse> response = call.execute();
+    //     Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
+    //     Response<EventLoggerResponse> response = call.execute();
 
-        if (!response.isSuccessful())
-            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+    //     if (!response.isSuccessful())
+    //         throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
 
-        eventBatch.setLogFlag();
+    //     eventBatch.setLogFlag();
 
-        return response.body();
-    }
+    //     return response.body();
+    // }
 
-    public EventLoggerResponse addEventLog(EventBatch eventBatch, boolean isTest) throws IOException, ZaiClientException, EmptyBatchException {
-        List<Event> events = eventBatch.getEventList();
+    // public EventLoggerResponse addEventLog(EventBatch eventBatch, boolean isTest) throws IOException, ZaiClientException, EmptyBatchException {
+    //     List<Event> events = eventBatch.getEventList();
 
-        if (events.size() == 0) throw new EmptyBatchException();
+    //     if (events.size() == 0) throw new EmptyBatchException();
 
-        if (isTest) {
-            for (Event event : events) {
-                event.setTimeToLive(Config.testEventTimeToLive);
-            }
-        }
+    //     if (isTest) {
+    //         for (Event event : events) {
+    //             event.setTimeToLive(Config.testEventTimeToLive);
+    //         }
+    //     }
 
-        Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
-        Response<EventLoggerResponse> response = call.execute();
+    //     Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
+    //     Response<EventLoggerResponse> response = call.execute();
 
-        if (!response.isSuccessful())
-            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+    //     if (!response.isSuccessful())
+    //         throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
 
-        eventBatch.setLogFlag();
+    //     eventBatch.setLogFlag();
 
-        return response.body();
-    }
+    //     return response.body();
+    // }
 
-    public RecommendationResponse getRecommendations(RecommendationRequest recommendation) throws IOException, ZaiClientException {
-        Call<RecommendationResponse> call = zaiAPI.getRecommendations(
-                mlApiEndpoint + recommendation.getPath(this.zaiClientId), recommendation
-        );
-        Response<RecommendationResponse> response = call.execute();
+    // public RecommendationResponse getRecommendations(RecommendationRequest recommendation) throws IOException, ZaiClientException {
+    //     Call<RecommendationResponse> call = zaiAPI.getRecommendations(
+    //             mlApiEndpoint + recommendation.getPath(this.zaiClientId), recommendation
+    //     );
+    //     Response<RecommendationResponse> response = call.execute();
 
-        if (!response.isSuccessful())
-            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+    //     if (!response.isSuccessful())
+    //         throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
 
-        return response.body();
-    }
+    //     return response.body();
+    // }
 
     private ZaiAPI instantiateZaiAPI() {
         String zaiClientId = this.zaiClientId;
