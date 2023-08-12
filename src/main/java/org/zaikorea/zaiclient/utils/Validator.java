@@ -76,19 +76,17 @@ public class Validator {
         return value;
     }
 
-    public static <T> T validateObject(T value, Function<T, Boolean> validator, boolean nullable, String varName) {
+    public static <T extends Comparable<T>> T validateNumber(T value, T min, boolean nullable, String varName) {
         if (nullable && value == null) {
             return null;
         }
 
-        if (!validator.apply(value)) {
+        if ((value.compareTo(min) < 0)) {
             throw new IllegalArgumentException(
-                    String.format("The value of %s is invalid", varName)
+                    String.format("The value of %s must be greater or equal to %s", varName, min)
             );
         }
 
         return value;
     }
-
-
 }

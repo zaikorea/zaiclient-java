@@ -20,7 +20,9 @@ import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
 import org.zaikorea.zaiclient.request.Event;
 import org.zaikorea.zaiclient.request.EventBatch;
-import org.zaikorea.zaiclient.request.RecommendationRequest;
+// import org.zaikorea.zaiclient.request.RecommendationRequest;
+// import org.zaikorea.zaiclient.request.recommendations.GetUserRecommendation;
+import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.request.items.AddItem;
 import org.zaikorea.zaiclient.request.items.DeleteItem;
 import org.zaikorea.zaiclient.request.items.UpdateItem;
@@ -89,6 +91,20 @@ public class ZaiClient {
         Call<ItemResponse> call = zaiAPI.deleteItem(request.getPayload());
 
         Response<ItemResponse> response = call.execute();
+
+        if (!response.isSuccessful()) {
+            throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
+        }
+
+        return response.body();
+    }
+
+    public RecommendationResponse sendRequest(RecommendationRequest recommendationRequest) throws IOException, ZaiClientException {
+        Call<RecommendationResponse> call = zaiAPI.getRecommendations(
+                mlApiEndpoint + recommendationRequest.getPath(this.zaiClientId), recommendationRequest.getPayload()
+        );
+
+        Response<RecommendationResponse> response = call.execute();
 
         if (!response.isSuccessful()) {
             throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
@@ -176,12 +192,12 @@ public class ZaiClient {
     private ZaiAPI instantiateZaiAPI() {
         String zaiClientId = this.zaiClientId;
         String zaiSecret = this.zaiSecret;
+        String zaiHttpLog = System.getenv("ZAI_HTTP_LOG");
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-
-        OkHttpClient client = new OkHttpClient.Builder()
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
             .readTimeout(this.readTimeout, TimeUnit.SECONDS)
             .connectTimeout(this.connectTimeout, TimeUnit.SECONDS)
             .addInterceptor(chain -> {
@@ -197,9 +213,13 @@ public class ZaiClient {
                 for (Map.Entry<String, String> zaiHeader : zaiHeaders.entrySet())
                     builder = builder.addHeader(zaiHeader.getKey(), zaiHeader.getValue());
                 return chain.proceed(builder.build());
-            })
-            .addInterceptor(logging)
-            .build();
+            });
+
+        if (zaiHttpLog != null && zaiHttpLog.equals("true")) {
+            clientBuilder = clientBuilder.addInterceptor(logging);
+        }
+
+        OkHttpClient client = clientBuilder.build();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(eventsApiEndpoint)

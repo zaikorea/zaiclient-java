@@ -9,6 +9,12 @@ public class Config {
 
     public static final String mlApiEndPoint = "https://ml-api%s.zaikorea.org";
     public static final String mlApiPathPrefix = "/clients/%s/recommenders";
+
+    public static final String userRecommendationPath = "/user-recommendations";
+    public static final String relatedItemsRecommendationPath = "/related-items";
+    public static final String rerankingRecommendationPath = "/reranking";
+
+
     public static final String userRecommendationPathPrefix = "/user-recommendations";
     public static final String relatedItemsRecommendationPathPrefix = "/related-items";
     public static final String rerankingRecommendationPathPrefix = "/reranking";
@@ -20,7 +26,7 @@ public class Config {
     public static final String zaiAuthorizationHeader = "X-ZAI-AUTHORIZATION";
     public static final String zaiCallTypeHeader = "X-ZAI-CALL-TYPE";
     public static final String zaiCallType = "sdk_call";
-    
+
     public static final int batchRequestCap = 50;
     public static final double epsilon = 1e-4;
     public static final int testEventTimeToLive = 60 * 60 * 24; // 1 day

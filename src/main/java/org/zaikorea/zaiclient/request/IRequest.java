@@ -1,9 +1,17 @@
 package org.zaikorea.zaiclient.request;
 
 public interface IRequest<T> {
-    public String getBaseUrl();
+    public default String getBaseUrl() {
+        throw new UnsupportedOperationException("Unimplemented method 'getBaseUrl'");
+    };
 
-    public String getPath();
+    public default String getPath() {
+        throw new UnsupportedOperationException("Unimplemented method 'getPath'");
+    }
+
+    public default String getPath(String clientId) {
+        throw new UnsupportedOperationException("Unimplemented method 'getPath'");
+    }
 
     public T getPayload();
 }
