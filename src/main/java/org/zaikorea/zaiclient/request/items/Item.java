@@ -41,10 +41,10 @@ public class Item {
     protected String description;
 
     @SerializedName("created_timestamp")
-    protected String createdTimestamp;
+    protected Long createdTimestamp;
 
     @SerializedName("updated_timestamp")
-    protected String updatedTimestamp;
+    protected Long updatedTimestamp;
 
     @SerializedName("is_active")
     protected boolean isActive = true;
@@ -132,11 +132,11 @@ public class Item {
         return description;
     }
 
-    public String getCreatedTimestamp() {
+    public Long getCreatedTimestamp() {
         return createdTimestamp;
     }
 
-    public String getUpdatedTimestamp() {
+    public Long getUpdatedTimestamp() {
         return updatedTimestamp;
     }
 
@@ -250,14 +250,18 @@ public class Item {
         return this;
     }
 
-    public Item setCreatedTimestamp(String createdTimestamp) {
-        this.createdTimestamp = Validator.validateString(createdTimestamp, 1, 500, true, "createdTimestamp");
+    public Item setCreatedTimestamp(Long createdTimestamp) {
+        // BackLog: The upper bound for timestamp is Tue, 19 Jan 2038 04:14:07 +0100.
+        //          This is the maximum value for a 32-bit signed integer in seconds since Unix epoch.
+        //          Should use long instead... might need change in all other places as well.
+        //          Also make sure that the other SDKs are using UTC timestamp when sending time to API server.
+        this.createdTimestamp = Validator.validateNumber(createdTimestamp, (long) 1_648_871_097, (long) 2_147_483_647, true, "createdTimestamp");
 
         return this;
     }
 
-    public Item setUpdatedTimestamp(String updatedTimestamp) {
-        this.updatedTimestamp = Validator.validateString(updatedTimestamp, 1, 500, true, "updatedTimestamp");
+    public Item setUpdatedTimestamp(Long updatedTimestamp) {
+        this.updatedTimestamp = Validator.validateNumber(updatedTimestamp, (long) 1_648_871_097, (long) 2_147_483_647, true, "updatedTimestamp");
 
         return this;
     }

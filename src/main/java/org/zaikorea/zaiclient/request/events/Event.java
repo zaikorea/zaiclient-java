@@ -81,6 +81,12 @@ public class Event {
         return this;
     }
 
+    public Event setTimestamp(long timestamp) {
+        this.timestamp = Validator.validateNumber(timestamp, (long) 1_648_871_097, (long) 2_147_483_647, false, "timestamp");
+
+        return this;
+    }
+
     public Event setTimestamp(double timestamp) {
         this.timestamp = Validator.validateNumber(timestamp, 1_648_871_097., 2_147_483_647., false, "timestamp");
 
