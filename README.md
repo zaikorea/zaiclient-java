@@ -1,6 +1,6 @@
 # Z.Ai REST Client for Java / Kotlin
 
-![JitPack](https://jitpack.io/v/zaikorea/zaiclient-java.svg)  
+![JitPack](https://jitpack.io/v/zaikorea/zaiclient-java.svg)
 
 Z.Ai API를 Java / Kotlin 환경에서 간편하게 이용할 수 있는 REST client SDK입니다.
 
@@ -35,7 +35,7 @@ Dependency를 추가합니다.
 
 ```css
 dependencies {
-  implementation 'com.github.zaikorea:zaiclient-java:v2.1.5'
+  implementation 'com.github.zaikorea:zaiclient-java:v3.0.0'
 }
 ```
 
@@ -58,7 +58,7 @@ Dependency를 추가합니다.
 
 ```css
 dependencies {
-  implementation("com.github.zaikorea:zaiclient-java:v2.1.5")
+  implementation("com.github.zaikorea:zaiclient-java:v3.0.0")
 }
 ```
 
@@ -81,6 +81,6 @@ dependencies {
   <dependency>
     <groupId>com.github.zaikorea</groupId>
     <artifactId>zaiclient-java</artifactId>
-    <version>v2.1.5</version>
+    <version>v3.0.0</version>
   </dependency>
 ```
