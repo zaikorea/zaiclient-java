@@ -51,10 +51,10 @@ public class Validator {
 
         for (String s : value) {
             try {
-                Validator.validateString(s, 0, 500, false, null);
+                Validator.validateString(s, 1, 500, false, null);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(
-                        String.format("The length of each element in %s must be between %d and %d", varName, 0, 500)
+                        String.format("The length of each element in %s must be between %d and %d", varName, 1, 500)
                 );
             }
         }
