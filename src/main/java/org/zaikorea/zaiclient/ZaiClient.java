@@ -18,12 +18,8 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import org.zaikorea.zaiclient.configs.Config;
 import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
-// import org.zaikorea.zaiclient.request.Event;
 import org.zaikorea.zaiclient.request.events.Event;
-import org.zaikorea.zaiclient.request.EventBatch;
 import org.zaikorea.zaiclient.request.events.EventRequest;
-// import org.zaikorea.zaiclient.request.RecommendationRequest;
-// import org.zaikorea.zaiclient.request.recommendations.GetUserRecommendation;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.request.items.AddItem;
 import org.zaikorea.zaiclient.request.items.DeleteItem;
@@ -62,11 +58,6 @@ public class ZaiClient {
 
     public ItemResponse sendRequest(AddItem request) throws IOException, ZaiClientException{
         Call<ItemResponse> call = zaiAPI.addItem(request.getPayload());
-        request.getPayload().stream().forEach(
-            item -> {
-                System.out.println(item.getItemId());
-            }
-        );
 
         Response<ItemResponse> response = call.execute();
 
@@ -176,59 +167,9 @@ public class ZaiClient {
         return response.body();
     }
 
-    // public EventLoggerResponse addEventLog(EventBatch eventBatch) throws IOException, ZaiClientException, EmptyBatchException {
-    //     List<Event> events = eventBatch.getEventList();
-
-    //     if (events.size() == 0) throw new EmptyBatchException();
-
-    //     Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
-    //     Response<EventLoggerResponse> response = call.execute();
-
-    //     if (!response.isSuccessful())
-    //         throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
-
-    //     eventBatch.setLogFlag();
-
-    //     return response.body();
-    // }
-
-    // public EventLoggerResponse addEventLog(EventBatch eventBatch, boolean isTest) throws IOException, ZaiClientException, EmptyBatchException {
-    //     List<Event> events = eventBatch.getEventList();
-
-    //     if (events.size() == 0) throw new EmptyBatchException();
-
-    //     if (isTest) {
-    //         for (Event event : events) {
-    //             event.setTimeToLive(Config.testEventTimeToLive);
-    //         }
-    //     }
-
-    //     Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
-    //     Response<EventLoggerResponse> response = call.execute();
-
-    //     if (!response.isSuccessful())
-    //         throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
-
-    //     eventBatch.setLogFlag();
-
-    //     return response.body();
-    // }
-
-    // public RecommendationResponse getRecommendations(RecommendationRequest recommendation) throws IOException, ZaiClientException {
-    //     Call<RecommendationResponse> call = zaiAPI.getRecommendations(
-    //             mlApiEndpoint + recommendation.getPath(this.zaiClientId), recommendation
-    //     );
-    //     Response<RecommendationResponse> response = call.execute();
-
-    //     if (!response.isSuccessful())
-    //         throw new ZaiClientException(getExceptionMessage(response), new HttpException(response));
-
-    //     return response.body();
-    // }
-
     private ZaiAPI instantiateZaiAPI() {
-        String zaiClientId = this.zaiClientId;
-        String zaiSecret = this.zaiSecret;
+        String clientId = this.zaiClientId;
+        String secret = this.zaiSecret;
         String zaiHttpLog = System.getenv("ZAI_HTTP_LOG");
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -242,9 +183,9 @@ public class ZaiClient {
                 String path = request.url().encodedPath();
                 Map<String, String> zaiHeaders;
                 try {
-                    zaiHeaders = ZaiHeaders.generateZaiHeaders(zaiClientId, zaiSecret, path);
+                    zaiHeaders = ZaiHeaders.generateZaiHeaders(clientId, secret, path);
                 } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(e); // NOSONAR
                 }
                 Request.Builder builder = request.newBuilder();
                 for (Map.Entry<String, String> zaiHeader : zaiHeaders.entrySet())

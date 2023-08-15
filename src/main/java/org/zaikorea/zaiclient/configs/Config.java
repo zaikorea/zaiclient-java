@@ -14,11 +14,6 @@ public class Config {
     public static final String relatedItemsRecommendationPath = "/related-items";
     public static final String rerankingRecommendationPath = "/reranking";
 
-
-    public static final String userRecommendationPathPrefix = "/user-recommendations";
-    public static final String relatedItemsRecommendationPathPrefix = "/related-items";
-    public static final String rerankingRecommendationPathPrefix = "/reranking";
-
     public static final String hmacAlgorithm = "HmacSHA256";
     public static final String hmacScheme = "ZAi";
     public static final String zaiClientIdHeader = "X-ZAI-CLIENT-ID";

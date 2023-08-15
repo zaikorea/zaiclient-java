@@ -8,17 +8,13 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.zaikorea.zaiclient.ZaiClient;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
-import org.zaikorea.zaiclient.request.RelatedItemsRecommendationRequest;
 import org.zaikorea.zaiclient.request.recommendations.GetRelatedRecommendation;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;

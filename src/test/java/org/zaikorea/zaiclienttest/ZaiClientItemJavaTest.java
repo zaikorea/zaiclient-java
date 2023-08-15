@@ -24,7 +24,6 @@ import org.zaikorea.zaiclient.request.items.DeleteItem;
 public class ZaiClientItemJavaTest {
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for testing purposes only
-    private static final String AddItem = null;
 
     private ZaiClient client;
 

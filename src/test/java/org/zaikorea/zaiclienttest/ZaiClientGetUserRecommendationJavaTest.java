@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zaikorea.zaiclient.ZaiClient;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
-import org.zaikorea.zaiclient.request.UserRecommendationRequest;
 import org.zaikorea.zaiclient.request.recommendations.GetUserRecommendation;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
@@ -110,8 +108,6 @@ public class ZaiClientGetUserRecommendationJavaTest {
     private static final String recLogRecommendations = "recommendations";
 
     private ZaiClient testClient;
-    private ZaiClient incorrectIdClient;
-    private ZaiClient incorrectSecretClient;
 
     private static final Region region = Region.AP_NORTHEAST_2;
     private DynamoDbClient ddbClient;
@@ -237,14 +233,6 @@ public class ZaiClientGetUserRecommendationJavaTest {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
                 .connectTimeout(20)
                 .readTimeout(40)
-                .build();
-        incorrectIdClient = new ZaiClient.Builder("." + clientId, clientSecret)
-                .connectTimeout(0)
-                .readTimeout(0)
-                .build();
-        incorrectSecretClient = new ZaiClient.Builder(clientId, "." + clientSecret)
-                .connectTimeout(-1)
-                .readTimeout(-1)
                 .build();
         ddbClient = DynamoDbClient.builder()
                 .region(region)
