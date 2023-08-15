@@ -29,13 +29,13 @@ public class AddLikeEvent extends EventRequest {
             this.itemId = itemId;
         }
 
-        public Builder setFrom(String from) {
+        public Builder from(String from) {
             this.from = from;
 
             return this;
         }
 
-        public Builder setIsZaiRecommendation(boolean isZaiRec) {
+        public Builder isZaiRecommendation(boolean isZaiRec) {
             this.isZaiRecommendation = isZaiRec;
 
             return this;

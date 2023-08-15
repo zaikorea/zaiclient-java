@@ -121,13 +121,11 @@ public class ZaiClient {
     }
 
     public EventLoggerResponse sendRequest(EventRequest eventRequest, boolean isTest) throws IOException, ZaiClientException {
-        List<Event> events = eventRequest.getPayload();
-
         if (isTest) {
-            for (Event event : events) {
-                event.setTimeToLive(Config.testEventTimeToLive);
-            }
+            eventRequest.setEventsToExpire();
         }
+
+        List<Event> events = eventRequest.getPayload();
 
         Call<EventLoggerResponse> call = zaiAPI.addEventLog(events);
 

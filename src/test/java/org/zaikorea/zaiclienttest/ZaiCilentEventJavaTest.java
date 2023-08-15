@@ -366,7 +366,7 @@ public class ZaiCilentEventJavaTest {
     @Test
     public void testAddCartAddEventWithFrom() {
         AddCartaddEvent eventRequest = new AddCartaddEvent.Builder(generateUUID(), generateUUID())
-            .setFrom(generateRandomString(10))
+            .from(generateRandomString(10))
             .build();
 
         checkSuccessfulEventAdd(eventRequest);
@@ -385,7 +385,7 @@ public class ZaiCilentEventJavaTest {
     @Test
     public void testAddLikeEventWithFrom() {
         AddLikeEvent eventRequest = new AddLikeEvent.Builder(generateUUID(), generateUUID())
-            .setFrom(generateRandomString(10))
+            .from(generateRandomString(10))
             .build();
 
         checkSuccessfulEventAdd(eventRequest);
@@ -394,7 +394,7 @@ public class ZaiCilentEventJavaTest {
     @Test
     public void testAddLikeEventWithIsZaiRec() {
         AddLikeEvent eventRequest = new AddLikeEvent.Builder(generateUUID(), generateUUID())
-            .setIsZaiRecommendation(true)
+            .isZaiRecommendation(true)
             .build();
 
         checkSuccessfulEventAdd(eventRequest);
@@ -403,8 +403,8 @@ public class ZaiCilentEventJavaTest {
     @Test
     public void testAddLikeEventWithOptions() {
         AddLikeEvent eventRequest = new AddLikeEvent.Builder(generateUUID(), generateUUID())
-            .setFrom(generateRandomString(10))
-            .setIsZaiRecommendation(true)
+            .from(generateRandomString(10))
+            .isZaiRecommendation(true)
             .build();
 
         checkSuccessfulEventAdd(eventRequest);

@@ -29,13 +29,13 @@ public class AddPageViewEvent extends EventRequest {
             this.pageType = pageType;
         }
 
-        public Builder setZaiRecommendation(boolean isZaiRec) {
-            this.isZaiRecommendation = isZaiRec;
+        public Builder containsZaiRec(boolean containsZaiRec) {
+            this.isZaiRecommendation = containsZaiRec;
 
             return this;
         }
 
-        public Builder setFrom(String from) {
+        public Builder from(String from) {
             this.from = from;
 
             return this;

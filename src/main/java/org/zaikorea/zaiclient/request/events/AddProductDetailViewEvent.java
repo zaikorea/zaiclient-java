@@ -11,8 +11,8 @@ public class AddProductDetailViewEvent extends EventRequest {
             .setUserId(builder.userId)
             .setItemId(builder.itemId)
             .setTimestamp(builder.timestamp)
-            .setEventType(builder.eventType)
-            .setEventValue(builder.eventValue)
+            .setEventType(DEFAULT_EVENT_TYPE)
+            .setEventValue(DEFAULT_EVENT_VALUE)
             .setTimeToLive(builder.timeToLive)
             .setIsZaiRecommendation(builder.isZaiRecommendation)
             .setFrom(builder.from)
@@ -22,8 +22,6 @@ public class AddProductDetailViewEvent extends EventRequest {
     public static class Builder {
         private final String userId;
         private final String itemId;
-        private String eventType = DEFAULT_EVENT_TYPE;
-        private String eventValue = DEFAULT_EVENT_VALUE;
         private double timestamp = Utils.getCurrentUnixTimestamp();
         private String from = null;
         private Integer timeToLive = null;
@@ -34,32 +32,22 @@ public class AddProductDetailViewEvent extends EventRequest {
             this.itemId = itemId;
         }
 
-        public Builder setEventType(String eventType) {
-            this.eventType = eventType;
-            return this;
-        }
-
-        public Builder setEventValue(String eventValue) {
-            this.eventValue = eventValue;
-            return this;
-        }
-
-        public Builder setTimestamp(double timestamp) {
+        public Builder timestamp(double timestamp) {
             this.timestamp = timestamp;
             return this;
         }
 
-        public Builder setTimeToLive(Integer timeToLive) {
+        public Builder timeToLive(Integer timeToLive) {
             this.timeToLive = timeToLive;
             return this;
         }
 
-        public Builder setIsZaiRecommendation(boolean isZaiRecommendation) {
+        public Builder isZaiRecommendation(boolean isZaiRecommendation) {
             this.isZaiRecommendation = isZaiRecommendation;
             return this;
         }
 
-        public Builder setFrom(String from) {
+        public Builder from(String from) {
             this.from = from;
             return this;
         }

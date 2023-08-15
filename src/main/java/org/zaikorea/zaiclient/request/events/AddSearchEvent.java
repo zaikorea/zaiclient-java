@@ -27,7 +27,7 @@ public class AddSearchEvent extends EventRequest {
             this.eventValue = searchQuery;
         }
 
-        public Builder setIsZaiRecommendation(boolean isZaiRec) {
+        public Builder isZaiRecommendation(boolean isZaiRec) {
             this.isZaiRecommendation = isZaiRec;
 
             return this;
