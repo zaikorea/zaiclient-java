@@ -1,7 +1,9 @@
 package org.zaikorea.zaiclient.utils;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.function.Function;
+
 
 public class Validator {
     public static String validateString(String value, int min, int max, boolean nullable, String varName) {
@@ -60,6 +62,18 @@ public class Validator {
         }
 
         return value;
+    }
+
+    public static String validateISODateTime(String dateTimeStr, String varName) {
+        try {
+            OffsetDateTime.parse(dateTimeStr);
+        } catch (DateTimeParseException e){
+            throw new IllegalArgumentException(
+                    String.format("The value of %s must be ISO 8601 format not %s", varName, dateTimeStr)
+            );
+        }
+
+        return dateTimeStr;
     }
 
     public static <T extends Comparable<T>> T validateNumber(T value, T min, T max, boolean nullable, String varName) {

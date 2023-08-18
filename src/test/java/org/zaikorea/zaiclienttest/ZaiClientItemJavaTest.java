@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -15,9 +17,7 @@ import org.junit.Test;
 import org.zaikorea.zaiclient.ZaiClient;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
 import org.zaikorea.zaiclient.request.items.Item;
-import org.zaikorea.zaiclient.request.items.ItemRequest;
 import org.zaikorea.zaiclient.request.items.AddItem;
-import org.zaikorea.zaiclient.request.items.UpdateItem;
 import org.zaikorea.zaiclient.response.ItemResponse;
 import org.zaikorea.zaiclient.request.items.DeleteItem;
 
@@ -129,6 +129,73 @@ public class ZaiClientItemJavaTest {
         List<String> itemIds = new LinkedList<>();
         items.forEach(item -> itemIds.add(item.getItemId()));
         DeleteItem deleteItemRequest = new DeleteItem(itemIds);
+
+        checkSuccessfulItemRequest(deleteItemRequest);
+    }
+
+    @Test
+    public void testAddItemWithCreatedTimestampInLong() {
+        String itemId = generateUUID();
+        String itemName = generateRandomString(10);
+
+        Item item = new Item(itemId, itemName).setCreatedTimestamp(System.currentTimeMillis());
+
+
+        AddItem addItemRequest = new AddItem(item);
+
+        checkSuccessfulItemRequest(addItemRequest);
+
+        DeleteItem deleteItemRequest = new DeleteItem(itemId);
+
+        checkSuccessfulItemRequest(deleteItemRequest);
+    }
+
+    @Test
+    public void testAddItemWithCreatedTimestampInISOString() {
+        String itemId = generateUUID();
+        String itemName = generateRandomString(10);
+
+        // Item item = new Item(itemId, itemName).setCreatedTimestamp(System.currentTimeMillis());
+        Item item = new Item(itemId, itemName).setCreatedTimestamp(LocalDateTime.now().toInstant(ZoneOffset.UTC).toString());
+
+
+        AddItem addItemRequest = new AddItem(item);
+
+        checkSuccessfulItemRequest(addItemRequest);
+
+        DeleteItem deleteItemRequest = new DeleteItem(itemId);
+
+        checkSuccessfulItemRequest(deleteItemRequest);
+    }
+
+    @Test
+    public void testAddItemWithUpdatedTimestampInLong() {
+        String itemId = generateUUID();
+        String itemName = generateRandomString(10);
+
+        Item item = new Item(itemId, itemName).setUpdatedTimestamp(System.currentTimeMillis());
+
+        AddItem addItemRequest = new AddItem(item);
+
+        checkSuccessfulItemRequest(addItemRequest);
+
+        DeleteItem deleteItemRequest = new DeleteItem(itemId);
+
+        checkSuccessfulItemRequest(deleteItemRequest);
+    }
+
+    @Test
+    public void testAddItemWithUpdatedTimestampInISOString() {
+        String itemId = generateUUID();
+        String itemName = generateRandomString(10);
+
+        Item item = new Item(itemId, itemName).setUpdatedTimestamp(LocalDateTime.now().toInstant(ZoneOffset.UTC).toString());
+
+        AddItem addItemRequest = new AddItem(item);
+
+        checkSuccessfulItemRequest(addItemRequest);
+
+        DeleteItem deleteItemRequest = new DeleteItem(itemId);
 
         checkSuccessfulItemRequest(deleteItemRequest);
     }

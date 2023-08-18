@@ -1,6 +1,10 @@
 package org.zaikorea.zaiclient.request.items;
 
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 import org.zaikorea.zaiclient.utils.Validator;
 
 import com.google.gson.annotations.SerializedName;
@@ -41,10 +45,10 @@ public class Item {
     protected String description;
 
     @SerializedName("created_timestamp")
-    protected Long createdTimestamp;
+    protected String createdTimestamp;
 
     @SerializedName("updated_timestamp")
-    protected Long updatedTimestamp;
+    protected String updatedTimestamp;
 
     @SerializedName("is_active")
     protected boolean isActive = true;
@@ -132,11 +136,11 @@ public class Item {
         return description;
     }
 
-    public Long getCreatedTimestamp() {
+    public String getCreatedTimestamp() {
         return createdTimestamp;
     }
 
-    public Long getUpdatedTimestamp() {
+    public String getUpdatedTimestamp() {
         return updatedTimestamp;
     }
 
@@ -250,18 +254,40 @@ public class Item {
         return this;
     }
 
+    public Item setCreatedTimestamp(String createdTimestamp) {
+        this.createdTimestamp = Validator.validateISODateTime(createdTimestamp, "createdTimestamp");
+
+        return this;
+    }
+
     public Item setCreatedTimestamp(Long createdTimestamp) {
         // BackLog: The upper bound for timestamp is Tue, 19 Jan 2038 04:14:07 +0100.
         //          This is the maximum value for a 32-bit signed integer in seconds since Unix epoch.
         //          Should use long instead... might need change in all other places as well.
         //          Also make sure that the other SDKs are using UTC timestamp when sending time to API server.
-        this.createdTimestamp = Validator.validateNumber(createdTimestamp, (long) 1_648_871_097, (long) 2_147_483_647, true, "createdTimestamp");
+        Validator.validateNumber(createdTimestamp, 1_648_871_097_000L, true, "createdTimestamp");
+
+        Instant time = Instant.ofEpochMilli(createdTimestamp);
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+
+        this.createdTimestamp = formatter.format(time);
+
+        return this;
+    }
+
+    public Item setUpdatedTimestamp(String updatedTimestamp) {
+        this.updatedTimestamp = Validator.validateISODateTime(updatedTimestamp, "updatedTimestamp");
 
         return this;
     }
 
     public Item setUpdatedTimestamp(Long updatedTimestamp) {
-        this.updatedTimestamp = Validator.validateNumber(updatedTimestamp, (long) 1_648_871_097, (long) 2_147_483_647, true, "updatedTimestamp");
+        Validator.validateNumber(updatedTimestamp, 1_648_871_097_000L, true, "updatedTimestamp");
+
+        Instant time = Instant.ofEpochMilli(updatedTimestamp);
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+
+        this.updatedTimestamp = formatter.format(time);
 
         return this;
     }
