@@ -35,9 +35,9 @@ public class GetRelatedRecommendation extends RecommendationRequest {
         private String recommendationType = DEFAULT_REC_TYPE;
         private String options = DEFAULT_OPTIONS;
 
-        public Builder(String itemId, String targetUserId, int limit) {
-            this.itemId = itemId;
+        public Builder(String targetUserId, String itemId, int limit) {
             this.userId = targetUserId;
+            this.itemId = itemId;
             this.limit = limit;
         }
 
