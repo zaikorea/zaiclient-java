@@ -237,7 +237,7 @@ public class ZaiClientGetRelatedRecommendationTest {
         String recommendationType = "home_page";
         String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, targetUserId, limit)
+        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(targetUserId, itemId, limit)
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .build();
@@ -264,7 +264,7 @@ public class ZaiClientGetRelatedRecommendationTest {
         int offset = generateRandomInteger(20, 40);
         String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, targetUserId, limit)
+        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(targetUserId, itemId, limit)
                 .offset(offset)
                 .build();
 
