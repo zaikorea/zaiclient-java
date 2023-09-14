@@ -90,7 +90,7 @@ public class ZaiClientGetRelatedRecommendationTest {
     private static final String recLogTableSortKey = "timestamp";
     private static final String recLogRecommendations = "recommendations";
 
-    private ZaiClient testClient;
+    private ZaiClient testClientToDevEndpoint; // TODO: Figure out to map dev endpoint with environment variable
 
     private static final Region region = Region.AP_NORTHEAST_2;
     private DynamoDbClient ddbClient;
@@ -181,7 +181,7 @@ public class ZaiClientGetRelatedRecommendationTest {
         Gson gson = new Gson();
 
         try {
-            RecommendationResponse response = testClient.sendRequest(recommendation);
+            RecommendationResponse response = testClientToDevEndpoint.sendRequest(recommendation);
 
             // Response Testing
             List<String> responseItems = response.getItems();
@@ -195,11 +195,6 @@ public class ZaiClientGetRelatedRecommendationTest {
             assertEquals(expectedMetadata, metadata);
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
-
-            // Log testing unavailable when userId is null
-            if (userId == null)
-                // return ;
-                userId = "null";
 
             // Check log
             Map<String, String> logItem = getRecLog(userId, itemId);
@@ -218,7 +213,8 @@ public class ZaiClientGetRelatedRecommendationTest {
 
     @Before
     public void setup() {
-        testClient = new ZaiClient.Builder(clientId, clientSecret)
+        testClientToDevEndpoint = new ZaiClient.Builder(clientId, clientSecret)
+                .customEndpoint("dev")
                 .connectTimeout(20)
                 .readTimeout(40)
                 .build();
@@ -239,19 +235,21 @@ public class ZaiClientGetRelatedRecommendationTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         String recommendationType = "home_page";
+        String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, limit)
+        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, targetUserId, limit)
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .build();
 
         try {
             metadata = new Metadata();
+            metadata.userId = targetUserId;
             metadata.itemId = itemId;
             metadata.limit = limit;
             metadata.offset = offset;
             metadata.recommendationType = recommendationType;
-            checkSuccessfulGetRelatedRecommendation(recommendation, null, itemId, metadata);
+            checkSuccessfulGetRelatedRecommendation(recommendation, targetUserId, itemId, metadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -264,17 +262,19 @@ public class ZaiClientGetRelatedRecommendationTest {
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
+        String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, limit)
+        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, targetUserId, limit)
                 .offset(offset)
                 .build();
 
         try {
             metadata = new Metadata();
+            metadata.userId = targetUserId;
             metadata.itemId = itemId;
             metadata.limit = limit;
             metadata.offset = offset;
-            checkSuccessfulGetRelatedRecommendation(recommendation, null, itemId, metadata);
+            checkSuccessfulGetRelatedRecommendation(recommendation, targetUserId, itemId, metadata);
         } catch (Exception e) {
             fail();
         }

@@ -14,6 +14,7 @@ public class GetRelatedRecommendation extends RecommendationRequest {
 
     public GetRelatedRecommendation(Builder builder) {
         this.recQuery = new RecommendationQuery()
+            .setUserId(builder.userId)
             .setItemId(builder.itemId)
             .setOffset(builder.offset)
             .setLimit(builder.limit)
@@ -29,12 +30,14 @@ public class GetRelatedRecommendation extends RecommendationRequest {
     public static class Builder {
         private final String itemId;
         private final int limit;
+        private final String userId;
         private int offset = DEFAULT_OFFSET;
         private String recommendationType = DEFAULT_REC_TYPE;
         private String options = DEFAULT_OPTIONS;
 
-        public Builder(String itemId, int limit) {
+        public Builder(String itemId, String targetUserId, int limit) {
             this.itemId = itemId;
+            this.userId = targetUserId;
             this.limit = limit;
         }
 
