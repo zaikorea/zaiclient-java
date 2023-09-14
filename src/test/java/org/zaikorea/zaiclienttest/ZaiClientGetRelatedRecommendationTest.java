@@ -239,8 +239,9 @@ public class ZaiClientGetRelatedRecommendationTest {
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
         String recommendationType = "home_page";
+        String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, limit)
+        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, targetUserId, limit)
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .build();
@@ -251,7 +252,7 @@ public class ZaiClientGetRelatedRecommendationTest {
             metadata.limit = limit;
             metadata.offset = offset;
             metadata.recommendationType = recommendationType;
-            checkSuccessfulGetRelatedRecommendation(recommendation, null, itemId, metadata);
+            checkSuccessfulGetRelatedRecommendation(recommendation, targetUserId, itemId, metadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -264,8 +265,9 @@ public class ZaiClientGetRelatedRecommendationTest {
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
+        String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, limit)
+        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(itemId, targetUserId, limit)
                 .offset(offset)
                 .build();
 
@@ -274,7 +276,7 @@ public class ZaiClientGetRelatedRecommendationTest {
             metadata.itemId = itemId;
             metadata.limit = limit;
             metadata.offset = offset;
-            checkSuccessfulGetRelatedRecommendation(recommendation, null, itemId, metadata);
+            checkSuccessfulGetRelatedRecommendation(recommendation, targetUserId, itemId, metadata);
         } catch (Exception e) {
             fail();
         }
