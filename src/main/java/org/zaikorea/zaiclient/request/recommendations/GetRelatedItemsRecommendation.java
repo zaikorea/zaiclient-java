@@ -7,12 +7,12 @@ import org.zaikorea.zaiclient.configs.Config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class GetRelatedRecommendation extends RecommendationRequest {
+public class GetRelatedItemsRecommendation extends RecommendationRequest {
     private static final String DEFAULT_REC_TYPE = "product_detail_page";
     private static final int DEFAULT_OFFSET = 0;
     private static final String DEFAULT_OPTIONS = null;
 
-    public GetRelatedRecommendation(Builder builder) {
+    public GetRelatedItemsRecommendation(Builder builder) {
         this.recQuery = new RecommendationQuery()
             .setUserId(builder.userId)
             .setItemId(builder.itemId)
@@ -67,8 +67,8 @@ public class GetRelatedRecommendation extends RecommendationRequest {
             return this;
         }
 
-        public GetRelatedRecommendation build() {
-            return new GetRelatedRecommendation(this);
+        public GetRelatedItemsRecommendation build() {
+            return new GetRelatedItemsRecommendation(this);
         }
     }
 }

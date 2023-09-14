@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zaikorea.zaiclient.ZaiClient;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
-import org.zaikorea.zaiclient.request.recommendations.GetRelatedRecommendation;
+import org.zaikorea.zaiclient.request.recommendations.GetRelatedItemsRecommendation;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.response.RecommendationResponse;
@@ -24,7 +24,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
-public class ZaiClientGetRelatedRecommendationTest {
+public class ZaiClientGetRelatedItemsRecommendationTest {
     class Metadata {
 
         @SerializedName("user_id")
@@ -237,7 +237,7 @@ public class ZaiClientGetRelatedRecommendationTest {
         String recommendationType = "home_page";
         String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(targetUserId, itemId, limit)
+        RecommendationRequest recommendation = new GetRelatedItemsRecommendation.Builder(targetUserId, itemId, limit)
                 .offset(offset)
                 .recommendationType(recommendationType)
                 .build();
@@ -264,7 +264,7 @@ public class ZaiClientGetRelatedRecommendationTest {
         int offset = generateRandomInteger(20, 40);
         String targetUserId = generateUUID();
 
-        RecommendationRequest recommendation = new GetRelatedRecommendation.Builder(targetUserId, itemId, limit)
+        RecommendationRequest recommendation = new GetRelatedItemsRecommendation.Builder(targetUserId, itemId, limit)
                 .offset(offset)
                 .build();
 
