@@ -203,4 +203,18 @@ public class ZaiClientGetCustomRecommendationTest {
         }
     }
 
+    // Unhappy path
+    @Test
+    public void testGetRelatedRecommendationWithoutAnyInput() { // No ItemId, No UserId, No ItemIds
+        try {
+            new GetCustomRecommendation.Builder("homepage-main-recommendations")
+                    .build();
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals(illegalAccessExceptionMessage, e.getMessage());
+        } catch (Error e) {
+            fail();
+        }
+    }
+
 }
