@@ -36,8 +36,6 @@ public class Metadata {
         public Metadata() {
             this.offset = 0;
             this.options = new HashMap<>();
-            this.callType = "related-items";
-            this.recommendationType = "product_detail_page";
         }
 
         @Override

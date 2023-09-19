@@ -7,26 +7,22 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.zaikorea.zaiclient.ZaiClient;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
-import org.zaikorea.zaiclient.request.recommendations.GetRerankingRecommendation;
+import org.zaikorea.zaiclient.request.recommendations.GetCustomRecommendation;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.response.RecommendationResponse;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -35,3 +31,176 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
+public class ZaiClientGetCustomRecommendationTest {
+
+    private static final String clientId = "test";
+    private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for
+
+    private static final String recLogTableName = "rec_log_test";
+    private static final String recLogTablePartitionKey = "user_id";
+    private static final String recLogTableSortKey = "timestamp";
+    private static final String recLogRecommendations = "recommendations";
+
+    private static final String illegalAccessExceptionMessage = "At least one of userId, itemId, or itemIds must be provided.";
+    private static final String nullLimitExceptionMessage = "The value of limit must not be null";
+    private static final String unprocessibleEntityExceptionMessage = "Unprocessable Entity";
+
+    private ZaiClient testClientToDevEndpoint; // TODO: Figure out to map dev endpoint with environment variable
+    private static final Region region = Region.AP_NORTHEAST_2;
+    private DynamoDbClient ddbClient;
+
+    private Map<String, String> getRecLog(String partitionValue) {
+
+        String partitionAlias = "#pk";
+
+        HashMap<String, String> attrNameAlias = new HashMap<>();
+        attrNameAlias.put(partitionAlias, recLogTablePartitionKey);
+        HashMap<String, AttributeValue> attrValues = new HashMap<>();
+        attrValues.put(":" + recLogTablePartitionKey, AttributeValue.builder()
+                .s(partitionValue)
+                .build());
+
+        QueryRequest request = QueryRequest.builder()
+                .tableName(recLogTableName)
+                .keyConditionExpression(partitionAlias + " = :" + recLogTablePartitionKey)
+                .expressionAttributeNames(attrNameAlias)
+                .expressionAttributeValues(attrValues)
+                .build();
+
+        try {
+            List<Map<String, AttributeValue>> returnedItems = ddbClient.query(request).items();
+            if (returnedItems.size() > 1)
+                return null;
+            if (returnedItems.size() == 0)
+                return new HashMap<>();
+            Map<String, AttributeValue> returnedItem = returnedItems.get(0);
+            Map<String, String> item = new HashMap<>();
+            if (returnedItem != null) {
+                for (String key : returnedItem.keySet()) {
+                    String val = returnedItem.get(key).toString();
+                    item.put(key, val.substring(17, val.length() - 1));
+                }
+                return item;
+            }
+            return null;
+        } catch (DynamoDbException e) {
+            e.printStackTrace();
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean deleteRecLog(String partitionValue) {
+
+        String sortValue = getRecLog(partitionValue).get(recLogTableSortKey);
+
+        HashMap<String, AttributeValue> keyToGet = new HashMap<>();
+
+        keyToGet.put(recLogTablePartitionKey, AttributeValue.builder().s(partitionValue).build());
+        keyToGet.put(recLogTableSortKey, AttributeValue.builder().n(sortValue).build());
+
+        DeleteItemRequest deleteReq = DeleteItemRequest.builder()
+                .key(keyToGet)
+                .tableName(recLogTableName)
+                .build();
+
+        try {
+            ddbClient.deleteItem(deleteReq);
+        } catch (DynamoDbException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    private void checkSuccessfulGetCustomRecommendation(RecommendationRequest recommendation, String userId,
+            Metadata expectedMetadata) {
+        RecommendationQuery recQuery = recommendation.getPayload();
+
+        int limit = recQuery.getLimit();
+        int offset = recQuery.getOffset();
+        Gson gson = new Gson();
+
+        try {
+            RecommendationResponse response = testClientToDevEndpoint.sendRequest(recommendation);
+
+            // Response Testing
+            List<String> responseItems = response.getItems();
+            for (int i = 0; i < limit; i++) {
+                String expectedItem = String.format("ITEM_ID_%d", i + offset);
+                assertEquals(expectedItem, responseItems.get(i));
+            }
+
+            // Metadata Testing
+            Metadata metadata = gson.fromJson(response.getMetadata(), Metadata.class);
+            assertEquals(expectedMetadata, metadata);
+            assertEquals(response.getItems().size(), limit);
+            assertEquals(response.getCount(), limit);
+
+            // Log testing unavailable when userId is null
+            if (userId == null)
+                return;
+
+            // Check log
+            Map<String, String> logItem = getRecLog(userId);
+            assertNotNull(logItem);
+            assertNotEquals(logItem.size(), 0);
+            assertEquals(logItem.get(
+                    recLogRecommendations).split(",").length,
+                    response.getItems().size());
+            assertTrue(deleteRecLog(userId));
+
+        } catch (IOException | ZaiClientException e) {
+            fail();
+        }
+    }
+
+    @Before
+    public void setup() {
+        testClientToDevEndpoint = new ZaiClient.Builder(clientId, clientSecret)
+                .customEndpoint("dev")
+                .connectTimeout(20)
+                .readTimeout(40)
+                .build();
+        ddbClient = DynamoDbClient.builder()
+                .region(region)
+                .build();
+    }
+
+    @After
+    public void cleanup() {
+        ddbClient.close();
+    }
+
+    @Test
+    public void testGetCustomRecommendation_1() {
+        String userId = TestUtils.generateUUID();
+
+        int limit = TestUtils.generateRandomInteger(1, 10);
+        int offset = TestUtils.generateRandomInteger(20, 40);
+
+        String recommendationType = "product-widget-recommendations";
+
+        RecommendationRequest recommendation = new GetCustomRecommendation.Builder(recommendationType)
+                .userId(userId)
+                .offset(offset)
+                .limit(limit)
+                .build();
+
+        try {
+            Metadata expectedMetadata = new Metadata();
+
+            expectedMetadata.userId = userId;
+            expectedMetadata.limit = limit;
+            expectedMetadata.offset = offset;
+            expectedMetadata.recommendationType = recommendationType;
+            expectedMetadata.callType = recommendationType;
+
+            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+}
