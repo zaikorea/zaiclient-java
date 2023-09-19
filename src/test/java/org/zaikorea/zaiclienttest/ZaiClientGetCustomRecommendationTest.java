@@ -203,6 +203,97 @@ public class ZaiClientGetCustomRecommendationTest {
         }
     }
 
+    @Test
+    public void testGetRelatedRecommendation_2() {
+        String itemId = TestUtils.generateUUID();
+
+        int limit = TestUtils.generateRandomInteger(1, 10);
+
+        String recommendationType = "homepage-main-recommendations";
+
+        RecommendationRequest recommendation = new GetCustomRecommendation.Builder(recommendationType)
+                .limit(limit)
+                .itemId(itemId)
+                .build();
+
+        try {
+            Metadata expectedMetadata = new Metadata(); // call_type and recommendation_type are same for custom
+                                                        // recommendations
+            expectedMetadata.itemId = itemId;
+            expectedMetadata.limit = limit;
+            expectedMetadata.recommendationType = recommendationType;
+            expectedMetadata.callType = recommendationType;
+            checkSuccessfulGetCustomRecommendation(recommendation, null, expectedMetadata);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetRelatedRecommendation_3() {
+        int limit = TestUtils.generateRandomInteger(1, 10);
+
+        List<String> itemIds = new ArrayList<>();
+        for (int i = 0; i < limit; i++) {
+            itemIds.add(TestUtils.generateUUID());
+        }
+
+        String recommendationType = "category-widget2-recommendations";
+
+        RecommendationRequest recommendation = new GetCustomRecommendation.Builder(recommendationType)
+                .itemIds(itemIds)
+                .limit(itemIds.size())
+                .build();
+
+        try {
+            Metadata expectedMetadata = new Metadata();
+            expectedMetadata.itemIds = itemIds;
+            expectedMetadata.limit = itemIds.size();
+            expectedMetadata.recommendationType = recommendationType;
+            expectedMetadata.callType = recommendationType;
+
+            checkSuccessfulGetCustomRecommendation(recommendation, null, expectedMetadata);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetRelatedRecommendation_4() {
+        String userId = TestUtils.generateUUID();
+        String itemId = TestUtils.generateUUID();
+        List<String> itemIds = new ArrayList<>();
+        int itemsCount = TestUtils.generateRandomInteger(1, 10);
+
+        for (int i = 0; i < itemsCount; i++) {
+            itemIds.add(TestUtils.generateUUID());
+        }
+
+        int limit = TestUtils.generateRandomInteger(1, 10);
+        String recommendationType = "category-widget2-recommendations";
+
+        RecommendationRequest recommendation = new GetCustomRecommendation.Builder(recommendationType)
+                .userId(userId)
+                .itemId(itemId)
+                .itemIds(itemIds)
+                .limit(limit)
+                .build();
+
+        try {
+            Metadata expectedMetadata = new Metadata();
+            expectedMetadata.userId = userId;
+            expectedMetadata.itemId = itemId;
+            expectedMetadata.itemIds = itemIds;
+            expectedMetadata.limit = limit;
+            expectedMetadata.recommendationType = recommendationType;
+            expectedMetadata.callType = recommendationType;
+
+            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
     // Unhappy path
     @Test
     public void testGetRelatedRecommendationWithoutAnyInput() { // No ItemId, No UserId, No ItemIds
