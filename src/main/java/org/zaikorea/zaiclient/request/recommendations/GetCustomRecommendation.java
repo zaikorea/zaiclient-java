@@ -2,6 +2,8 @@ package org.zaikorea.zaiclient.request.recommendations;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import org.zaikorea.zaiclient.configs.Config;
 
@@ -46,9 +48,19 @@ public class GetCustomRecommendation extends RecommendationRequest {
         private Integer limit = DEFAULT_LIMIT;
         private String options = DEFAULT_OPTIONS;
 
-
         public Builder(String recommendationType) {
+            if (!this.validateRecommendationType(recommendationType)) {
+                throw new IllegalArgumentException("Recommendation Type must be in the format of [0-9a-zA-Z-]+-recommendations");
+            }
+
             this.recommendationType = recommendationType;
+        }
+
+        private boolean validateRecommendationType(String recommendationType) {
+            Pattern pattern = Pattern.compile("[0-9a-zA-Z-]+-recommendations");
+            Matcher matcher = pattern.matcher(recommendationType);
+
+            return matcher.matches();
         }
 
         public Builder userId(String userId) {

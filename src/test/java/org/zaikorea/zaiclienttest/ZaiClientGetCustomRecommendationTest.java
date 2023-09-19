@@ -243,4 +243,18 @@ public class ZaiClientGetCustomRecommendationTest {
         }
     }
 
+    @Test
+    public void testGetCustomRecommendationWithWrongRecommendationTypeFormat() {
+        String recommendationType = "homepage-main-rec";
+
+        try {
+            new GetCustomRecommendation.Builder(recommendationType)
+                    .build();
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals("Recommendation Type must be in the format of [0-9a-zA-Z-]+-recommendations", e.getMessage());
+        } catch (Error e) {
+            fail();
+        }
+    }
 }
