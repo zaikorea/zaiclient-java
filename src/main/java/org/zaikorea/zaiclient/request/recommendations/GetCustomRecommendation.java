@@ -12,7 +12,7 @@ public class GetCustomRecommendation extends RecommendationRequest {
 
     private static final int DEFAULT_OFFSET = 0;
     private static final String DEFAULT_OPTIONS = null;
-    private static final int DEFAULT_LIMIT = 20;
+    private static final Integer DEFAULT_LIMIT = null;
     private static final String DEFAULT_USER_ID = null;
     private static final String DEFAULT_ITEM_ID = null;
     private static final List<String> DEFAULT_ITEM_IDS = null;
@@ -43,7 +43,7 @@ public class GetCustomRecommendation extends RecommendationRequest {
         private String itemId = DEFAULT_ITEM_ID;
         private List<String> itemIds = DEFAULT_ITEM_IDS;
         private int offset = DEFAULT_OFFSET;
-        private int limit = DEFAULT_LIMIT;
+        private Integer limit = DEFAULT_LIMIT;
         private String options = DEFAULT_OPTIONS;
 
 
@@ -75,7 +75,7 @@ public class GetCustomRecommendation extends RecommendationRequest {
             return this;
         }
 
-        public Builder limit(int limit) {
+        public Builder limit(Integer limit) {
             this.limit = limit;
 
             return this;

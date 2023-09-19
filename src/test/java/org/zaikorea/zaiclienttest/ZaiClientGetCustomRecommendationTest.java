@@ -217,4 +217,30 @@ public class ZaiClientGetCustomRecommendationTest {
         }
     }
 
+    @Test
+    public void testGetCustomRecommendationWithoutLimit() {
+        int itemCount = TestUtils.generateRandomInteger(1, 10);
+
+        List<String> itemIds = new ArrayList<>();
+        for (int i = 0; i < itemCount; i++) {
+            itemIds.add(TestUtils.generateUUID());
+        }
+
+        try {
+            RecommendationRequest recommendation = new GetCustomRecommendation.Builder("homepage-main-recommendations")
+                    .itemIds(itemIds)
+                    .build();
+            Metadata expectedMetadata = new Metadata();
+            expectedMetadata.itemIds = itemIds;
+            expectedMetadata.offset = 0;
+            checkSuccessfulGetCustomRecommendation(recommendation, null, expectedMetadata);
+
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals(nullLimitExceptionMessage, e.getMessage());
+        } catch (Error e) {
+            fail();
+        }
+    }
+
 }

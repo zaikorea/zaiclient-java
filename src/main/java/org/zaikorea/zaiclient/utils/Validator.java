@@ -81,6 +81,12 @@ public class Validator {
             return null;
         }
 
+        if (!nullable && value == null) {
+            throw new IllegalArgumentException(
+                    String.format("The value of %s must not be null", varName)
+            );
+        }
+
         if ((value.compareTo(min) < 0) || value.compareTo(max) > 0) {
             throw new IllegalArgumentException(
                     String.format("The value of %s must be between %s and %s", varName, min, max)

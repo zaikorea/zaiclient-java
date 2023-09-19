@@ -18,7 +18,7 @@ public class RecommendationQuery {
     protected List<String> itemIds;
 
     @SerializedName("limit")
-    protected int limit;
+    protected Integer limit;
 
     @SerializedName("recommendation_type")
     protected String recommendationType;
@@ -42,7 +42,7 @@ public class RecommendationQuery {
         return itemIds;
     }
 
-    public int getLimit() {
+    public Integer getLimit() {
         return limit;
     }
 
@@ -73,7 +73,7 @@ public class RecommendationQuery {
         return this;
     }
 
-    public RecommendationQuery setLimit(int limit) {
+    public RecommendationQuery setLimit(Integer limit) {
         this.limit = Validator.validateNumber(limit, 0, 10000, false, "limit");
         return this;
     }
