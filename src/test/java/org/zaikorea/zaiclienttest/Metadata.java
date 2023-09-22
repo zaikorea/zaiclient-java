@@ -5,32 +5,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.google.gson.annotations.SerializedName;
 
 public class Metadata {
 
-        @SerializedName("user_id")
+        @JsonAlias("user_id")
         public String userId;
 
-        @SerializedName("item_id")
+        @JsonAlias("item_id")
         public String itemId;
 
-        @SerializedName("item_ids")
+        @JsonAlias("item_ids")
         public List<String> itemIds;
 
-        @SerializedName("limit")
+        @JsonAlias("limit")
         public Integer limit;
 
-        @SerializedName("offset")
+        @JsonAlias("offset")
         public Integer offset;
 
-        @SerializedName("options")
-        public Map<String, Integer> options;
+        @JsonAlias("options")
+        public Map<String, ?> options;
 
-        @SerializedName("call_type")
+        @JsonAlias("call_type")
         public String callType;
 
-        @SerializedName("recommendation_type")
+        @JsonAlias("recommendation_type")
         public String recommendationType;
 
         public Metadata() {

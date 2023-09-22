@@ -22,7 +22,7 @@ import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.response.RecommendationResponse;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -114,13 +114,12 @@ public class ZaiClientGetCustomRecommendationTest {
         return true;
     }
 
-    private void checkSuccessfulGetCustomRecommendation(RecommendationRequest recommendation, String userId,
-            Metadata expectedMetadata) {
+    private void checkSuccessfulGetCustomRecommendation(RecommendationRequest recommendation, String userId, Metadata expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
         int limit = recQuery.getLimit();
         int offset = recQuery.getOffset();
-        Gson gson = new Gson();
+        ObjectMapper mapper = new ObjectMapper();
 
         try {
             RecommendationResponse response = testClientToDevEndpoint.sendRequest(recommendation);
@@ -133,7 +132,8 @@ public class ZaiClientGetCustomRecommendationTest {
             }
 
             // Metadata Testing
-            Metadata metadata = gson.fromJson(response.getMetadata(), Metadata.class);
+            Metadata metadata = mapper.readValue(response.getMetadata(), Metadata.class);
+
             assertEquals(expectedMetadata, metadata);
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
@@ -287,6 +287,90 @@ public class ZaiClientGetCustomRecommendationTest {
             expectedMetadata.limit = limit;
             expectedMetadata.recommendationType = recommendationType;
             expectedMetadata.callType = recommendationType;
+
+            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetRelatedRecommendation_5() {
+        String userId = TestUtils.generateUUID();
+        String itemId = TestUtils.generateUUID();
+        List<String> itemIds = new ArrayList<>();
+        int itemsCount = TestUtils.generateRandomInteger(1, 10);
+
+        for (int i = 0; i < itemsCount; i++) {
+            itemIds.add(TestUtils.generateUUID());
+        }
+
+        int limit = TestUtils.generateRandomInteger(1, 10);
+        String recommendationType = "category-widget2-recommendations";
+
+        Map<String, String> options = new HashMap<>();
+        options.put("option1", "value1");
+        options.put("option2", "value2");
+
+        RecommendationRequest recommendation = new GetCustomRecommendation.Builder(recommendationType)
+                .userId(userId)
+                .itemId(itemId)
+                .itemIds(itemIds)
+                .limit(limit)
+                .options(options)
+                .build();
+
+        try {
+            Metadata expectedMetadata = new Metadata();
+            expectedMetadata.userId = userId;
+            expectedMetadata.itemId = itemId;
+            expectedMetadata.itemIds = itemIds;
+            expectedMetadata.limit = limit;
+            expectedMetadata.recommendationType = recommendationType;
+            expectedMetadata.callType = recommendationType;
+            expectedMetadata.options = options;
+
+            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetRelatedRecommendation_6() {
+        String userId = TestUtils.generateUUID();
+        String itemId = TestUtils.generateUUID();
+        List<String> itemIds = new ArrayList<>();
+        int itemsCount = TestUtils.generateRandomInteger(1, 10);
+
+        for (int i = 0; i < itemsCount; i++) {
+            itemIds.add(TestUtils.generateUUID());
+        }
+
+        int limit = TestUtils.generateRandomInteger(1, 10);
+        String recommendationType = "category-widget2-recommendations";
+
+        Map<String, Integer> options = new HashMap<>();
+        options.put("option1", 1);
+        options.put("option2", 2);
+
+        RecommendationRequest recommendation = new GetCustomRecommendation.Builder(recommendationType)
+                .userId(userId)
+                .itemId(itemId)
+                .itemIds(itemIds)
+                .limit(limit)
+                .options(options)
+                .build();
+
+        try {
+            Metadata expectedMetadata = new Metadata();
+            expectedMetadata.userId = userId;
+            expectedMetadata.itemId = itemId;
+            expectedMetadata.itemIds = itemIds;
+            expectedMetadata.limit = limit;
+            expectedMetadata.recommendationType = recommendationType;
+            expectedMetadata.callType = recommendationType;
+            expectedMetadata.options = options;
 
             checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
         } catch (Exception e) {
