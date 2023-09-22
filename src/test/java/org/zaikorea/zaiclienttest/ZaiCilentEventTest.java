@@ -40,7 +40,7 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
 
-public class ZaiCilentEventJavaTest {
+public class ZaiCilentEventTest {
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for testing purposes only
     private static final String eventTableName = "events_test";

@@ -13,6 +13,7 @@ public class Config {
     public static final String userRecommendationPath = "/user-recommendations";
     public static final String relatedItemsRecommendationPath = "/related-items";
     public static final String rerankingRecommendationPath = "/reranking";
+    public static final String customRecommendationPath = "/custom-recommendations";
 
     public static final String hmacAlgorithm = "HmacSHA256";
     public static final String hmacScheme = "ZAi";

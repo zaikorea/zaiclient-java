@@ -34,7 +34,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
-public class ZaiClientGetUserRecommendationJavaTest {
+public class ZaiClientGetUserRecommendationTest {
     class Metadata {
 
         @SerializedName("user_id")
