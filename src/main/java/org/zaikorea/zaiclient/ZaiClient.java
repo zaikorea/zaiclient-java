@@ -256,8 +256,8 @@ public class ZaiClient {
         }
 
         public Builder customEndpoint(String endpoint) throws InvalidParameterException {
-            if (endpoint.length() > 10)
-                throw new InvalidParameterException("Custom endpoint should be less than or equal to 10.");
+            if (endpoint.length() > 100)
+                throw new InvalidParameterException("Custom endpoint should be less than or equal to 100.");
 
             if (Pattern.matches("^[a-zA-Z0-9-]+$", endpoint)) {
                 this.eventsApiEndpoint = String.format(Config.eventsApiEndPoint, "-"+endpoint);
