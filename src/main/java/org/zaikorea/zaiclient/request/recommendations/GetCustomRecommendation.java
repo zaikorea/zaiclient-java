@@ -57,7 +57,7 @@ public class GetCustomRecommendation extends RecommendationRequest {
         }
 
         private boolean validateRecommendationType(String recommendationType) {
-            Pattern pattern = Pattern.compile("[0-9a-zA-Z-]+-recommendations");
+            Pattern pattern = Pattern.compile("[0-9a-zA-Z-_]+");
             Matcher matcher = pattern.matcher(recommendationType);
 
             return matcher.matches();
