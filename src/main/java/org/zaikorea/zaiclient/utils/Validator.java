@@ -11,6 +11,12 @@ public class Validator {
             return null;
         }
 
+        if (!nullable && value == null) {
+            throw new IllegalArgumentException(
+                    String.format("The value of %s must not be null", varName)
+            );
+        }
+
         int length = value.length();
 
         if ((length < min) || (length > max)) {
@@ -27,6 +33,12 @@ public class Validator {
             return null;
         }
 
+        if (!nullable && value == null) {
+            throw new IllegalArgumentException(
+                    String.format("The value of %s must not be null", varName)
+            );
+        }
+
         int length = value.length();
 
         if (length < min) {
@@ -41,6 +53,12 @@ public class Validator {
     public static List<String> validateStringList(List<String> value, int listMin, int listMax, boolean nullable, String varName) {
         if (nullable && value == null) {
             return null;
+        }
+
+        if (!nullable && value == null) {
+            throw new IllegalArgumentException(
+                    String.format("The value of %s must not be null", varName)
+            );
         }
 
         int length = value.size();
