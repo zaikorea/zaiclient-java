@@ -1,7 +1,9 @@
 package org.zaikorea.zaiclient.request.events;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.zaikorea.zaiclient.configs.Config;
 import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
@@ -19,15 +21,20 @@ public class AddCustomEvent extends EventRequest {
 
         for (int i = 0; i < builder.itemIds.size(); i++) {
             this.events.add(new Event()
-                .setUserId(builder.userId)
-                .setItemId(builder.itemIds.get(i))
-                .setTimestamp(timestamp + Config.epsilon * i)
-                .setEventType(builder.eventType)
-                .setEventValue(builder.eventValues.get(i))
-                .setTimeToLive(builder.timeToLive.get(i))
-                .setIsZaiRecommendation(builder.isZaiRecommendation.get(i))
-                .setFrom(builder.from.get(i))
-            );
+                    .setUserId(builder.userId)
+                    .setItemId(builder.itemIds.get(i))
+                    .setTimestamp(timestamp + Config.epsilon * i)
+                    .setEventType(builder.eventType)
+                    .setEventValue(builder.eventValues.get(i))
+                    .setTimeToLive(builder.timeToLive.get(i))
+                    .setIsZaiRecommendation(builder.isZaiRecommendation.get(i))
+                    .setFrom(builder.from.get(i))
+                    .setUrl(builder.url)
+                    .setRef(builder.ref)
+                    .setRecommendationId(builder.recommendationId)
+                    .setEventProperties(builder.eventProperties)
+                    .setUserProperties(builder.userProperties));
+
         }
     }
 
@@ -39,6 +46,11 @@ public class AddCustomEvent extends EventRequest {
         private List<Boolean> isZaiRecommendation = new ArrayList<>();
         private List<String> from = new ArrayList<>();
         private List<Integer> timeToLive = new ArrayList<>();
+        private String url = null;
+        private String ref = null;
+        private String recommendationId = null;
+        private Map<String, ?> eventProperties = new HashMap<>();
+        private Map<String, ?> userProperties = new HashMap<>();
 
         public Builder(String userId, String eventType) {
             this.userId = userId;
@@ -94,6 +106,36 @@ public class AddCustomEvent extends EventRequest {
             this.eventValues.remove(idx);
             this.isZaiRecommendation.remove(idx);
             this.from.remove(idx);
+
+            return this;
+        }
+
+        public Builder url(String url) {
+            this.url = url;
+
+            return this;
+        }
+
+        public Builder ref(String ref) {
+            this.ref = ref;
+
+            return this;
+        }
+
+        public Builder recommendationId(String recommendationId) {
+            this.recommendationId = recommendationId;
+
+            return this;
+        }
+
+        public Builder eventProperties(Map<String, ?> eventProperties) {
+            this.eventProperties = eventProperties;
+
+            return this;
+        }
+
+        public Builder userProperties(Map<String, ?> userProperties) {
+            this.userProperties = userProperties;
 
             return this;
         }
