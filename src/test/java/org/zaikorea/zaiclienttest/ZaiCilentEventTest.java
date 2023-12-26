@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -39,10 +40,10 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
-
 public class ZaiCilentEventTest {
     private static final String clientId = "test";
-    private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for testing purposes only
+    private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for
+                                                                                              // testing purposes only
     private static final String eventTableName = "events_test";
     private static final String eventTablePartitionKey = "user_id";
     private static final String eventTableSortKey = "timestamp";
@@ -52,6 +53,11 @@ public class ZaiCilentEventTest {
     private static final String eventTableExpirationTimeKey = "expiration_time";
     private static final String eventTableIsZaiRecommendationKey = "is_zai_recommendation";
     private static final String eventTableFromKey = "from";
+    private static final String eventTableUrlKey = "url";
+    private static final String eventTableRefKey = "ref";
+    private static final String eventTableRecommendationIdKey = "recommendation_id";
+    private static final String eventTableEventPropertiesKey = "event_properties";
+    private static final String eventTableUserPropertiesKey = "user_properties";
 
     private static final int defaultDataExpirationSeconds = 60 * 60 * 24 * 365; // 1 year
 
@@ -100,9 +106,9 @@ public class ZaiCilentEventTest {
         String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder sb = new StringBuilder();
 
-        for(int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
 
-            index = generateRandomInteger(0, alphabet.length()-1);
+            index = generateRandomInteger(0, alphabet.length() - 1);
 
             randomChar = alphabet.charAt(index);
 
@@ -112,23 +118,60 @@ public class ZaiCilentEventTest {
         return sb.toString();
     }
 
+    private static Map<String, Object> ddbMapToJavaMap(Map<String, AttributeValue> itemMap) {
+        Map<String, Object> javaMap = new HashMap<>();
+
+        for (Map.Entry<String, AttributeValue> entry : itemMap.entrySet()) {
+            String key = entry.getKey();
+            AttributeValue attributeValue = entry.getValue();
+
+            // AttributeValue의 데이터 타입에 따라 적절한 Java 객체로 변환
+            Object javaValue = toJavaObject(attributeValue);
+
+            javaMap.put(key, javaValue);
+        }
+
+        return javaMap;
+    }
+
+    private static Object toJavaObject(AttributeValue attributeValue) {
+        if (attributeValue.s() != null) {
+            return attributeValue.s();
+        } else if (attributeValue.n() != null) {
+            return attributeValue.n();
+        } else if (attributeValue.bool() != null) {
+            return attributeValue.bool();
+        } else if (attributeValue.m() != null) {
+            // 중첩된 Map의 경우 재귀적으로 변환
+            return ddbMapToJavaMap(attributeValue.m());
+        } else if (attributeValue.l() != null) {
+            // 리스트의 경우 재귀적으로 변환
+            return attributeValue.l().stream()
+                    .map(ZaiCilentEventTest::toJavaObject)
+                    .collect(java.util.stream.Collectors.toList());
+        } else {
+            // 그 외의 경우는 null 또는 다른 형태의 데이터일 수 있음
+            return null;
+        }
+    }
+
     private Map<String, String> getEventLog(String partitionValue) {
 
         String partitionAlias = "#pk";
 
-        HashMap<String,String> attrNameAlias = new HashMap<>();
+        HashMap<String, String> attrNameAlias = new HashMap<>();
         attrNameAlias.put(partitionAlias, eventTablePartitionKey);
         HashMap<String, AttributeValue> attrValues = new HashMap<>();
         attrValues.put(":" + eventTablePartitionKey, AttributeValue.builder()
-            .s(partitionValue)
-            .build());
+                .s(partitionValue)
+                .build());
 
         QueryRequest request = QueryRequest.builder()
-            .tableName(eventTableName)
-            .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
-            .expressionAttributeNames(attrNameAlias)
-            .expressionAttributeValues(attrValues)
-            .build();
+                .tableName(eventTableName)
+                .keyConditionExpression(partitionAlias + " = :" + eventTablePartitionKey)
+                .expressionAttributeNames(attrNameAlias)
+                .expressionAttributeValues(attrValues)
+                .build();
 
         try {
             List<Map<String, AttributeValue>> returnedItems = ddbClient.query(request).items();
@@ -140,8 +183,10 @@ public class ZaiCilentEventTest {
             Map<String, String> item = new HashMap<>();
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
-                    String val = returnedItem.get(key).toString();
-                    item.put(key, val.substring(val.indexOf("=") + 1, val.length() - 1));
+                    // Convert AttributeValue to Java Object
+                    AttributeValue attributeValue = returnedItem.get(key);
+                    String val = toJavaObject(attributeValue).toString();
+                    item.put(key, val);
                 }
                 return item;
             }
@@ -152,7 +197,6 @@ public class ZaiCilentEventTest {
             return null;
         }
     }
-
 
     private Map<String, String> getEventLogWithTimeStamp(String partitionValue, double sortValue) {
         HashMap<String, AttributeValue> keyToGet = new HashMap<>();
@@ -171,8 +215,10 @@ public class ZaiCilentEventTest {
             Map<String, String> item = new HashMap<>();
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
-                    String val = returnedItem.get(key).toString();
-                    item.put(key, val.substring(val.indexOf("=") + 1, val.length() - 1));
+                    // Convert AttributeValue to Java Object
+                    AttributeValue attributeValue = returnedItem.get(key);
+                    String val = toJavaObject(attributeValue).toString();
+                    item.put(key, val);
                 }
                 return item;
             }
@@ -194,9 +240,9 @@ public class ZaiCilentEventTest {
         keyToGet.put(eventTableSortKey, AttributeValue.builder().n(sortValue).build());
 
         DeleteItemRequest deleteReq = DeleteItemRequest.builder()
-            .key(keyToGet)
-            .tableName(eventTableName)
-            .build();
+                .key(keyToGet)
+                .tableName(eventTableName)
+                .build();
 
         try {
             ddbClient.deleteItem(deleteReq);
@@ -247,6 +293,11 @@ public class ZaiCilentEventTest {
             String eventValue = event.getEventValue();
             boolean isZaiRecommendation = event.getIsZaiRecommendation();
             String from = event.getFrom();
+            String url = event.getUrl();
+            String ref = event.getRef();
+            String recommendationId = event.getRecommendationId();
+            Map<String, ?> eventProperties = event.getEventProperties();
+            Map<String, ?> userProperties = event.getUserProperties();
 
             // Map<String, String> logItem = getEventLog(userId);
             Map<String, String> logItem = getEventLogWithTimeStamp(userId, timestamp);
@@ -259,7 +310,12 @@ public class ZaiCilentEventTest {
             assertEquals(logItem.get(eventTableEventTypeKey), eventType);
             assertEquals(logItem.get(eventTableEventValueKey), eventValue);
             assertEquals(Boolean.parseBoolean(logItem.get(eventTableIsZaiRecommendationKey)), isZaiRecommendation);
-            assertEquals(logItem.get(eventTableFromKey), from);
+            assertEquals(logItem.get(eventTableFromKey), Objects.toString(from));
+            assertEquals(logItem.get(eventTableUrlKey), Objects.toString(url));
+            assertEquals(logItem.get(eventTableRefKey), Objects.toString(ref));
+            assertEquals(logItem.get(eventTableRecommendationIdKey), Objects.toString(recommendationId));
+            assertEquals(logItem.get(eventTableEventPropertiesKey), Objects.toString(eventProperties));
+            assertEquals(logItem.get(eventTableUserPropertiesKey), Objects.toString(userProperties));
             assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
         }
     }
@@ -285,6 +341,11 @@ public class ZaiCilentEventTest {
             Integer timeToLive = event.getTimeToLive();
             boolean isZaiRecommendation = event.getIsZaiRecommendation();
             String from = event.getFrom();
+            String url = event.getUrl();
+            String ref = event.getRef();
+            String recommendationId = event.getRecommendationId();
+            Map<String, ?> eventProperties = event.getEventProperties();
+            Map<String, ?> userProperties = event.getUserProperties();
 
             Map<String, String> logItem = getEventLog(userId);
             assertNotNull(logItem);
@@ -297,13 +358,17 @@ public class ZaiCilentEventTest {
             if (isTest) {
                 assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)),
                         (int) (serverTimestamp + timeToLive));
-            }
-            else {
+            } else {
                 assertEquals(Integer.parseInt(logItem.get(eventTableExpirationTimeKey)),
                         (int) (serverTimestamp + defaultDataExpirationSeconds));
             }
             assertEquals(Boolean.parseBoolean(logItem.get(eventTableIsZaiRecommendationKey)), isZaiRecommendation);
-            assertEquals(logItem.get(eventTableFromKey), from);
+            assertEquals(logItem.get(eventTableFromKey), Objects.toString(from));
+            assertEquals(logItem.get(eventTableUrlKey), Objects.toString(url));
+            assertEquals(logItem.get(eventTableRefKey), Objects.toString(ref));
+            assertEquals(logItem.get(eventTableRecommendationIdKey), Objects.toString(recommendationId));
+            assertEquals(logItem.get(eventTableEventPropertiesKey), Objects.toString(eventProperties));
+            assertEquals(logItem.get(eventTableUserPropertiesKey), Objects.toString(userProperties));
             assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
         }
     }
@@ -311,6 +376,7 @@ public class ZaiCilentEventTest {
     @Before
     public void setup() {
         testClient = new ZaiClient.Builder(clientId, clientSecret)
+                .customEndpoint("dev")
                 .connectTimeout(10)
                 .readTimeout(30)
                 .build();
@@ -366,11 +432,34 @@ public class ZaiCilentEventTest {
     @Test
     public void testAddCartAddEventWithFrom() {
         AddCartaddEvent eventRequest = new AddCartaddEvent.Builder(generateUUID(), generateUUID())
-            .from(generateRandomString(10))
-            .build();
+                .from(generateRandomString(10))
+                .build();
 
         checkSuccessfulEventAdd(eventRequest);
     }
+
+    @Test
+    public void testAddCartAddEventWithNewSchema() {
+        Map<String, String> eventProperties = new HashMap<>();
+        Map<String, String> userProperties = new HashMap<>();
+
+        eventProperties.put("event_props_key1", "event_props_value1");
+        eventProperties.put("event_props_key2", "event_props_value2");
+        userProperties.put("user_props_key1", "user_props_value1");
+        userProperties.put("user_props_key2", "user_props_value2");
+
+        AddCartaddEvent eventRequest = new AddCartaddEvent.Builder(generateUUID(), generateUUID())
+                .from(generateRandomString(10))
+                .url("https://www.blux.ai/")
+                .ref("https://www.zaikorea.org/")
+                .recommendationId(generateUUID())
+                .eventProperties(eventProperties)
+                .userProperties(userProperties)
+                .build();
+
+        checkSuccessfulEventAdd(eventRequest);
+    }
+
     /**********************************
      *          AddLikeEvent        *
      **********************************/
@@ -385,8 +474,8 @@ public class ZaiCilentEventTest {
     @Test
     public void testAddLikeEventWithFrom() {
         AddLikeEvent eventRequest = new AddLikeEvent.Builder(generateUUID(), generateUUID())
-            .from(generateRandomString(10))
-            .build();
+                .from(generateRandomString(10))
+                .build();
 
         checkSuccessfulEventAdd(eventRequest);
     }
@@ -394,8 +483,8 @@ public class ZaiCilentEventTest {
     @Test
     public void testAddLikeEventWithIsZaiRec() {
         AddLikeEvent eventRequest = new AddLikeEvent.Builder(generateUUID(), generateUUID())
-            .isZaiRecommendation(true)
-            .build();
+                .isZaiRecommendation(true)
+                .build();
 
         checkSuccessfulEventAdd(eventRequest);
     }
@@ -403,9 +492,9 @@ public class ZaiCilentEventTest {
     @Test
     public void testAddLikeEventWithOptions() {
         AddLikeEvent eventRequest = new AddLikeEvent.Builder(generateUUID(), generateUUID())
-            .from(generateRandomString(10))
-            .isZaiRecommendation(true)
-            .build();
+                .from(generateRandomString(10))
+                .isZaiRecommendation(true)
+                .build();
 
         checkSuccessfulEventAdd(eventRequest);
     }
@@ -422,7 +511,7 @@ public class ZaiCilentEventTest {
     }
 
     /**********************************
-     *           AddSearchEvent       *
+     *         AddSearchEvent         *
      **********************************/
     @Test
     public void testSearchEvent() {
@@ -433,7 +522,7 @@ public class ZaiCilentEventTest {
     }
 
     /**********************************
-     *         AddPurchaseEvent       *
+     *        AddPurchaseEvent        *
      **********************************/
     @Test
     public void testAddPurchaseEvent() {
@@ -459,22 +548,22 @@ public class ZaiCilentEventTest {
         checkSuccessfulEventAdd(purchaseEventRequest);
     }
 
-
     /**********************************
-     *     AddCustomEvent             *
+     *         AddCustomEvent         *
      **********************************/
     @Test
     public void testAddCustomEvent() {
-       AddCustomEvent eventRequest = new AddCustomEvent.Builder(generateUUID(), generateRandomString(10))
+        AddCustomEvent eventRequest = new AddCustomEvent.Builder(generateUUID(), generateRandomString(10))
                 .addEventItem(generateUUID(), generateRandomString(10))
                 .build();
 
-       checkSuccessfulEventAdd(eventRequest);
+        checkSuccessfulEventAdd(eventRequest);
     }
 
-     @Test
-     public void testAddCustomEventInBatch() {
-        AddCustomEvent.Builder customEventRequestBuilder = new AddCustomEvent.Builder(generateUUID(), generateRandomString(10));
+    @Test
+    public void testAddCustomEventInBatch() {
+        AddCustomEvent.Builder customEventRequestBuilder = new AddCustomEvent.Builder(generateUUID(),
+                generateRandomString(10));
 
         int numEvents = generateRandomInteger(1, 10);
 
@@ -485,5 +574,5 @@ public class ZaiCilentEventTest {
         AddCustomEvent customEventRequest = customEventRequestBuilder.build();
 
         checkSuccessfulEventAdd(customEventRequest);
-     }
+    }
 }
