@@ -441,6 +441,8 @@ public class ZaiClientGetCustomRecommendationTest {
     @Test
     public void testGetCustomRecommendationWithWrongRecommendationTypeFormat() {
         String recommendationType = "homepage-main-rec%&$";
+        String userId = TestUtils.generateUUID();
+        int limit = TestUtils.generateRandomInteger(1, 10);
 
         try {
             new GetCustomRecommendation.Builder(recommendationType)
