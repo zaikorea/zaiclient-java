@@ -3,7 +3,6 @@ package org.zaikorea.zaiclienttest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -305,7 +304,7 @@ public class ZaiClientGetUserRecommendationTest {
             metadata.userId = userId;
             metadata.limit = limit;
             metadata.offset = offset;
-            checkSuccessfulGetUserRecommendation(recommendation, userId, metadata);
+            checkSuccessfulGetUserRecommendation(recommendation, metadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
