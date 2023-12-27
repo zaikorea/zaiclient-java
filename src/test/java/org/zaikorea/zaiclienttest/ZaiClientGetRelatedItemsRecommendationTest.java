@@ -62,7 +62,7 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
         public boolean equals(Object obj) {
 
             try {
-                for (Field field: obj.getClass().getFields()) {
+                for (Field field : obj.getClass().getFields()) {
                     if (field.get(obj) != null && field.get(obj).equals(field.get(this)))
                         continue;
                     else {
@@ -88,7 +88,14 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
     private static final String recLogTableName = "rec_log_test";
     private static final String recLogTablePartitionKey = "user_id";
     private static final String recLogTableSortKey = "timestamp";
-    private static final String recLogRecommendations = "recommendations";
+    private static final String recLogRecommendationTypeKey = "recommendation_type";
+    private static final String recLogOffsetKey = "offset";
+    private static final String recLogItemIdKey = "item_id";
+    private static final String recLogRecommendationIdKey = "recommendation_id";
+    private static final String recLogRecommendationsKey = "recommendations";
+    private static final String recLogUserIdKey = "user_id";
+    private static final String recLogLimitKey = "limit";
+    private static final String recLogItemIdsKey = "item_ids";
 
     private ZaiClient testClientToDevEndpoint; // TODO: Figure out to map dev endpoint with environment variable
 
@@ -126,7 +133,7 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
                 .expressionAttributeValues(attrValues)
                 .build();
 
-        try  {
+        try {
             List<Map<String, AttributeValue>> returnedItems = ddbClient.query(request).items();
             if (returnedItems.size() > 1)
                 return null;
@@ -136,8 +143,10 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
             Map<String, String> item = new HashMap<>();
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
-                    String val = returnedItem.get(key).toString();
-                    item.put(key, val.substring(17, val.length() - 1));
+                    // Convert AttributeValue to Java Object
+                    AttributeValue attributeValue = returnedItem.get(key);
+                    String val = Objects.toString(TestUtils.toJavaObject(attributeValue));
+                    item.put(key, val);
                 }
                 return item;
             }
@@ -173,11 +182,16 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
         return true;
     }
 
-    private void checkSuccessfulGetRelatedRecommendation(RecommendationRequest recommendation, String userId, String itemId, Metadata expectedMetadata) {
+    private void checkSuccessfulGetRelatedRecommendation(RecommendationRequest recommendation,
+            Metadata expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
-        int limit = recQuery.getLimit();
+        String recommendationType = recQuery.getRecommendationType();
         int offset = recQuery.getOffset();
+        String userId = recQuery.getUserId();
+        String itemId = recQuery.getItemId();
+        int limit = recQuery.getLimit();
+        List<String> itemIds = recQuery.getItemIds();
         Gson gson = new Gson();
 
         try {
@@ -185,8 +199,9 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
 
             // Response Testing
             List<String> responseItems = response.getItems();
+            String recommendationId = response.getRecommendationId();
             for (int i = 0; i < limit; i++) {
-                String expectedItem = String.format("ITEM_ID_%d", i+offset);
+                String expectedItem = String.format("ITEM_ID_%d", i + offset);
                 assertEquals(expectedItem, responseItems.get(i));
             }
 
@@ -199,11 +214,15 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
             // Check log
             Map<String, String> logItem = getRecLog(userId, itemId);
             assertNotNull(logItem);
-            assertNotEquals(logItem.size(), 0);
-            assertEquals(logItem.get(
-                            recLogRecommendations).split(",").length,
-                    response.getItems().size()
-            );
+            assertNotEquals(0, logItem.size());
+            assertEquals(Objects.toString(recommendationType), logItem.get(recLogRecommendationTypeKey));
+            assertEquals(Objects.toString(offset), logItem.get(recLogOffsetKey));
+            assertEquals(Objects.toString(itemId), logItem.get(recLogItemIdKey));
+            assertEquals(Objects.toString(recommendationId), logItem.get(recLogRecommendationIdKey));
+            assertEquals(Objects.toString(responseItems), logItem.get(recLogRecommendationsKey));
+            assertEquals(Objects.toString(userId), logItem.get(recLogUserIdKey));
+            assertEquals(Objects.toString(limit), logItem.get(recLogLimitKey));
+            assertEquals(Objects.toString(itemIds), logItem.get(recLogItemIdsKey));
             assertTrue(deleteRecLog(userId, itemId));
 
         } catch (IOException | ZaiClientException e) {
@@ -214,7 +233,6 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
     @Before
     public void setup() {
         testClientToDevEndpoint = new ZaiClient.Builder(clientId, clientSecret)
-                .customEndpoint("dev")
                 .connectTimeout(20)
                 .readTimeout(40)
                 .build();
@@ -229,7 +247,7 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
     }
 
     @Test
-    public void testGetUserRecommendation_1() {
+    public void testGetRelatedRecommendation_1() {
         Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
@@ -249,7 +267,7 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
             metadata.limit = limit;
             metadata.offset = offset;
             metadata.recommendationType = recommendationType;
-            checkSuccessfulGetRelatedRecommendation(recommendation, targetUserId, itemId, metadata);
+            checkSuccessfulGetRelatedRecommendation(recommendation, metadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -274,7 +292,7 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
             metadata.itemId = itemId;
             metadata.limit = limit;
             metadata.offset = offset;
-            checkSuccessfulGetRelatedRecommendation(recommendation, targetUserId, itemId, metadata);
+            checkSuccessfulGetRelatedRecommendation(recommendation, metadata);
         } catch (Exception e) {
             fail();
         }

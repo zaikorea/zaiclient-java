@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +40,14 @@ public class ZaiClientGetCustomRecommendationTest {
     private static final String recLogTableName = "rec_log_test";
     private static final String recLogTablePartitionKey = "user_id";
     private static final String recLogTableSortKey = "timestamp";
-    private static final String recLogRecommendations = "recommendations";
+    private static final String recLogRecommendationTypeKey = "recommendation_type";
+    private static final String recLogOffsetKey = "offset";
+    private static final String recLogItemIdKey = "item_id";
+    private static final String recLogRecommendationIdKey = "recommendation_id";
+    private static final String recLogRecommendationsKey = "recommendations";
+    private static final String recLogUserIdKey = "user_id";
+    private static final String recLogLimitKey = "limit";
+    private static final String recLogItemIdsKey = "item_ids";
 
     private static final String illegalAccessExceptionMessage = "At least one of userId, itemId, or itemIds must be provided.";
     private static final String nullLimitExceptionMessage = "The value of limit must not be null";
@@ -77,8 +85,10 @@ public class ZaiClientGetCustomRecommendationTest {
             Map<String, String> item = new HashMap<>();
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
-                    String val = returnedItem.get(key).toString();
-                    item.put(key, val.substring(17, val.length() - 1));
+                    // Convert AttributeValue to Java Object
+                    AttributeValue attributeValue = returnedItem.get(key);
+                    String val = Objects.toString(TestUtils.toJavaObject(attributeValue));
+                    item.put(key, val);
                 }
                 return item;
             }
@@ -114,11 +124,16 @@ public class ZaiClientGetCustomRecommendationTest {
         return true;
     }
 
-    private void checkSuccessfulGetCustomRecommendation(RecommendationRequest recommendation, String userId, Metadata expectedMetadata) {
+    private void checkSuccessfulGetCustomRecommendation(RecommendationRequest recommendation,
+            Metadata expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
-        int limit = recQuery.getLimit();
+        String recommendationType = recQuery.getRecommendationType();
         int offset = recQuery.getOffset();
+        String userId = recQuery.getUserId();
+        String itemId = recQuery.getItemId();
+        int limit = recQuery.getLimit();
+        List<String> itemIds = recQuery.getItemIds();
         ObjectMapper mapper = new ObjectMapper();
 
         try {
@@ -126,6 +141,7 @@ public class ZaiClientGetCustomRecommendationTest {
 
             // Response Testing
             List<String> responseItems = response.getItems();
+            String recommendationId = response.getRecommendationId();
             for (int i = 0; i < limit; i++) {
                 String expectedItem = String.format("ITEM_ID_%d", i + offset);
                 assertEquals(expectedItem, responseItems.get(i));
@@ -145,10 +161,15 @@ public class ZaiClientGetCustomRecommendationTest {
             // Check log
             Map<String, String> logItem = getRecLog(userId);
             assertNotNull(logItem);
-            assertNotEquals(logItem.size(), 0);
-            assertEquals(logItem.get(
-                    recLogRecommendations).split(",").length,
-                    response.getItems().size());
+            assertNotEquals(0, logItem.size());
+            assertEquals(Objects.toString(recommendationType), logItem.get(recLogRecommendationTypeKey));
+            assertEquals(Objects.toString(offset), logItem.get(recLogOffsetKey));
+            assertEquals(Objects.toString(itemId), logItem.get(recLogItemIdKey));
+            assertEquals(Objects.toString(recommendationId), logItem.get(recLogRecommendationIdKey));
+            assertEquals(Objects.toString(responseItems), logItem.get(recLogRecommendationsKey));
+            assertEquals(Objects.toString(userId), logItem.get(recLogUserIdKey));
+            assertEquals(Objects.toString(limit), logItem.get(recLogLimitKey));
+            assertEquals(Objects.toString(itemIds), logItem.get(recLogItemIdsKey));
             assertTrue(deleteRecLog(userId));
 
         } catch (IOException | ZaiClientException e) {
@@ -159,7 +180,6 @@ public class ZaiClientGetCustomRecommendationTest {
     @Before
     public void setup() {
         testClientToDevEndpoint = new ZaiClient.Builder(clientId, clientSecret)
-                .customEndpoint("dev")
                 .connectTimeout(20)
                 .readTimeout(40)
                 .build();
@@ -197,7 +217,7 @@ public class ZaiClientGetCustomRecommendationTest {
             expectedMetadata.recommendationType = recommendationType;
             expectedMetadata.callType = recommendationType;
 
-            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
         }
@@ -223,7 +243,7 @@ public class ZaiClientGetCustomRecommendationTest {
             expectedMetadata.limit = limit;
             expectedMetadata.recommendationType = recommendationType;
             expectedMetadata.callType = recommendationType;
-            checkSuccessfulGetCustomRecommendation(recommendation, null, expectedMetadata);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
         }
@@ -252,7 +272,7 @@ public class ZaiClientGetCustomRecommendationTest {
             expectedMetadata.recommendationType = recommendationType;
             expectedMetadata.callType = recommendationType;
 
-            checkSuccessfulGetCustomRecommendation(recommendation, null, expectedMetadata);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
         }
@@ -288,7 +308,7 @@ public class ZaiClientGetCustomRecommendationTest {
             expectedMetadata.recommendationType = recommendationType;
             expectedMetadata.callType = recommendationType;
 
-            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
         }
@@ -330,7 +350,7 @@ public class ZaiClientGetCustomRecommendationTest {
             expectedMetadata.callType = recommendationType;
             expectedMetadata.options = options;
 
-            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
         }
@@ -372,7 +392,7 @@ public class ZaiClientGetCustomRecommendationTest {
             expectedMetadata.callType = recommendationType;
             expectedMetadata.options = options;
 
-            checkSuccessfulGetCustomRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
         }
@@ -408,7 +428,7 @@ public class ZaiClientGetCustomRecommendationTest {
             Metadata expectedMetadata = new Metadata();
             expectedMetadata.itemIds = itemIds;
             expectedMetadata.offset = 0;
-            checkSuccessfulGetCustomRecommendation(recommendation, null, expectedMetadata);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
 
             fail();
         } catch (IllegalArgumentException e) {
@@ -420,7 +440,7 @@ public class ZaiClientGetCustomRecommendationTest {
 
     @Test
     public void testGetCustomRecommendationWithWrongRecommendationTypeFormat() {
-        String recommendationType = "homepage-main-rec";
+        String recommendationType = "homepage-main-rec%&$";
 
         try {
             new GetCustomRecommendation.Builder(recommendationType)
