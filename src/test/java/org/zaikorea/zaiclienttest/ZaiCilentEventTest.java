@@ -403,10 +403,10 @@ public class ZaiCilentEventTest {
 
     @Test
     public void testAddCartAddEventWithNewSchema() {
-        Map<String, String> eventProperties = new HashMap<>();
-        Map<String, String> userProperties = new HashMap<>();
+        Map<String, Object> eventProperties = new HashMap<>();
+        Map<String, Object> userProperties = new HashMap<>();
 
-        eventProperties.put("event_props_key1", "event_props_value1");
+        eventProperties.put("event_props_key1", 1);
         eventProperties.put("event_props_key2", "event_props_value2");
         userProperties.put("user_props_key1", "user_props_value1");
         userProperties.put("user_props_key2", "user_props_value2");

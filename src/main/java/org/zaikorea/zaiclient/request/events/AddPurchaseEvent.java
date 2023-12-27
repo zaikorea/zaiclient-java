@@ -1,7 +1,6 @@
 package org.zaikorea.zaiclient.request.events;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,8 +46,8 @@ public class AddPurchaseEvent extends EventRequest {
         private List<Integer> timeToLive = new ArrayList<>();
         private String url = null;
         private String ref = null;
-        private Map<String, ?> eventProperties = new HashMap<>();
-        private Map<String, ?> userProperties = new HashMap<>();
+        private Map<String, ?> eventProperties = null;
+        private Map<String, ?> userProperties = null;
 
         public Builder(String userId) {
             this.userId = userId;
