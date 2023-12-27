@@ -290,6 +290,29 @@ public class ZaiClientGetUserRecommendationTest {
     }
 
     @Test
+    public void testGetUserRecommendation_3() { // With null user (unregistered user)
+        Metadata metadata;
+        String userId = null;
+        int limit = generateRandomInteger(1, 10);
+        int offset = generateRandomInteger(20, 40);
+
+        RecommendationRequest recommendation = new GetUserRecommendation.Builder(userId, limit)
+                .offset(offset)
+                .build();
+
+        try {
+            metadata = new Metadata();
+            metadata.userId = userId;
+            metadata.limit = limit;
+            metadata.offset = offset;
+            checkSuccessfulGetUserRecommendation(recommendation, userId, metadata);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            fail();
+        }
+    }
+
+    @Test
     public void testGetUserRecommendation_2() {
         Metadata metadata;
         String userId = generateUUID();

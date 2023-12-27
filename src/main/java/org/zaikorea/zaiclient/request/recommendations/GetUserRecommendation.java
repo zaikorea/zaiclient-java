@@ -35,7 +35,7 @@ public class GetUserRecommendation extends RecommendationRequest {
         private String options = DEFAULT_OPTIONS;
 
         public Builder(String userId, int limit) {
-            this.userId = Validator.validateString(userId, 1, 500, false, "userId");
+            this.userId = Validator.validateString(userId, 1, 500, true, "userId");
             this.limit = Validator.validateNumber(limit, 0, 10000, false, "limit");
         }
 

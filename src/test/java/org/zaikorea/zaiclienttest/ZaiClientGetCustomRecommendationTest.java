@@ -224,7 +224,7 @@ public class ZaiClientGetCustomRecommendationTest {
     }
 
     @Test
-    public void testGetRelatedRecommendation_2() {
+    public void testGetCustomRecommendation_2() {
         String itemId = TestUtils.generateUUID();
 
         int limit = TestUtils.generateRandomInteger(1, 10);
@@ -250,7 +250,7 @@ public class ZaiClientGetCustomRecommendationTest {
     }
 
     @Test
-    public void testGetRelatedRecommendation_3() {
+    public void testGetCustomRecommendation_3() {
         int limit = TestUtils.generateRandomInteger(1, 10);
 
         List<String> itemIds = new ArrayList<>();
@@ -279,7 +279,7 @@ public class ZaiClientGetCustomRecommendationTest {
     }
 
     @Test
-    public void testGetRelatedRecommendation_4() {
+    public void testGetCustomRecommendation_4() {
         String userId = TestUtils.generateUUID();
         String itemId = TestUtils.generateUUID();
         List<String> itemIds = new ArrayList<>();
@@ -315,7 +315,7 @@ public class ZaiClientGetCustomRecommendationTest {
     }
 
     @Test
-    public void testGetRelatedRecommendation_5() {
+    public void testGetCustomRecommendation_5() {
         String userId = TestUtils.generateUUID();
         String itemId = TestUtils.generateUUID();
         List<String> itemIds = new ArrayList<>();
@@ -357,7 +357,7 @@ public class ZaiClientGetCustomRecommendationTest {
     }
 
     @Test
-    public void testGetRelatedRecommendation_6() {
+    public void testGetCustomRecommendation_6() {
         String userId = TestUtils.generateUUID();
         String itemId = TestUtils.generateUUID();
         List<String> itemIds = new ArrayList<>();
@@ -400,7 +400,7 @@ public class ZaiClientGetCustomRecommendationTest {
 
     // Unhappy path
     @Test
-    public void testGetRelatedRecommendationWithoutAnyInput() { // No ItemId, No UserId, No ItemIds
+    public void testGetCustomRecommendationWithoutAnyInput() { // No ItemId, No UserId, No ItemIds
         try {
             new GetCustomRecommendation.Builder("homepage-main-recommendations")
                     .build();
@@ -444,6 +444,8 @@ public class ZaiClientGetCustomRecommendationTest {
 
         try {
             new GetCustomRecommendation.Builder(recommendationType)
+                    .userId(userId)
+                    .limit(limit)
                     .build();
             fail();
         } catch (IllegalArgumentException e) {
