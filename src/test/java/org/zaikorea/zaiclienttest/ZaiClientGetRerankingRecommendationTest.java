@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -36,7 +37,7 @@ import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
 public class ZaiClientGetRerankingRecommendationTest {
-        class Metadata {
+    class Metadata {
 
         @SerializedName("user_id")
         public String userId;
@@ -66,7 +67,7 @@ public class ZaiClientGetRerankingRecommendationTest {
         public boolean equals(Object obj) {
 
             try {
-                for (Field field: obj.getClass().getFields()) {
+                for (Field field : obj.getClass().getFields()) {
                     if (field.get(obj) != null && field.get(obj).equals(field.get(this)))
                         continue;
                     else {
@@ -94,7 +95,14 @@ public class ZaiClientGetRerankingRecommendationTest {
     private static final String recLogTableName = "rec_log_test";
     private static final String recLogTablePartitionKey = "user_id";
     private static final String recLogTableSortKey = "timestamp";
-    private static final String recLogRecommendations = "recommendations";
+    private static final String recLogRecommendationTypeKey = "recommendation_type";
+    private static final String recLogOffsetKey = "offset";
+    private static final String recLogItemIdKey = "item_id";
+    private static final String recLogRecommendationIdKey = "recommendation_id";
+    private static final String recLogRecommendationsKey = "recommendations";
+    private static final String recLogUserIdKey = "user_id";
+    private static final String recLogLimitKey = "limit";
+    private static final String recLogItemIdsKey = "item_ids";
 
     private ZaiClient testClient;
 
@@ -137,8 +145,10 @@ public class ZaiClientGetRerankingRecommendationTest {
             Map<String, String> item = new HashMap<>();
             if (returnedItem != null) {
                 for (String key : returnedItem.keySet()) {
-                    String val = returnedItem.get(key).toString();
-                    item.put(key, val.substring(17, val.length() - 1));
+                    // Convert AttributeValue to Java Object
+                    AttributeValue attributeValue = returnedItem.get(key);
+                    String val = Objects.toString(TestUtils.toJavaObject(attributeValue));
+                    item.put(key, val);
                 }
                 return item;
             }
@@ -149,7 +159,6 @@ public class ZaiClientGetRerankingRecommendationTest {
             return null;
         }
     }
-
 
     private boolean deleteRecLog(String partitionValue) {
 
@@ -175,11 +184,16 @@ public class ZaiClientGetRerankingRecommendationTest {
         return true;
     }
 
-    private void checkSuccessfulGetRerankingRecommendation(RecommendationRequest recommendation, String userId, Metadata expectedMetadata) {
+    private void checkSuccessfulGetRerankingRecommendation(RecommendationRequest recommendation,
+            Metadata expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
-        int limit = recQuery.getLimit();
+        String recommendationType = recQuery.getRecommendationType();
         int offset = recQuery.getOffset();
+        String userId = recQuery.getUserId();
+        String itemId = recQuery.getItemId();
+        int limit = recQuery.getLimit();
+        List<String> itemIds = recQuery.getItemIds();
         Gson gson = new Gson();
 
         try {
@@ -187,8 +201,9 @@ public class ZaiClientGetRerankingRecommendationTest {
 
             // Response Testing
             List<String> responseItems = response.getItems();
+            String recommendationId = response.getRecommendationId();
             for (int i = 0; i < limit; i++) {
-                String expectedItem = String.format("ITEM_ID_%d", i+offset);
+                String expectedItem = String.format("ITEM_ID_%d", i + offset);
                 assertEquals(expectedItem, responseItems.get(i));
             }
 
@@ -200,16 +215,20 @@ public class ZaiClientGetRerankingRecommendationTest {
 
             // Log testing unavailable when userId is null
             if (userId == null)
-                return ;
+                return;
 
             // Check log
             Map<String, String> logItem = getRecLog(userId);
             assertNotNull(logItem);
-            assertNotEquals(logItem.size(), 0);
-            assertEquals(logItem.get(
-                            recLogRecommendations).split(",").length,
-                    response.getItems().size()
-            );
+            assertNotEquals(0, logItem.size());
+            assertEquals(Objects.toString(recommendationType), logItem.get(recLogRecommendationTypeKey));
+            assertEquals(Objects.toString(offset), logItem.get(recLogOffsetKey));
+            assertEquals(Objects.toString(itemId), logItem.get(recLogItemIdKey));
+            assertEquals(Objects.toString(recommendationId), logItem.get(recLogRecommendationIdKey));
+            assertEquals(Objects.toString(responseItems), logItem.get(recLogRecommendationsKey));
+            assertEquals(Objects.toString(userId), logItem.get(recLogUserIdKey));
+            assertEquals(Objects.toString(limit), logItem.get(recLogLimitKey));
+            assertEquals(Objects.toString(itemIds), logItem.get(recLogItemIdsKey));
             assertTrue(deleteRecLog(userId));
 
         } catch (IOException | ZaiClientException e) {
@@ -239,7 +258,7 @@ public class ZaiClientGetRerankingRecommendationTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
+            itemIds.add(String.format("ITEM_ID_%d", i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -257,7 +276,7 @@ public class ZaiClientGetRerankingRecommendationTest {
             expectedMetadata.itemIds = itemIds;
             expectedMetadata.limit = limit;
             expectedMetadata.offset = offset;
-            checkSuccessfulGetRerankingRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -269,7 +288,7 @@ public class ZaiClientGetRerankingRecommendationTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
+            itemIds.add(String.format("ITEM_ID_%d", i));
         }
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -285,7 +304,7 @@ public class ZaiClientGetRerankingRecommendationTest {
             expectedMetadata.itemIds = itemIds;
             expectedMetadata.limit = limit;
             expectedMetadata.offset = offset;
-            checkSuccessfulGetRerankingRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -297,7 +316,7 @@ public class ZaiClientGetRerankingRecommendationTest {
         String userId = generateUUID();
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
+            itemIds.add(String.format("ITEM_ID_%d", i));
         }
         int limit = generateRandomInteger(1, 10);
 
@@ -310,7 +329,7 @@ public class ZaiClientGetRerankingRecommendationTest {
             expectedMetadata.userId = userId;
             expectedMetadata.itemIds = itemIds;
             expectedMetadata.limit = limit;
-            checkSuccessfulGetRerankingRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -322,7 +341,7 @@ public class ZaiClientGetRerankingRecommendationTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
+            itemIds.add(String.format("ITEM_ID_%d", i));
         }
 
         RecommendationRequest recommendation = new GetRerankingRecommendation.Builder(userId, itemIds)
@@ -333,7 +352,7 @@ public class ZaiClientGetRerankingRecommendationTest {
             expectedMetadata.userId = userId;
             expectedMetadata.itemIds = itemIds;
             expectedMetadata.limit = itemIds.size();
-            checkSuccessfulGetRerankingRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -345,7 +364,7 @@ public class ZaiClientGetRerankingRecommendationTest {
         String userId = null;
         List<String> itemIds = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            itemIds.add(String.format("ITEM_ID_%d",i));
+            itemIds.add(String.format("ITEM_ID_%d", i));
         }
         String recommendationType = "test_page";
 
@@ -359,7 +378,7 @@ public class ZaiClientGetRerankingRecommendationTest {
             expectedMetadata.itemIds = itemIds;
             expectedMetadata.limit = itemIds.size();
             expectedMetadata.recommendationType = recommendationType;
-            checkSuccessfulGetRerankingRecommendation(recommendation, userId, expectedMetadata);
+            checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();

@@ -1,7 +1,9 @@
 package org.zaikorea.zaiclient.request.events;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.zaikorea.zaiclient.configs.Config;
 import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
@@ -19,16 +21,20 @@ public class AddPurchaseEvent extends EventRequest {
         }
 
         for (int i = 0; i < builder.itemIds.size(); i++) {
-            this.events.add(new Event() // TODO: Creating new Event in a loop is not a good idea. Should be done in Builder methods.
-                .setUserId(builder.userId)
-                .setItemId(builder.itemIds.get(i))
-                .setTimestamp(timestamp + Config.epsilon * i)
-                .setEventType(DEFAULT_EVENT_TYPE)
-                .setEventValue(builder.eventValues.get(i))
-                .setTimeToLive(builder.timeToLive.get(i))
-                .setIsZaiRecommendation(builder.isZaiRecommendation.get(i))
-                .setFrom(builder.from.get(i))
-            );
+            this.events.add(new Event() // TODO: Creating new Event in a loop is not a good idea. Should be done in
+                                        // Builder methods.
+                    .setUserId(builder.userId)
+                    .setItemId(builder.itemIds.get(i))
+                    .setTimestamp(timestamp + Config.epsilon * i)
+                    .setEventType(DEFAULT_EVENT_TYPE)
+                    .setEventValue(builder.eventValues.get(i))
+                    .setTimeToLive(builder.timeToLive.get(i))
+                    .setIsZaiRecommendation(builder.isZaiRecommendation.get(i))
+                    .setFrom(builder.from.get(i))
+                    .setUrl(builder.url)
+                    .setRef(builder.ref)
+                    .setEventProperties(builder.eventProperties)
+                    .setUserProperties(builder.userProperties));
         }
     }
 
@@ -39,6 +45,10 @@ public class AddPurchaseEvent extends EventRequest {
         private List<Boolean> isZaiRecommendation = new ArrayList<>();
         private List<String> from = new ArrayList<>();
         private List<Integer> timeToLive = new ArrayList<>();
+        private String url = null;
+        private String ref = null;
+        private Map<String, ?> eventProperties = new HashMap<>();
+        private Map<String, ?> userProperties = new HashMap<>();
 
         public Builder(String userId) {
             this.userId = userId;
@@ -53,7 +63,8 @@ public class AddPurchaseEvent extends EventRequest {
             return this;
         }
 
-        // BackLog: This might need an interface to receive float number pricing with currency (USD, KRW, etc.)
+        // BackLog: This might need an interface to receive float number pricing with
+        // currency (USD, KRW, etc.)
 
         public Builder addPurchase(String itemId, int price, String from) {
             this.itemIds.add(itemId);
@@ -93,6 +104,30 @@ public class AddPurchaseEvent extends EventRequest {
             this.eventValues.remove(idx);
             this.isZaiRecommendation.remove(idx);
             this.from.remove(idx);
+
+            return this;
+        }
+
+        public Builder url(String url) {
+            this.url = url;
+
+            return this;
+        }
+
+        public Builder ref(String ref) {
+            this.ref = ref;
+
+            return this;
+        }
+
+        public Builder eventProperties(Map<String, ?> eventProperties) {
+            this.eventProperties = eventProperties;
+
+            return this;
+        }
+
+        public Builder userProperties(Map<String, ?> userProperties) {
+            this.userProperties = userProperties;
 
             return this;
         }

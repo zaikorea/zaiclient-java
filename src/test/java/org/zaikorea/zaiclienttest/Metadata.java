@@ -6,60 +6,58 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.google.gson.annotations.SerializedName;
 
 public class Metadata {
 
-        @JsonAlias("user_id")
-        public String userId;
+    @JsonAlias("user_id")
+    public String userId;
 
-        @JsonAlias("item_id")
-        public String itemId;
+    @JsonAlias("item_id")
+    public String itemId;
 
-        @JsonAlias("item_ids")
-        public List<String> itemIds;
+    @JsonAlias("item_ids")
+    public List<String> itemIds;
 
-        @JsonAlias("limit")
-        public Integer limit;
+    @JsonAlias("limit")
+    public Integer limit;
 
-        @JsonAlias("offset")
-        public Integer offset;
+    @JsonAlias("offset")
+    public Integer offset;
 
-        @JsonAlias("options")
-        public Map<String, ?> options;
+    @JsonAlias("options")
+    public Map<String, ?> options;
 
-        @JsonAlias("call_type")
-        public String callType;
+    @JsonAlias("call_type")
+    public String callType;
 
-        @JsonAlias("recommendation_type")
-        public String recommendationType;
+    @JsonAlias("recommendation_type")
+    public String recommendationType;
 
-        public Metadata() {
-            this.offset = 0;
-            this.options = new HashMap<>();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-
-            try {
-                for (Field field: obj.getClass().getFields()) {
-                    if (field.get(obj) != null && field.get(obj).equals(field.get(this)))
-                        continue;
-                    else {
-                        if (field.get(obj) == null && field.get(this) == null)
-                            continue;
-                        else
-                            return false;
-                    }
-                }
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                System.out.println(e.getMessage());
-
-                return false;
-            }
-
-            return true;
-        }
+    public Metadata() {
+        this.offset = 0;
+        this.options = new HashMap<>();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+
+        try {
+            for (Field field : obj.getClass().getFields()) {
+                if (field.get(obj) != null && field.get(obj).equals(field.get(this)))
+                    continue;
+                else {
+                    if (field.get(obj) == null && field.get(this) == null)
+                        continue;
+                    else
+                        return false;
+                }
+            }
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            System.out.println(e.getMessage());
+
+            return false;
+        }
+
+        return true;
+    }
+}

@@ -16,7 +16,6 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 import org.zaikorea.zaiclient.configs.Config;
-import org.zaikorea.zaiclient.exceptions.EmptyBatchException;
 import org.zaikorea.zaiclient.exceptions.ZaiClientException;
 import org.zaikorea.zaiclient.request.events.Event;
 import org.zaikorea.zaiclient.request.events.EventRequest;

@@ -8,7 +8,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 
 public class RecommendationResponse {
-    
+
     @SerializedName("items")
     private List<String> items;
 
@@ -21,21 +21,36 @@ public class RecommendationResponse {
     @SerializedName("metadata")
     private String metadata;
 
-    public List<String> getItems() { return items; }
+    @SerializedName("recommendation_id")
+    private String recommendationId;
 
-    public int getCount() { return count; }
+    public List<String> getItems() {
+        return items;
+    }
 
-    public double getTimestamp() { return this.timestamp; }
+    public int getCount() {
+        return count;
+    }
+
+    public double getTimestamp() {
+        return this.timestamp;
+    }
 
     public String getMetadata() {
         Gson gson = new Gson();
         try {
             Map<String, Object> json = gson.fromJson(metadata, Map.class);
         } catch (JsonSyntaxException e) {
-            System.out.println(String.format("WARNING: Failed to parse the metadata to object, returning an empty object. metadata: %s", metadata));
+            System.out.println(String.format(
+                    "WARNING: Failed to parse the metadata to object, returning an empty object. metadata: %s",
+                    metadata));
             metadata = "{}";
         }
 
         return metadata;
+    }
+
+    public String getRecommendationId() {
+        return recommendationId;
     }
 }

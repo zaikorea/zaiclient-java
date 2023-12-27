@@ -2,10 +2,11 @@ package org.zaikorea.zaiclient.request.events;
 
 import org.zaikorea.zaiclient.utils.Validator;
 
+import java.util.HashMap;
+import java.util.Map;
 import com.google.gson.annotations.SerializedName;
 
 public class Event {
-
 
     @SerializedName("user_id")
     protected String userId;
@@ -30,6 +31,21 @@ public class Event {
 
     @SerializedName("from")
     protected String from = null;
+
+    @SerializedName("url")
+    protected String url = null;
+
+    @SerializedName("ref")
+    protected String ref = null;
+
+    @SerializedName("recommendation_id")
+    protected String recommendationId = null;
+
+    @SerializedName("event_properties")
+    protected Map<String, ?> eventProperties = new HashMap<>();
+
+    @SerializedName("user_properties")
+    protected Map<String, ?> userProperties = new HashMap<>();
 
     public String getUserId() {
         return userId;
@@ -63,6 +79,26 @@ public class Event {
         return from;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public String getRecommendationId() {
+        return recommendationId;
+    }
+
+    public Map<String, ?> getEventProperties() {
+        return eventProperties;
+    }
+
+    public Map<String, ?> getUserProperties() {
+        return userProperties;
+    }
+
     public Event setUserId(String userId) {
         this.userId = Validator.validateString(userId, 1, 500, false, "userId");
 
@@ -82,7 +118,8 @@ public class Event {
     }
 
     public Event setTimestamp(long timestamp) {
-        this.timestamp = Validator.validateNumber(timestamp, (long) 1_648_871_097, (long) 2_147_483_647, false, "timestamp");
+        this.timestamp = Validator.validateNumber(timestamp, (long) 1_648_871_097, (long) 2_147_483_647, false,
+                "timestamp");
 
         return this;
     }
@@ -100,7 +137,7 @@ public class Event {
     }
 
     public Event setEventValue(String eventValue) {
-        this.eventValue = Validator.validateString(eventValue, 0, 500, true, "eventValue");
+        this.eventValue = Validator.validateString(eventValue, 0, 500, false, "eventValue");
 
         return this;
     }
@@ -119,6 +156,36 @@ public class Event {
 
     public Event setTimeToLive(Integer timeToLive) {
         this.timeToLive = Validator.validateNumber(timeToLive, 0, 2_147_483_647, true, "timeToLive");
+
+        return this;
+    }
+
+    public Event setUrl(String url) {
+        this.url = Validator.validateString(url, 0, true, "url");
+
+        return this;
+    }
+
+    public Event setRef(String ref) {
+        this.ref = Validator.validateString(ref, 0, true, "ref");
+
+        return this;
+    }
+
+    public Event setRecommendationId(String recommendationId) {
+        this.recommendationId = Validator.validateString(recommendationId, 0, true, "recommendationId");
+
+        return this;
+    }
+
+    public Event setEventProperties(Map<String, ?> eventProperties) {
+        this.eventProperties = eventProperties;
+
+        return this;
+    }
+
+    public Event setUserProperties(Map<String, ?> userProperties) {
+        this.userProperties = userProperties;
 
         return this;
     }
