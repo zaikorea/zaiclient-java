@@ -60,6 +60,8 @@ public class ZaiCilentEventTest {
     private static final String eventTableUserPropertiesKey = "user_properties";
 
     private static final int defaultDataExpirationSeconds = 60 * 60 * 24 * 365; // 1 year
+    private static final String eventPropertiesDefaultValue = "{}";
+    private static final String userPropertiesDefaultValue = "{}";
 
     private ZaiClient testClient;
 
@@ -277,8 +279,14 @@ public class ZaiCilentEventTest {
             assertEquals(logItem.get(eventTableUrlKey), Objects.toString(url));
             assertEquals(logItem.get(eventTableRefKey), Objects.toString(ref));
             assertEquals(logItem.get(eventTableRecommendationIdKey), Objects.toString(recommendationId));
-            assertEquals(logItem.get(eventTableEventPropertiesKey), Objects.toString(eventProperties));
-            assertEquals(logItem.get(eventTableUserPropertiesKey), Objects.toString(userProperties));
+            if (eventProperties == null)
+                assertEquals(eventPropertiesDefaultValue, logItem.get(eventTableEventPropertiesKey));
+            else
+                assertEquals(logItem.get(eventTableEventPropertiesKey), Objects.toString(eventProperties));
+            if (userProperties == null)
+                assertEquals(userPropertiesDefaultValue, logItem.get(eventTableUserPropertiesKey));
+            else
+                assertEquals(logItem.get(eventTableUserPropertiesKey), Objects.toString(userProperties));
             assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
         }
     }
@@ -330,8 +338,14 @@ public class ZaiCilentEventTest {
             assertEquals(logItem.get(eventTableUrlKey), Objects.toString(url));
             assertEquals(logItem.get(eventTableRefKey), Objects.toString(ref));
             assertEquals(logItem.get(eventTableRecommendationIdKey), Objects.toString(recommendationId));
-            assertEquals(logItem.get(eventTableEventPropertiesKey), Objects.toString(eventProperties));
-            assertEquals(logItem.get(eventTableUserPropertiesKey), Objects.toString(userProperties));
+            if (eventProperties == null)
+                assertEquals(eventPropertiesDefaultValue, logItem.get(eventTableEventPropertiesKey));
+            else
+                assertEquals(logItem.get(eventTableEventPropertiesKey), Objects.toString(eventProperties));
+            if (userProperties == null)
+                assertEquals(userPropertiesDefaultValue, logItem.get(eventTableUserPropertiesKey));
+            else
+                assertEquals(logItem.get(eventTableUserPropertiesKey), Objects.toString(userProperties));
             assertTrue(deleteEventLogWithTimestamp(userId, timestamp));
         }
     }
