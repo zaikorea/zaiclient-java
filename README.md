@@ -6,19 +6,13 @@ Z.Ai API를 Java / Kotlin 환경에서 간편하게 이용할 수 있는 REST cl
 
 [com.squareup.retrofit2](https://github.com/square/retrofit) 모듈을 이용하며, Java 1.8 이상을 지원합니다.
 
-
-
 ## Documentation
 
 SDK에 대한 documentation은 [ZAiDocs](https://docs.zaikorea.org/)에서 확인 가능합니다.
 
-
-
 ## Installation
 
 이 SDK는 [JitPack](https://jitpack.io/#zaikorea/zaiclient-java) 을 통해 배포되어 있습니다. 다음과 같이 프로젝트에 추가할 수 있습니다.
-
-
 
 ### Gradle (build.gradle)
 
@@ -35,11 +29,9 @@ Dependency를 추가합니다.
 
 ```css
 dependencies {
-  implementation 'com.github.zaikorea:zaiclient-java:v3.1.3'
+  implementation 'com.github.zaikorea:zaiclient-java:v3.2.0'
 }
 ```
-
-
 
 ### Gradle (build.gradle.kts)
 
@@ -58,11 +50,9 @@ Dependency를 추가합니다.
 
 ```css
 dependencies {
-  implementation("com.github.zaikorea:zaiclient-java:v3.1.3")
+  implementation("com.github.zaikorea:zaiclient-java:v3.2.0")
 }
 ```
-
-
 
 ### Maven
 
@@ -81,6 +71,6 @@ dependencies {
   <dependency>
     <groupId>com.github.zaikorea</groupId>
     <artifactId>zaiclient-java</artifactId>
-    <version>v3.1.3</version>
+    <version>v3.2.0</version>
   </dependency>
 ```
