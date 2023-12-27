@@ -2,7 +2,6 @@ package org.zaikorea.zaiclient.request.events;
 
 import org.zaikorea.zaiclient.utils.Validator;
 
-import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.annotations.SerializedName;
 
@@ -42,10 +41,10 @@ public class Event {
     protected String recommendationId = null;
 
     @SerializedName("event_properties")
-    protected Map<String, ?> eventProperties = new HashMap<>();
+    protected Map<String, ?> eventProperties = null;
 
     @SerializedName("user_properties")
-    protected Map<String, ?> userProperties = new HashMap<>();
+    protected Map<String, ?> userProperties = null;
 
     public String getUserId() {
         return userId;

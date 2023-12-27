@@ -1,6 +1,5 @@
 package org.zaikorea.zaiclient.request.events;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.zaikorea.zaiclient.utils.Utils;
@@ -31,8 +30,8 @@ public class AddPageViewEvent extends EventRequest {
         private String from = null;
         private String url = null;
         private String ref = null;
-        private Map<String, ?> eventProperties = new HashMap<>();
-        private Map<String, ?> userProperties = new HashMap<>();
+        private Map<String, ?> eventProperties = null;
+        private Map<String, ?> userProperties = null;
 
         public Builder(String userId, String pageType) {
             this.userId = userId;
