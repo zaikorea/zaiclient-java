@@ -8,7 +8,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.*;
 
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import org.junit.After;
 import org.junit.Before;
@@ -183,7 +182,7 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
     }
 
     private void checkSuccessfulGetRelatedRecommendation(RecommendationRequest recommendation,
-            Metadata expectedMetadata) {
+            Map<String, Object> expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
         String recommendationType = recQuery.getRecommendationType();
@@ -192,7 +191,6 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
         String itemId = recQuery.getItemId();
         int limit = recQuery.getLimit();
         List<String> itemIds = recQuery.getItemIds();
-        Gson gson = new Gson();
 
         try {
             RecommendationResponse response = testClientToDevEndpoint.sendRequest(recommendation);
@@ -206,8 +204,14 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
             }
 
             // Metadata Testing
-            Metadata metadata = gson.fromJson(response.getMetadata(), Metadata.class);
-            assertEquals(expectedMetadata, metadata);
+            Map<String, Object> metadata = response.getMetadata();
+            for (String key : expectedMetadata.keySet()) {
+                if (expectedMetadata.get(key) instanceof Integer && metadata.get(key) instanceof Double)
+                    assertEquals(expectedMetadata.get(key), ((Double) metadata.get(key)).intValue());    
+                else
+                    assertEquals(expectedMetadata.get(key), metadata.get(key));    
+            }
+
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
 
@@ -248,7 +252,6 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
 
     @Test
     public void testGetRelatedRecommendation_1() {
-        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -261,13 +264,13 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
                 .build();
 
         try {
-            metadata = new Metadata();
-            metadata.userId = targetUserId;
-            metadata.itemId = itemId;
-            metadata.limit = limit;
-            metadata.offset = offset;
-            metadata.recommendationType = recommendationType;
-            checkSuccessfulGetRelatedRecommendation(recommendation, metadata);
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", targetUserId);
+            expectedMetadata.put("item_id", itemId);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            checkSuccessfulGetRelatedRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -276,7 +279,6 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
 
     @Test
     public void testGetRelatedRecommendation_2() {
-        Metadata metadata;
         String itemId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -287,12 +289,12 @@ public class ZaiClientGetRelatedItemsRecommendationTest {
                 .build();
 
         try {
-            metadata = new Metadata();
-            metadata.userId = targetUserId;
-            metadata.itemId = itemId;
-            metadata.limit = limit;
-            metadata.offset = offset;
-            checkSuccessfulGetRelatedRecommendation(recommendation, metadata);
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", targetUserId);
+            expectedMetadata.put("item_id", itemId);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
+            checkSuccessfulGetRelatedRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
         }

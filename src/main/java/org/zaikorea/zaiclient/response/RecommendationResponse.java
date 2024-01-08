@@ -1,5 +1,6 @@
 package org.zaikorea.zaiclient.response;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,19 +37,17 @@ public class RecommendationResponse {
         return this.timestamp;
     }
 
-    public String getMetadata() {
+    public Map<String, Object> getMetadata() {
         Gson gson = new Gson();
         try {
-            Map<String, Object> json = gson.fromJson(metadata, Map.class);
+            return gson.fromJson(metadata, Map.class);
         } catch (JsonSyntaxException e) {
             System.out.println(String.format(
                     "WARNING: Failed to parse the metadata to object, returning an empty object. metadata: %s",
                     metadata));
-            metadata = "{}";
+            return new HashMap<>();
         }
-
-        return metadata;
-    }
+    }   
 
     public String getRecommendationId() {
         return recommendationId;

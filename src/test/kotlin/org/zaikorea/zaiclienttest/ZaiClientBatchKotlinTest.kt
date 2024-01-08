@@ -559,3 +559,4 @@ class ZaiClientBatchKotlinTest {
                 return utcnow.toString()
             }
     }
+}

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +24,6 @@ import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.response.RecommendationResponse;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
-
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -36,69 +32,6 @@ import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
 public class ZaiClientGetUserRecommendationTest {
-    class Metadata {
-
-        @SerializedName("user_id")
-        public String userId;
-        @SerializedName("item_id")
-        public String itemId;
-        @SerializedName("item_ids")
-        public List<String> itemIds;
-        @SerializedName("limit")
-        public Integer limit;
-        @SerializedName("offset")
-        public Integer offset;
-        @SerializedName("options")
-        public Map<String, Integer> options;
-        @SerializedName("call_type")
-        public String callType;
-        @SerializedName("recommendation_type")
-        public String recommendationType;
-
-        public Metadata() {
-            this.offset = 0;
-            this.options = new HashMap<>();
-            this.callType = "user-recommendations";
-            this.recommendationType = "homepage";
-        }
-
-        @Override
-        public String toString() {
-            return "Metadata{" +
-                    "userId='" + userId + '\'' +
-                    ", itemId='" + itemId + '\'' +
-                    ", itemIds=" + itemIds +
-                    ", limit=" + limit +
-                    ", offset=" + offset +
-                    ", options=" + options +
-                    ", callType='" + callType + '\'' +
-                    ", recommendationType='" + recommendationType + '\'' +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-
-            try {
-                for (Field field : obj.getClass().getFields()) {
-                    if (field.get(obj) != null && field.get(obj).equals(field.get(this)))
-                        continue;
-                    else {
-                        if (field.get(obj) == null && field.get(this) == null)
-                            continue;
-                        else
-                            return false;
-                    }
-                }
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                System.out.println(e.getMessage());
-
-                return false;
-            }
-
-            return true;
-        }
-    }
 
     private static final String clientId = "test";
     private static final String clientSecret = "KVPzvdHTPWnt0xaEGc2ix-eqPXFCdEV5zcqolBr_h1k"; // this secret key is for
@@ -195,7 +128,7 @@ public class ZaiClientGetUserRecommendationTest {
         return true;
     }
 
-    private void checkSuccessfulGetUserRecommendation(RecommendationRequest recommendation, Metadata expectedMetadata) {
+    private void checkSuccessfulGetUserRecommendation(RecommendationRequest recommendation, Map<String, Object> expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
         String recommendationType = recQuery.getRecommendationType();
@@ -204,7 +137,6 @@ public class ZaiClientGetUserRecommendationTest {
         String itemId = recQuery.getItemId();
         int limit = recQuery.getLimit();
         List<String> itemIds = recQuery.getItemIds();
-        Gson gson = new Gson();
 
         try {
             RecommendationResponse response = testClient.sendRequest(recommendation);
@@ -218,8 +150,14 @@ public class ZaiClientGetUserRecommendationTest {
             }
 
             // Metadata Testing
-            Metadata metadata = gson.fromJson(response.getMetadata(), Metadata.class);
-            assertEquals(expectedMetadata, metadata);
+            Map<String, Object> metadata = response.getMetadata();
+            for (String key : expectedMetadata.keySet()) {
+                if (expectedMetadata.get(key) instanceof Integer && metadata.get(key) instanceof Double)
+                    assertEquals(expectedMetadata.get(key), ((Double) metadata.get(key)).intValue());    
+                else
+                    assertEquals(expectedMetadata.get(key), metadata.get(key));    
+            }
+
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
 
@@ -264,7 +202,7 @@ public class ZaiClientGetUserRecommendationTest {
 
     @Test
     public void testGetUserRecommendation_1() {
-        Metadata metadata;
+        Map<String, Object> expectedMetadata;
         String userId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -276,12 +214,12 @@ public class ZaiClientGetUserRecommendationTest {
                 .build();
 
         try {
-            metadata = new Metadata();
-            metadata.userId = userId;
-            metadata.limit = limit;
-            metadata.offset = offset;
-            metadata.recommendationType = recommendationType;
-            checkSuccessfulGetUserRecommendation(recommendation, metadata);
+            expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            checkSuccessfulGetUserRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -289,8 +227,8 @@ public class ZaiClientGetUserRecommendationTest {
     }
 
     @Test
-    public void testGetUserRecommendation_3() { // With null user (unregistered user)
-        Metadata metadata;
+    public void testGetUserRecommendation_2() { // With null user (unregistered user)
+        Map<String, Object> expectedMetadata;
         String userId = null;
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -300,11 +238,11 @@ public class ZaiClientGetUserRecommendationTest {
                 .build();
 
         try {
-            metadata = new Metadata();
-            metadata.userId = userId;
-            metadata.limit = limit;
-            metadata.offset = offset;
-            checkSuccessfulGetUserRecommendation(recommendation, metadata);
+            expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
+            checkSuccessfulGetUserRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();
@@ -312,8 +250,8 @@ public class ZaiClientGetUserRecommendationTest {
     }
 
     @Test
-    public void testGetUserRecommendation_2() {
-        Metadata metadata;
+    public void testGetUserRecommendation_3() {
+        Map<String, Object> expectedMetadata;
         String userId = generateUUID();
         int limit = generateRandomInteger(1, 10);
         int offset = generateRandomInteger(20, 40);
@@ -323,11 +261,11 @@ public class ZaiClientGetUserRecommendationTest {
                 .build();
 
         try {
-            metadata = new Metadata();
-            metadata.userId = userId;
-            metadata.limit = limit;
-            metadata.offset = offset;
-            checkSuccessfulGetUserRecommendation(recommendation, metadata);
+            expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
+            checkSuccessfulGetUserRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail();

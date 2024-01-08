@@ -29,7 +29,7 @@ Dependency를 추가합니다.
 
 ```css
 dependencies {
-  implementation 'com.github.zaikorea:zaiclient-java:v3.2.0'
+  implementation 'com.github.zaikorea:zaiclient-java:v3.2.1'
 }
 ```
 
@@ -50,7 +50,7 @@ Dependency를 추가합니다.
 
 ```css
 dependencies {
-  implementation("com.github.zaikorea:zaiclient-java:v3.2.0")
+  implementation("com.github.zaikorea:zaiclient-java:v3.2.1")
 }
 ```
 
@@ -71,6 +71,6 @@ dependencies {
   <dependency>
     <groupId>com.github.zaikorea</groupId>
     <artifactId>zaiclient-java</artifactId>
-    <version>v3.2.0</version>
+    <version>v3.2.1</version>
   </dependency>
 ```

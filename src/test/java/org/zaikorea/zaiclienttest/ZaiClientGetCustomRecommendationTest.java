@@ -23,8 +23,6 @@ import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.response.RecommendationResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -51,7 +49,6 @@ public class ZaiClientGetCustomRecommendationTest {
 
     private static final String illegalAccessExceptionMessage = "At least one of userId, itemId, or itemIds must be provided.";
     private static final String nullLimitExceptionMessage = "The value of limit must not be null";
-    private static final String unprocessibleEntityExceptionMessage = "Unprocessable Entity";
 
     private ZaiClient testClientToDevEndpoint; // TODO: Figure out to map dev endpoint with environment variable
     private static final Region region = Region.AP_NORTHEAST_2;
@@ -125,7 +122,7 @@ public class ZaiClientGetCustomRecommendationTest {
     }
 
     private void checkSuccessfulGetCustomRecommendation(RecommendationRequest recommendation,
-            Metadata expectedMetadata) {
+            Map<String, Object> expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
         String recommendationType = recQuery.getRecommendationType();
@@ -134,7 +131,6 @@ public class ZaiClientGetCustomRecommendationTest {
         String itemId = recQuery.getItemId();
         int limit = recQuery.getLimit();
         List<String> itemIds = recQuery.getItemIds();
-        ObjectMapper mapper = new ObjectMapper();
 
         try {
             RecommendationResponse response = testClientToDevEndpoint.sendRequest(recommendation);
@@ -148,9 +144,14 @@ public class ZaiClientGetCustomRecommendationTest {
             }
 
             // Metadata Testing
-            Metadata metadata = mapper.readValue(response.getMetadata(), Metadata.class);
-
-            assertEquals(expectedMetadata, metadata);
+            Map<String, Object> metadata = response.getMetadata();
+            for (String key : expectedMetadata.keySet()) {
+                if (expectedMetadata.get(key) instanceof Integer && metadata.get(key) instanceof Double)
+                    assertEquals(expectedMetadata.get(key), ((Double) metadata.get(key)).intValue());    
+                else
+                    assertEquals(expectedMetadata.get(key), metadata.get(key));    
+            }
+            
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
 
@@ -209,14 +210,12 @@ public class ZaiClientGetCustomRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-
-            expectedMetadata.userId = userId;
-            expectedMetadata.limit = limit;
-            expectedMetadata.offset = offset;
-            expectedMetadata.recommendationType = recommendationType;
-            expectedMetadata.callType = recommendationType;
-
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            expectedMetadata.put("call_type", recommendationType);
             checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
@@ -237,12 +236,11 @@ public class ZaiClientGetCustomRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata(); // call_type and recommendation_type are same for custom
-                                                        // recommendations
-            expectedMetadata.itemId = itemId;
-            expectedMetadata.limit = limit;
-            expectedMetadata.recommendationType = recommendationType;
-            expectedMetadata.callType = recommendationType;
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("item_id", itemId);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            expectedMetadata.put("call_type", recommendationType);
             checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
@@ -266,12 +264,11 @@ public class ZaiClientGetCustomRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = itemIds.size();
-            expectedMetadata.recommendationType = recommendationType;
-            expectedMetadata.callType = recommendationType;
-
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", itemIds.size());
+            expectedMetadata.put("recommendation_type", recommendationType);
+            expectedMetadata.put("call_type", recommendationType);
             checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
@@ -300,14 +297,13 @@ public class ZaiClientGetCustomRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemId = itemId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = limit;
-            expectedMetadata.recommendationType = recommendationType;
-            expectedMetadata.callType = recommendationType;
-
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_id", itemId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            expectedMetadata.put("call_type", recommendationType);
             checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
@@ -341,15 +337,14 @@ public class ZaiClientGetCustomRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemId = itemId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = limit;
-            expectedMetadata.recommendationType = recommendationType;
-            expectedMetadata.callType = recommendationType;
-            expectedMetadata.options = options;
-
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_id", itemId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            expectedMetadata.put("call_type", recommendationType);
+            expectedMetadata.put("options", options);
             checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
@@ -383,15 +378,13 @@ public class ZaiClientGetCustomRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemId = itemId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = limit;
-            expectedMetadata.recommendationType = recommendationType;
-            expectedMetadata.callType = recommendationType;
-            expectedMetadata.options = options;
-
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_id", itemId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            expectedMetadata.put("call_type", recommendationType);
             checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             fail();
@@ -421,15 +414,16 @@ public class ZaiClientGetCustomRecommendationTest {
             itemIds.add(TestUtils.generateUUID());
         }
 
+        
+
         try {
             RecommendationRequest recommendation = new GetCustomRecommendation.Builder("homepage-main-recommendations")
-                    .itemIds(itemIds)
-                    .build();
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.offset = 0;
+                .itemIds(itemIds)
+                .build();
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("offset", 0);
             checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
-
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(nullLimitExceptionMessage, e.getMessage());
