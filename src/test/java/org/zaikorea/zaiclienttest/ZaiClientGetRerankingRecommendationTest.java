@@ -26,7 +26,6 @@ import org.zaikorea.zaiclient.request.recommendations.RecommendationQuery;
 import org.zaikorea.zaiclient.request.recommendations.RecommendationRequest;
 import org.zaikorea.zaiclient.response.RecommendationResponse;
 
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
 import software.amazon.awssdk.regions.Region;
@@ -185,7 +184,7 @@ public class ZaiClientGetRerankingRecommendationTest {
     }
 
     private void checkSuccessfulGetRerankingRecommendation(RecommendationRequest recommendation,
-            Metadata expectedMetadata) {
+    Map<String, Object> expectedMetadata) {
         RecommendationQuery recQuery = recommendation.getPayload();
 
         String recommendationType = recQuery.getRecommendationType();
@@ -194,7 +193,6 @@ public class ZaiClientGetRerankingRecommendationTest {
         String itemId = recQuery.getItemId();
         int limit = recQuery.getLimit();
         List<String> itemIds = recQuery.getItemIds();
-        Gson gson = new Gson();
 
         try {
             RecommendationResponse response = testClient.sendRequest(recommendation);
@@ -208,8 +206,13 @@ public class ZaiClientGetRerankingRecommendationTest {
             }
 
             // Metadata Testing
-            Metadata metadata = gson.fromJson(response.getMetadata(), Metadata.class);
-            assertEquals(expectedMetadata, metadata);
+            Map<String, Object> metadata = response.getMetadata();
+            for (String key : expectedMetadata.keySet()) {
+                if (expectedMetadata.get(key) instanceof Integer && metadata.get(key) instanceof Double)
+                    assertEquals(expectedMetadata.get(key), ((Double) metadata.get(key)).intValue());    
+                else
+                    assertEquals(expectedMetadata.get(key), metadata.get(key));    
+            }
             assertEquals(response.getItems().size(), limit);
             assertEquals(response.getCount(), limit);
 
@@ -271,11 +274,11 @@ public class ZaiClientGetRerankingRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = limit;
-            expectedMetadata.offset = offset;
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
             checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -299,11 +302,11 @@ public class ZaiClientGetRerankingRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = limit;
-            expectedMetadata.offset = offset;
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("offset", offset);
             checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -325,10 +328,10 @@ public class ZaiClientGetRerankingRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = limit;
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", limit);
             checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -348,10 +351,10 @@ public class ZaiClientGetRerankingRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = itemIds.size();
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", itemIds.size());
             checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -373,11 +376,11 @@ public class ZaiClientGetRerankingRecommendationTest {
                 .build();
 
         try {
-            Metadata expectedMetadata = new Metadata();
-            expectedMetadata.userId = userId;
-            expectedMetadata.itemIds = itemIds;
-            expectedMetadata.limit = itemIds.size();
-            expectedMetadata.recommendationType = recommendationType;
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("user_id", userId);
+            expectedMetadata.put("item_ids", itemIds);
+            expectedMetadata.put("limit", itemIds.size());
+            expectedMetadata.put("recommendation_type", recommendationType);
             checkSuccessfulGetRerankingRecommendation(recommendation, expectedMetadata);
         } catch (Exception e) {
             System.out.println(e.getMessage());
