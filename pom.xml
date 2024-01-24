@@ -6,7 +6,7 @@
 
     <groupId>org.zaikorea</groupId>
     <artifactId>zaiclient</artifactId>
-    <version>3.2.1</version>
+    <version>3.2.2</version>
 
     <name>zaiclient</name>
     <url>https://github.com/zaikorea/zaiclient</url>
