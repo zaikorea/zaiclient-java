@@ -20,10 +20,6 @@ public class GetCustomRecommendation extends RecommendationRequest {
     private static final List<String> DEFAULT_ITEM_IDS = null;
 
     public GetCustomRecommendation(Builder builder) {
-        // Additional validation
-        if (builder.userId == null && builder.itemId == null && builder.itemIds == null)
-            throw new IllegalArgumentException("At least one of userId, itemId, or itemIds must be provided.");
-
         this.recQuery = new RecommendationQuery()
                 .setUserId(builder.userId)
                 .setItemId(builder.itemId)

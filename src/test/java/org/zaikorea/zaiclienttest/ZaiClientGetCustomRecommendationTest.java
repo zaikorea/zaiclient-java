@@ -47,7 +47,6 @@ public class ZaiClientGetCustomRecommendationTest {
     private static final String recLogLimitKey = "limit";
     private static final String recLogItemIdsKey = "item_ids";
 
-    private static final String illegalAccessExceptionMessage = "At least one of userId, itemId, or itemIds must be provided.";
     private static final String nullLimitExceptionMessage = "The value of limit must not be null";
 
     private ZaiClient testClientToDevEndpoint; // TODO: Figure out to map dev endpoint with environment variable
@@ -391,20 +390,27 @@ public class ZaiClientGetCustomRecommendationTest {
         }
     }
 
-    // Unhappy path
     @Test
-    public void testGetCustomRecommendationWithoutAnyInput() { // No ItemId, No UserId, No ItemIds
+    public void testGetCustomRecommendation_7() {
+        int limit = TestUtils.generateRandomInteger(1, 10);
+        String recommendationType = "category-widget2-recommendations";
+
+        RecommendationRequest recommendation = new GetCustomRecommendation.Builder(recommendationType)
+                .limit(limit)
+                .build();
+
         try {
-            new GetCustomRecommendation.Builder("homepage-main-recommendations")
-                    .build();
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals(illegalAccessExceptionMessage, e.getMessage());
-        } catch (Error e) {
+            Map<String, Object> expectedMetadata = new HashMap<String, Object>();
+            expectedMetadata.put("limit", limit);
+            expectedMetadata.put("recommendation_type", recommendationType);
+            expectedMetadata.put("call_type", recommendationType);
+            checkSuccessfulGetCustomRecommendation(recommendation, expectedMetadata);
+        } catch (Exception e) {
             fail();
         }
     }
 
+    // Unhappy path
     @Test
     public void testGetCustomRecommendationWithoutLimit() {
         int itemCount = TestUtils.generateRandomInteger(1, 10);
